@@ -717,6 +717,122 @@
             if (window.lucide) window.lucide.createIcons();
         }
 
+        // --- Authentication ---
+        window.handleLoginClick = async function() {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                if (result.user.email !== 'chimhinhin@gmail.com') {
+                    await signOut(auth);
+                    window.showAlert("權限不足：這是一個私人的管理帳號。");
+                }
+            } catch (error) {
+                if (error.code !== 'auth/popup-closed-by-user') { 
+                    console.error("Login Error: ", error);
+                    window.showAlert("登入失敗 (" + error.code + ")"); 
+                }
+            }
+        }
+        
+        window.handleLogout = async function() { 
+            await signOut(auth); 
+            window.updateAllViews();
+        }
+
+        // --- CRUD ---
+        window.toggleTBD = function(forceState) {
+            const overlay = document.getElementById('f-endtime-tbd-overlay');
+            let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
+            if (isTBD) overlay.classList.remove('hidden');
+            else overlay.classList.add('hidden');
+        }
+
+        window.toggleRepeatCount = function() {
+            const repeatType = document.getElementById('f-repeat').value;
+            const container = document.getElementById('repeat-count-container');
+            if (repeatType === 'none') {
+                container.classList.add('hidden');
+                container.classList.remove('flex');
+            } else {
+                container.classList.remove('hidden');
+                container.classList.add('flex');
+            }
+        }
+
+        window.handleAddOrEditEvent = async function(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+            
+            const timeVal = document.getElementById('f-time').value;
+            const isTBD = !document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden');
+            const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
+            
+            const repeatType = document.getElementById('f-repeat').value;
+            const repeatCountStr = document.getElementById('f-repeat-count').value;
+            const repeatCount = (repeatType === 'none' || editingId) ? 1 : parseInt(repeatCountStr, 10);
+
+            if (!editingId) {
+                localStorage.setItem('chim_app_last_time', timeVal);
+                localStorage.setItem('chim_app_last_endtime', document.getElementById('f-endtime').value);
+                localStorage.setItem('chim_app_last_tbd', isTBD);
+            }
+
+            const baseDateStr = document.getElementById('f-date').value;
+            const [year, month, day] = baseDateStr.split('-').map(Number);
+            const tagVal = document.getElementById('f-tag').value;
+            const titleVal = document.getElementById('f-title').value;
+            const locationVal = document.getElementById('f-location').value;
+
+            try {
+                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
+                
+                if (editingId) {
+                    const eventDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events', editingId);
+                    await updateDoc(eventDoc, {
+                        tag: tagVal,
+                        title: titleVal,
+                        date: baseDateStr,
+                        time: timeVal,
+                        endTime: endTimeVal,
+                        location: locationVal,
+                    });
+                } 
+                else {
+                    const newEvents = [];
+                    for (let i = 0; i < repeatCount; i++) {
+                        let targetDate = new Date(year, month - 1, day);
+                        if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
+                        else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
+
+                        newEvents.push({
+                            tag: tagVal,
+                            title: titleVal,
+                            date: formatDate(targetDate),
+                            time: timeVal,
+                            endTime: endTimeVal,
+                            location: locationVal,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                    await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
+                }
+
+                window.closeModals();
+                e.target.reset();
+                document.getElementById('f-repeat').value = 'none';
+                document.getElementById('f-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
+                window.toggleRepeatCount();
+            } catch (error) { 
+                console.error(error);
+                window.showAlert("儲存失敗，請確認 Firebase 資料庫規則是否已設為允許讀寫。"); 
+            }
+        }
+
+        window.deleteEvent = async function(id) {
+            if (!isAdmin) return;
+            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), id)); } 
+            catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
+        }
+
         window.renderTags = function() {
             const container = document.getElementById('dynamic-tags-container');
             if(!container) return;
