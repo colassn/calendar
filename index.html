@@ -33,7 +33,6 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
         
-        /* 隱藏原生時間選擇器的圖標，讓版面更乾淨 (適用於 webkit 瀏覽器) */
         input[type="time"]::-webkit-calendar-picker-indicator { display: none; background: transparent; }
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
     </style>
@@ -114,53 +113,66 @@
         </button>
     </div>
 
-    <!-- Modals Overlay -->
+    <!-- MAIN Modals Overlay -->
     <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-400">
 
-        <!-- 鋼琴班智能更改 Modal (人體工學重構版) -->
-        <div id="piano-update-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[90vh]">
-            <div class="bg-indigo-50 p-6 pb-6 text-center border-b border-indigo-100 relative shrink-0">
+        <!-- 鋼琴班智能更改 Modal (防錯與預覽升級版) -->
+        <div id="piano-update-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[95vh]">
+            <div class="bg-indigo-50 p-6 pb-4 text-center relative shrink-0">
                 <button onclick="closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
-                <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                    <i data-lucide="music" class="w-7 h-7 text-indigo-500 fill-indigo-500"></i>
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
+                    <i data-lucide="music" class="w-5 h-5 text-indigo-500 fill-indigo-500"></i>
                 </div>
-                <h3 class="text-2xl font-black text-zinc-900 tracking-tight mb-1">鋼琴班智能更改</h3>
-                <p class="text-zinc-500 font-bold text-xs">貼上對話自動填寫，或直接手動設定</p>
+                <h3 class="text-xl font-black text-zinc-900 tracking-tight mb-1">鋼琴班更改</h3>
             </div>
             
+            <!-- 目前已排定的鋼琴班 (橫向滾動) -->
+            <div class="px-6 pt-3 pb-1 shrink-0 bg-white border-b border-zinc-50">
+                <h4 class="text-[10px] font-bold text-indigo-400 mb-2 uppercase tracking-widest pl-1">未來現有鋼琴班 (點擊載入)</h4>
+                <div id="pu-existing-list" class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                    <!-- 動態載入 -->
+                </div>
+            </div>
+
             <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow">
-                <form id="piano-update-form" onsubmit="handlePianoSubmit(event)" class="space-y-6">
+                <form id="piano-update-form" onsubmit="handlePianoSubmit(event)" class="space-y-5">
                     
-                    <!-- 智能輸入區 -->
                     <div>
                         <textarea id="pu-text" rows="2" oninput="handlePianoPaste(event)" class="w-full px-5 py-4 text-sm bg-zinc-50 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-[1.5rem] resize-none font-medium placeholder:text-zinc-400 leading-relaxed shadow-inner" placeholder="貼上導師訊息：&#10;27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
                     </div>
 
-                    <!-- 人體工學重構：日期與時間整合設定區 (預設為顯示) -->
+                    <!-- 人體工學重構：日期與時間整合設定區 -->
                     <div id="pu-details" class="space-y-3 block">
+                        
+                        <!-- 衝突警告區塊 (隱藏) -->
+                        <div id="pu-conflict-warning" class="hidden bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-start gap-2.5">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 mt-0.5 shrink-0"></i>
+                            <div>
+                                <p class="text-xs font-bold text-amber-700 mb-0.5">發現該日已有鋼琴班 (<span id="pu-conflict-time"></span>)</p>
+                                <p class="text-[10px] font-medium text-amber-600 leading-tight">確認發佈將會覆蓋原有時間。如果原本資訊正確，你可以直接關閉。</p>
+                            </div>
+                        </div>
+
                         <!-- 日期區塊 -->
                         <div class="bg-indigo-50/60 p-2 pl-4 rounded-[1.25rem] flex items-center shadow-sm">
                             <div class="flex-1">
                                 <label class="block text-[10px] font-bold text-indigo-600 mb-0.5 tracking-widest uppercase">上堂日期</label>
-                                <input id="pu-date" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-black text-lg">
+                                <input id="pu-date" onchange="checkPianoConflict()" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-black text-lg">
                             </div>
                             <div class="bg-white p-3 rounded-xl shadow-sm text-indigo-500 mr-1"><i data-lucide="calendar" class="w-5 h-5"></i></div>
                         </div>
 
-                        <!-- 時間區塊 (黃金比例合併設計) -->
+                        <!-- 時間區塊 -->
                         <div class="flex items-center bg-zinc-50 rounded-[1.25rem] border border-zinc-200 p-1.5 shadow-sm relative">
                             <div class="flex-1 px-2 py-3">
                                 <label class="block text-[10px] font-bold text-zinc-400 mb-1 text-center tracking-widest uppercase">開始</label>
                                 <input id="pu-time" required type="time" class="w-full text-center bg-transparent focus:outline-none text-zinc-900 font-black text-2xl tracking-wider">
                             </div>
-                            
-                            <!-- 中央絕美分隔線/圖標 -->
                             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-zinc-100 rounded-full flex items-center justify-center shadow-sm z-10">
                                 <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-zinc-400"></i>
                             </div>
-
                             <div class="flex-1 px-2 py-3">
                                 <label class="block text-[10px] font-bold text-zinc-400 mb-1 text-center tracking-widest uppercase">結束</label>
                                 <input id="pu-endtime" type="time" class="w-full text-center bg-transparent focus:outline-none text-zinc-900 font-black text-2xl tracking-wider">
@@ -168,8 +180,22 @@
                         </div>
                     </div>
 
-                    <div class="pt-4">
-                        <button type="submit" class="w-full py-4 text-base font-black text-white bg-indigo-500 rounded-[1.5rem] hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98]">確認並發佈</button>
+                    <!-- 鋼琴班專屬重複設定 -->
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="bg-indigo-50/40 p-1 rounded-[1.25rem] border border-indigo-100 flex items-center relative overflow-hidden">
+                            <input type="hidden" id="pu-repeat" value="none">
+                            <button type="button" onclick="openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-2.5 text-sm bg-transparent text-indigo-900 font-bold transition-colors">
+                                單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>
+                            </button>
+                        </div>
+                        <div id="pu-repeat-count-container" class="hidden bg-indigo-50/40 p-1 rounded-[1.25rem] border border-indigo-100 items-center relative overflow-hidden">
+                            <div class="bg-white p-2.5 rounded-xl ml-0.5 shadow-sm text-indigo-500 text-[10px] font-bold text-center w-8 h-8 flex items-center justify-center leading-none shrink-0">次數</div>
+                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-2.5 text-sm bg-transparent focus:outline-none text-indigo-900 font-bold" placeholder="重複次數">
+                        </div>
+                    </div>
+
+                    <div class="pt-2 pb-2">
+                        <button type="submit" id="pu-submit-btn" class="w-full py-4 text-base font-black text-white bg-indigo-500 rounded-[1.5rem] hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98]">確認並發佈</button>
                     </div>
                 </form>
             </div>
@@ -286,9 +312,7 @@
                             <input id="f-title" required type="text" class="w-2/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold" placeholder="準備做些什麼？">
                         </div>
                         <!-- 動態標籤快選區 -->
-                        <div id="dynamic-tags-container" class="flex flex-wrap gap-1.5 mt-2 px-1">
-                            <!-- 標籤將會在這裡動態渲染 -->
-                        </div>
+                        <div id="dynamic-tags-container" class="flex flex-wrap gap-1.5 mt-2 px-1"></div>
                     </div>
 
                     <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
@@ -349,7 +373,7 @@
             </div>
         </div>
 
-        <!-- Admin Modal (管理中心) -->
+        <!-- Admin Modal (管理中心 - 重構排版) -->
         <div id="admin-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
@@ -361,7 +385,6 @@
             </div>
             
             <div class="p-6 overflow-y-auto space-y-8 grow hide-scrollbar bg-white">
-                
                 <!-- 標籤管理區塊 -->
                 <div>
                     <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5"></i> 自定義標籤管理</h4>
@@ -369,9 +392,7 @@
                         <input id="new-tag-input" type="text" class="flex-1 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold" placeholder="新標籤 (例如: 補習)">
                         <button onclick="addCustomTag()" class="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-bold hover:bg-zinc-800 transition-colors shadow-sm">新增</button>
                     </div>
-                    <div id="admin-tags-list" class="flex flex-wrap gap-2">
-                        <!-- 標籤列表動態注入 -->
-                    </div>
+                    <div id="admin-tags-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
                 <div class="h-px bg-zinc-100 w-full"></div>
@@ -382,9 +403,7 @@
                         <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5"></i> 快捷發佈範本</h4>
                         <button onclick="openPresetModal()" class="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded-md hover:bg-blue-100 transition-colors flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> 新增範本</button>
                     </div>
-                    <div class="space-y-2" id="admin-preset-list">
-                        <!-- Presets injected here -->
-                    </div>
+                    <div class="space-y-2" id="admin-preset-list"></div>
                 </div>
 
                 <div class="h-px bg-zinc-100 w-full"></div>
@@ -397,10 +416,7 @@
                             <i data-lucide="trash-2" class="w-4 h-4"></i> 一鍵清除所有已結束排程
                         </button>
                     </div>
-                    
-                    <div class="space-y-3" id="admin-event-list">
-                        <!-- Admin list injected here -->
-                    </div>
+                    <div class="space-y-3" id="admin-event-list"></div>
                 </div>
             </div>
         </div>
@@ -593,6 +609,14 @@
             unsubscribeSnapshot = onSnapshot(dbPath, (snapshot) => {
                 events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 updateAllViews();
+                
+                // 動態刷新鋼琴班列表與警告檢查 (如果視窗打開的話)
+                const puModal = document.getElementById('piano-update-modal');
+                if (puModal && !puModal.classList.contains('hidden')) {
+                    renderUpcomingPiano();
+                    checkPianoConflict();
+                }
+
                 if (dashboardInterval) forceDashboardUpdate(); 
             }, (error) => { console.error("Firestore error: ", error); });
 
@@ -987,7 +1011,7 @@
             });
         }
 
-        // --- 核心視圖與日曆導航函數 ---
+        // --- 核心視圖與日曆導航 ---
         function updateAllViews() {
             renderAuth(); 
             renderCalendar(); 
@@ -1026,10 +1050,6 @@
 
         // --- 鋼琴班智能更改邏輯 (Piano Add Parser) ---
         window.openPianoUpdateModal = function() {
-            // 確保每次打開時，手動輸入區域都是顯示狀態
-            const detailsEl = document.getElementById('pu-details');
-            if (detailsEl) detailsEl.classList.remove('hidden');
-
             document.getElementById('piano-update-form').reset();
             document.getElementById('pu-date').value = formatDate(new Date());
             
@@ -1039,14 +1059,59 @@
             document.getElementById('pu-time').value = `${hh}:${mm}`;
             document.getElementById('pu-endtime').value = '';
             
+            // 重置重複選項
+            document.getElementById('pu-repeat').value = 'none';
+            document.getElementById('pu-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>`;
+            window.togglePuRepeatCount();
+            
+            renderUpcomingPiano();
+            checkPianoConflict(); // 預設檢查
+            
             showOverlayAndModal('piano-update-modal');
             if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.renderUpcomingPiano = function() {
+            const listContainer = document.getElementById('pu-existing-list');
+            const now = new Date();
+            const pianoEvents = events
+                .filter(e => e.tag === '鋼琴班' && new Date(`${e.date}T${e.time}:00`) >= now)
+                .sort((a,b) => new Date(`${a.date}T${a.time}:00`) - new Date(`${b.date}T${b.time}:00`));
+
+            if(pianoEvents.length === 0) {
+                listContainer.innerHTML = '<span class="text-[11px] text-zinc-400 font-bold ml-1">未來暫無已排定之鋼琴班</span>';
+                return;
+            }
+
+            let html = '';
+            pianoEvents.forEach(e => {
+                const d = new Date(e.date);
+                const dateStr = d.toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
+                html += `
+                <button type="button" onclick="loadPianoEvent('${e.id}')" class="shrink-0 bg-indigo-50/50 hover:bg-indigo-100 border border-indigo-100 px-3 py-2 rounded-xl flex flex-col items-start transition-colors text-left min-w-[70px]">
+                    <span class="text-[10px] font-bold text-indigo-400 mb-0.5">${dateStr}</span>
+                    <span class="text-sm font-black text-indigo-700">${formatAMPM(e.time)}</span>
+                </button>`;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        window.loadPianoEvent = function(id) {
+            const e = events.find(x => x.id === id);
+            if(e) {
+                document.getElementById('pu-date').value = e.date;
+                document.getElementById('pu-time').value = e.time;
+                document.getElementById('pu-endtime').value = e.endTime === 'TBD' ? '' : (e.endTime || '');
+                document.getElementById('pu-text').value = ''; // 清空對話欄
+                checkPianoConflict();
+            }
         }
 
         window.handlePianoPaste = function(e) {
             const text = e.target.value;
             if(!text) return;
             let found = false;
+            
             const dateMatch = text.match(/(\d{1,2})\/(\d{1,2})/g);
             if (dateMatch && dateMatch.length > 0) {
                 const lastMatch = dateMatch[dateMatch.length - 1]; 
@@ -1058,6 +1123,7 @@
                 document.getElementById('pu-date').value = `${y}-${m}-${d}`;
                 found = true;
             }
+            
             const timeMatch = text.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
             if (timeMatch) {
                 const to24h = (t) => {
@@ -1070,26 +1136,95 @@
                 document.getElementById('pu-endtime').value = to24h(timeMatch[2]);
                 found = true;
             }
+            if (found) checkPianoConflict();
+        }
+
+        window.checkPianoConflict = function() {
+            const dateVal = document.getElementById('pu-date').value;
+            const conflict = events.find(e => e.tag === '鋼琴班' && e.date === dateVal);
+            const warningEl = document.getElementById('pu-conflict-warning');
+            const submitBtn = document.getElementById('pu-submit-btn');
+
+            if (conflict) {
+                document.getElementById('pu-conflict-time').innerText = formatAMPM(conflict.time);
+                warningEl.classList.remove('hidden');
+                submitBtn.innerText = "確認覆蓋更改";
+                submitBtn.classList.replace('bg-indigo-500', 'bg-rose-500');
+                submitBtn.classList.replace('hover:bg-indigo-600', 'hover:bg-rose-600');
+                submitBtn.classList.replace('shadow-indigo-500/30', 'shadow-rose-500/30');
+            } else {
+                warningEl.classList.add('hidden');
+                submitBtn.innerText = "確認並發佈";
+                submitBtn.classList.replace('bg-rose-500', 'bg-indigo-500');
+                submitBtn.classList.replace('hover:bg-rose-600', 'hover:bg-indigo-600');
+                submitBtn.classList.replace('shadow-rose-500/30', 'shadow-indigo-500/30');
+            }
+        }
+
+        window.togglePuRepeatCount = function() {
+            const repeatType = document.getElementById('pu-repeat').value;
+            const container = document.getElementById('pu-repeat-count-container');
+            if (repeatType === 'none') {
+                container.classList.add('hidden');
+                container.classList.remove('flex');
+            } else {
+                container.classList.remove('hidden');
+                container.classList.add('flex');
+            }
         }
 
         window.handlePianoSubmit = async function(e) {
             e.preventDefault();
-            const newEvent = {
-                tag: '鋼琴班',
-                title: '鋼琴班補堂',
-                location: '',
-                date: document.getElementById('pu-date').value,
-                time: document.getElementById('pu-time').value,
-                endTime: document.getElementById('pu-endtime').value,
-                createdAt: new Date().toISOString()
-            };
+            
+            const dateVal = document.getElementById('pu-date').value;
+            const timeVal = document.getElementById('pu-time').value;
+            const endtimeVal = document.getElementById('pu-endtime').value;
+            
+            const repeatType = document.getElementById('pu-repeat').value;
+            const repeatCountStr = document.getElementById('pu-repeat-count').value;
+            const repeatCount = (repeatType === 'none') ? 1 : parseInt(repeatCountStr, 10);
+
+            const [year, month, day] = dateVal.split('-').map(Number);
+            const newEvents = [];
+            const datesToCheck = [];
+
+            for (let i = 0; i < repeatCount; i++) {
+                let targetDate = new Date(year, month - 1, day);
+                if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
+                else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
+
+                const dStr = formatDate(targetDate);
+                datesToCheck.push(dStr);
+
+                newEvents.push({
+                    tag: '鋼琴班',
+                    title: '鋼琴班補堂',
+                    location: '',
+                    date: dStr,
+                    time: timeVal,
+                    endTime: endtimeVal,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
             try {
+                // 為了防止重複，我們刪除該日期已有的鋼琴班 (這需要 Firebase 允許未登入者有 write 權限)
+                const conflicts = events.filter(ev => ev.tag === '鋼琴班' && datesToCheck.includes(ev.date));
+                const deletePromises = conflicts.map(c => deleteDoc(doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), c.id));
+                await Promise.all(deletePromises);
+
+                // 批次寫入新活動
                 const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
-                await addDoc(dbPath, newEvent);
+                await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
+
                 window.closeModals();
                 e.target.reset();
-                window.showAlert("🎹 鋼琴班補堂已成功發佈！");
-            } catch (error) { window.showAlert("發佈失敗，請確認資料庫權限。"); }
+                window.checkPianoConflict(); // Reset UI
+                window.showAlert("🎹 鋼琴班排程已成功發佈/更新！");
+            } catch (error) { 
+                console.error(error);
+                window.showAlert("發佈失敗，請確認資料庫權限 (Rules)。"); 
+            }
         }
 
         // --- Custom Select Modal Logic ---
@@ -1098,7 +1233,7 @@
             const optionsEl = document.getElementById('select-modal-options');
             let html = '';
 
-            if (type === 'f-repeat') {
+            if (type === 'f-repeat' || type === 'pu-repeat') {
                 titleEl.innerText = "選擇重複頻率";
                 const options = [
                     { val: 'none', label: '單次排程' },
@@ -1141,9 +1276,16 @@
 
         window.handleSelectOption = function(type, value, label) {
             document.getElementById(type).value = value;
-            document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
-            if (type === 'f-repeat') window.toggleRepeatCount();
-            if (type === 'qa-preset') window.handleQuickAddPresetChange();
+            
+            if(type === 'pu-repeat') {
+                document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>`;
+                window.togglePuRepeatCount();
+            } else {
+                document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
+                if (type === 'f-repeat') window.toggleRepeatCount();
+                if (type === 'qa-preset') window.handleQuickAddPresetChange();
+            }
+            
             window.closeSelectModal();
             if (window.lucide) window.lucide.createIcons();
         }
@@ -1338,121 +1480,6 @@
             } catch (error) { window.showAlert("清除錯誤。"); }
         }
 
-
-        // --- Authentication ---
-        window.handleLoginClick = async function() {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                if (result.user.email !== 'chimhinhin@gmail.com') {
-                    await signOut(auth);
-                    window.showAlert("權限不足：這是一個私人的管理帳號。");
-                }
-            } catch (error) {
-                if (error.code !== 'auth/popup-closed-by-user') { 
-                    console.error("Login Error: ", error);
-                    window.showAlert("登入失敗 (" + error.code + ")"); 
-                }
-            }
-        }
-        window.handleLogout = async function() { 
-            await signOut(auth); 
-            updateAllViews();
-        }
-
-        // --- CRUD ---
-        window.toggleTBD = function(forceState) {
-            const overlay = document.getElementById('f-endtime-tbd-overlay');
-            let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
-            if (isTBD) overlay.classList.remove('hidden');
-            else overlay.classList.add('hidden');
-        }
-
-        window.toggleRepeatCount = function() {
-            const repeatType = document.getElementById('f-repeat').value;
-            const container = document.getElementById('repeat-count-container');
-            if (repeatType === 'none') {
-                container.classList.add('hidden');
-                container.classList.remove('flex');
-            } else {
-                container.classList.remove('hidden');
-                container.classList.add('flex');
-            }
-        }
-
-        window.handleAddOrEditEvent = async function(e) {
-            e.preventDefault();
-            if (!isAdmin) return;
-            
-            const timeVal = document.getElementById('f-time').value;
-            const isTBD = !document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden');
-            const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
-            
-            const repeatType = document.getElementById('f-repeat').value;
-            const repeatCountStr = document.getElementById('f-repeat-count').value;
-            const repeatCount = (repeatType === 'none' || editingId) ? 1 : parseInt(repeatCountStr, 10);
-
-            if (!editingId) {
-                localStorage.setItem('chim_app_last_time', timeVal);
-                localStorage.setItem('chim_app_last_endtime', document.getElementById('f-endtime').value);
-                localStorage.setItem('chim_app_last_tbd', isTBD);
-            }
-
-            const baseDateStr = document.getElementById('f-date').value;
-            const [year, month, day] = baseDateStr.split('-').map(Number);
-            const tagVal = document.getElementById('f-tag').value;
-            const titleVal = document.getElementById('f-title').value;
-            const locationVal = document.getElementById('f-location').value;
-
-            try {
-                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
-                
-                if (editingId) {
-                    const eventDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events', editingId);
-                    await updateDoc(eventDoc, {
-                        tag: tagVal,
-                        title: titleVal,
-                        date: baseDateStr,
-                        time: timeVal,
-                        endTime: endTimeVal,
-                        location: locationVal,
-                    });
-                } 
-                else {
-                    const newEvents = [];
-                    for (let i = 0; i < repeatCount; i++) {
-                        let targetDate = new Date(year, month - 1, day);
-                        if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
-                        else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
-
-                        newEvents.push({
-                            tag: tagVal,
-                            title: titleVal,
-                            date: formatDate(targetDate),
-                            time: timeVal,
-                            endTime: endTimeVal,
-                            location: locationVal,
-                            createdAt: new Date().toISOString()
-                        });
-                    }
-                    await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
-                }
-
-                window.closeModals();
-                e.target.reset();
-                document.getElementById('f-repeat').value = 'none';
-                document.getElementById('f-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
-                window.toggleRepeatCount();
-            } catch (error) { 
-                console.error(error);
-                window.showAlert("儲存失敗，請確認 Firebase 資料庫規則是否已設為允許讀寫。"); 
-            }
-        }
-
-        window.deleteEvent = async function(id) {
-            if (!isAdmin) return;
-            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), id)); } 
-            catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
-        }
 
         // --- Modals ---
         function showOverlayAndModal(modalId) {
@@ -1728,8 +1755,12 @@
         }
 
         window.onload = () => {
-            window.applyFont(currentFont);
-            window.applyBgColor(currentBgColor, currentHeaderColor);
+            const font = localStorage.getItem('chim_app_font') || 'sans';
+            const bgColor = localStorage.getItem('chim_app_bg') || '#F2F2F7';
+            const headColor = localStorage.getItem('chim_app_header') || 'bg-appbg/70';
+            
+            window.applyFont(font);
+            window.applyBgColor(bgColor, headColor);
             updateAllViews();
         };
     </script>
