@@ -33,7 +33,7 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
         
-        /* 隱藏原生時間選擇器的圖標，讓版面更乾淨 (適用於 webkit 瀏覽器) */
+        /* 隱藏原生時間選擇器的圖標，讓版面更乾淨 */
         input[type="time"]::-webkit-calendar-picker-indicator { display: none; background: transparent; }
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
     </style>
@@ -117,7 +117,7 @@
     <!-- MAIN Modals Overlay -->
     <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-400">
 
-        <!-- 鋼琴班智能更改 Modal (修復滑動問題) -->
+        <!-- 鋼琴班智能更改 Modal -->
         <div id="piano-update-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
             <div class="bg-indigo-50 p-6 pb-5 text-center relative shrink-0 border-b border-indigo-100">
                 <button onclick="window.closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
@@ -130,30 +130,25 @@
                 <p class="text-zinc-500 font-bold text-xs">貼上對話自動填寫，或直接手動設定</p>
             </div>
             
-            <!-- 目前已排定的鋼琴班 (橫向滾動) -->
+            <!-- 目前已排定的鋼琴班 -->
             <div class="bg-zinc-50/70 px-6 py-3 shrink-0 border-b border-zinc-100 flex items-center gap-2 overflow-x-auto hide-scrollbar" id="pu-existing-list">
                 <!-- 動態載入 -->
             </div>
 
             <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow w-full space-y-6">
                 <form id="piano-update-form" onsubmit="window.handlePianoSubmit(event)" class="space-y-6">
-                    
-                    <!-- 智能輸入區 -->
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-widest pl-1">智能解析 (貼上訊息)</label>
                         <textarea id="pu-text" rows="2" oninput="window.handlePianoPaste(event)" class="w-full px-4 py-3 text-sm bg-white border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-2xl resize-none font-medium placeholder:text-zinc-300 shadow-inner transition-shadow" placeholder="例如：27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
                     </div>
 
-                    <!-- 人體工學重構：日期與時間一體化卡片 -->
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-widest pl-1">時間設定</label>
                         <div class="bg-white border border-zinc-200 rounded-[1.5rem] p-1 shadow-sm">
-                            <!-- 日期 -->
                             <div class="flex items-center px-3 py-2 border-b border-zinc-100">
                                 <i data-lucide="calendar" class="w-4 h-4 text-indigo-500 mr-3 shrink-0"></i>
                                 <input id="pu-date" onchange="window.checkPianoConflict()" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-bold text-sm tracking-wide">
                             </div>
-                            <!-- 時間 (黃金比例左右佈局) -->
                             <div class="flex items-center justify-between p-2 gap-2">
                                 <div class="flex-1 bg-zinc-50 rounded-xl px-3 py-2.5 text-center border border-zinc-100">
                                     <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1">開始</p>
@@ -168,7 +163,6 @@
                         </div>
                     </div>
 
-                    <!-- 鋼琴班專屬重複設定 -->
                     <div class="grid grid-cols-2 gap-3 mt-4">
                         <div class="bg-indigo-50/40 p-1 rounded-[1.25rem] border border-indigo-100 flex items-center relative overflow-hidden">
                             <input type="hidden" id="pu-repeat" value="none">
@@ -182,7 +176,6 @@
                         </div>
                     </div>
 
-                    <!-- 防錯警告：衝突選項區 (預設隱藏) -->
                     <div id="pu-conflict-warning" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-[1.5rem] flex flex-col gap-3">
                         <div class="flex items-start gap-2.5">
                             <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500 shrink-0"></i>
@@ -193,7 +186,6 @@
                         </div>
                     </div>
 
-                    <!-- 正常發佈按鈕 -->
                     <div id="pu-submit-section" class="pt-2">
                         <button type="submit" id="pu-submit-btn" class="w-full py-4 text-sm font-black text-white bg-indigo-500 rounded-[1.5rem] hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98] tracking-wide">確認並發佈</button>
                     </div>
@@ -202,7 +194,7 @@
             </div>
         </div>
 
-        <!-- 快捷發佈 Modal (修復滑動) -->
+        <!-- 快捷發佈 Modal -->
         <div id="quick-add-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
             <div class="bg-amber-50 p-8 pb-6 text-center border-b border-amber-100 relative shrink-0">
                 <button onclick="window.closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
@@ -248,7 +240,7 @@
             </div>
         </div>
 
-        <!-- 預設範本設定 Modal (修復滑動) -->
+        <!-- 預設範本設定 Modal -->
         <div id="preset-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh] z-[105]">
             <div class="flex justify-between items-center p-6 pb-2 border-b border-zinc-50 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
@@ -296,7 +288,7 @@
             </div>
         </div>
 
-        <!-- Add / Edit Modal (修復滑動) -->
+        <!-- Add / Edit Modal -->
         <div id="add-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
             <div class="flex justify-between items-center p-6 pb-2 border-b border-zinc-50 shrink-0">
                 <h3 id="form-modal-title" class="text-lg font-bold text-zinc-900 tracking-tight">新增排程</h3>
@@ -373,7 +365,7 @@
             </div>
         </div>
 
-        <!-- Admin Modal (修復滑動) -->
+        <!-- Admin Modal -->
         <div id="admin-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
@@ -385,7 +377,6 @@
             </div>
             
             <div class="p-6 overflow-y-auto space-y-8 bg-white grow hide-scrollbar w-full">
-            <div class="p-6 overflow-y-auto space-y-8 grow hide-scrollbar bg-white">
                 <!-- 標籤管理區塊 -->
                 <div>
                     <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5"></i> 自定義標籤管理</h4>
@@ -468,8 +459,8 @@
         </div>
 
         <!-- Detail Modal -->
-        <div id="detail-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400">
-            <div class="p-8 md:p-10 relative flex flex-col items-center text-center">
+        <div id="detail-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
+            <div class="p-8 md:p-10 relative flex flex-col items-center text-center overflow-y-auto hide-scrollbar w-full">
                 <button onclick="window.closeModals()" class="absolute top-6 right-6 text-zinc-300 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-full transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -484,7 +475,7 @@
                     </div>
                 </div>
 
-                <div class="w-full mt-4">
+                <div class="w-full mt-4 shrink-0">
                     <button onclick="window.closeModals()" class="w-full py-3.5 bg-zinc-50 text-zinc-900 rounded-2xl hover:bg-zinc-100 transition-colors text-sm font-bold">關閉</button>
                 </div>
             </div>
@@ -546,7 +537,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let currentFont = localStorage.getItem('chim_app_font') || 'sans'; 
         let currentBgColor = localStorage.getItem('chim_app_bg') || '#F2F2F7';
@@ -888,7 +879,7 @@
                     
                     const startObj = new Date(`${e.date}T${e.time}:00`);
                     let endObj;
-                    if (e.endTime === 'TBD' || !e.endTime || e.endTime.trim() === '') {
+                    if (e.endTime === 'TBD' || !e.endTime || String(e.endTime).trim() === '') {
                         endObj = new Date(startObj.getTime() + 60*60*1000); 
                     } else {
                         endObj = new Date(`${e.date}T${e.endTime}:00`);
@@ -898,8 +889,10 @@
                     const startMs = startObj.getTime();
                     const endMs = endObj.getTime();
 
-                    if (e.endTime === 'TBD') displayEndTime = ' - 暫未確定';
-                    else if (!e.endTime || e.endTime.trim() === '') displayEndTime = ' - 未設定時間';
+                    let endText = '';
+                    if (e.endTime === 'TBD') endText = ' - 暫未確定';
+                    else if (!e.endTime || String(e.endTime).trim() === '') endText = ' - 未設定時間';
+                    else endText = displayEndTime;
 
                     const displayTag = e.tag ? `<span class="text-zinc-500 mr-1">【${e.tag}】</span>` : '';
 
@@ -912,9 +905,9 @@
                                 
                                 <div class="flex flex-col items-center gap-2.5 mb-3">
                                     <span class="flex items-center justify-center gap-1.5 text-zinc-500 text-xs md:text-sm font-bold opacity-80 tabular-nums">
-                                        <i data-lucide="clock" class="w-4 h-4"></i> ${displayTime}${displayEndTime}
+                                        <i data-lucide="clock" class="w-4 h-4"></i> ${displayTime}${endText}
                                     </span>
-                                    ${e.location ? `
+                                    ${e.location && String(e.location).trim() !== '' ? `
                                     <span class="flex items-center justify-center gap-1.5 text-zinc-500 text-xs md:text-sm font-bold opacity-80">
                                         <i data-lucide="map-pin" class="w-4 h-4"></i> ${e.location}
                                     </span>
@@ -998,6 +991,7 @@
             });
         }
 
+        // --- 核心視圖與日曆導航 ---
         window.updateAllViews = function() {
             window.renderAuth(); 
             window.renderCalendar(); 
@@ -1034,6 +1028,7 @@
             window.updateAllViews(); 
         }
 
+        // --- 鋼琴班智能更改邏輯 (Piano Add Parser) ---
         window.openPianoUpdateModal = function() {
             const detailsEl = document.getElementById('pu-details');
             if (detailsEl) detailsEl.classList.remove('hidden');
@@ -1047,9 +1042,13 @@
             document.getElementById('pu-time').value = `${hh}:${mm}`;
             document.getElementById('pu-endtime').value = '';
             
-            document.getElementById('pu-repeat').value = 'none';
-            document.getElementById('pu-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>`;
-            window.togglePuRepeatCount();
+            const puRepeatEl = document.getElementById('pu-repeat');
+            if (puRepeatEl) {
+                puRepeatEl.value = 'none';
+                const puRepeatBtn = document.getElementById('pu-repeat-btn');
+                if (puRepeatBtn) puRepeatBtn.innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>`;
+                window.togglePuRepeatCount();
+            }
             
             if (typeof window.renderUpcomingPiano === 'function') window.renderUpcomingPiano();
             if (typeof window.checkPianoConflict === 'function') window.checkPianoConflict();
@@ -1215,6 +1214,7 @@
             window.executePianoSubmit();
         }
 
+        // --- Custom Select Modal Logic ---
         window.openSelectModal = function(type) {
             const titleEl = document.getElementById('select-modal-title');
             const optionsEl = document.getElementById('select-modal-options');
@@ -1410,7 +1410,7 @@
                 sortedEvents.forEach(e => {
                     const startObj = new Date(`${e.date}T${e.time}:00`);
                     let endObj;
-                    if (e.endTime === 'TBD' || !e.endTime || e.endTime.trim() === '') {
+                    if (e.endTime === 'TBD' || !e.endTime || String(e.endTime).trim() === '') {
                         endObj = new Date(startObj.getTime() + 60*60*1000); 
                     } else {
                         endObj = new Date(`${e.date}T${e.endTime}:00`);
@@ -1450,7 +1450,7 @@
             const eventsToDelete = events.filter(e => {
                 const startObj = new Date(`${e.date}T${e.time}:00`);
                 let endObj;
-                if (e.endTime === 'TBD' || !e.endTime || e.endTime.trim() === '') endObj = new Date(startObj.getTime() + 60*60*1000); 
+                if (e.endTime === 'TBD' || !e.endTime || String(e.endTime).trim() === '') endObj = new Date(startObj.getTime() + 60*60*1000); 
                 else {
                     endObj = new Date(`${e.date}T${e.endTime}:00`);
                     if (endObj < startObj) endObj.setDate(endObj.getDate() + 1); 
@@ -1465,15 +1465,14 @@
             } catch (error) { window.showAlert("清除錯誤。"); }
         }
 
-
-        // --- Modals ---
         window.showOverlayAndModal = function(modalId) {
             const overlay = document.getElementById('modal-overlay');
             const modal = document.getElementById(modalId);
-            overlay.classList.remove('hidden'); modal.classList.remove('hidden');
+            if (overlay) overlay.classList.remove('hidden');
+            if (modal) modal.classList.remove('hidden');
             setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                modal.classList.remove('translate-y-8', 'scale-95');
+                if (overlay) overlay.classList.remove('opacity-0');
+                if (modal) modal.classList.remove('translate-y-8', 'scale-95');
             }, 10);
         }
 
@@ -1529,33 +1528,40 @@
         }
 
         window.openEventDetail = function(id) {
-            const event = events.find(e => e.id === id);
-            if (!event) return;
+            try {
+                const evData = events.find(e => e.id === id);
+                if (!evData) {
+                    console.warn("Event not found:", id);
+                    return;
+                }
 
-            const dateObj = new Date(event.date);
-            document.getElementById('detail-date').innerText = dateObj.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-            
-            let endStr = '';
-            if (event.endTime === 'TBD') endStr = ' - 暫未確定';
-            else if (event.endTime && event.endTime.trim() !== '') endStr = ' - ' + formatAMPM(event.endTime);
-            else endStr = ' - 未設定時間'; 
-            
-            document.getElementById('detail-time').innerText = `${formatAMPM(event.time)}${endStr}`;
-            document.getElementById('detail-title').innerText = event.tag ? `【${event.tag}】${event.title}` : event.title;
-            
-            const locContainer = document.getElementById('detail-location-container');
-            const locEl = document.getElementById('detail-location');
-            if (event.location && event.location.trim() !== '') {
-                locEl.innerText = event.location;
-                locContainer.classList.remove('hidden');
-                locContainer.classList.add('flex');
-            } else {
-                locContainer.classList.add('hidden');
-                locContainer.classList.remove('flex');
+                const dateObj = new Date(evData.date);
+                document.getElementById('detail-date').innerText = dateObj.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+                
+                let endStr = '';
+                if (evData.endTime === 'TBD') endStr = ' - 暫未確定';
+                else if (evData.endTime && String(evData.endTime).trim() !== '') endStr = ' - ' + formatAMPM(evData.endTime);
+                else endStr = ' - 未設定時間'; 
+                
+                document.getElementById('detail-time').innerText = `${formatAMPM(evData.time)}${endStr}`;
+                document.getElementById('detail-title').innerText = evData.tag ? `【${evData.tag}】${evData.title}` : evData.title;
+                
+                const locContainer = document.getElementById('detail-location-container');
+                const locEl = document.getElementById('detail-location');
+                if (evData.location && String(evData.location).trim() !== '') {
+                    locEl.innerText = evData.location;
+                    locContainer.classList.remove('hidden');
+                    locContainer.classList.add('flex');
+                } else {
+                    locContainer.classList.add('hidden');
+                    locContainer.classList.remove('flex');
+                }
+
+                window.showOverlayAndModal('detail-modal');
+                if (window.lucide) window.lucide.createIcons();
+            } catch (err) {
+                console.error("Error opening detail modal:", err);
             }
-
-            window.showOverlayAndModal('detail-modal');
-            if (window.lucide) window.lucide.createIcons();
         }
 
         window.openAdminModal = function() { 
@@ -1660,7 +1666,7 @@
             const upcomingEvents = events.map(e => {
                 const start = new Date(`${e.date}T${e.time}:00`);
                 let end;
-                if (e.endTime === 'TBD' || !e.endTime || e.endTime.trim() === '') end = new Date(start.getTime() + 60*60*1000); 
+                if (e.endTime === 'TBD' || !e.endTime || String(e.endTime).trim() === '') end = new Date(start.getTime() + 60*60*1000); 
                 else {
                     end = new Date(`${e.date}T${e.endTime}:00`);
                     if (end < start) end.setDate(end.getDate() + 1); 
@@ -1695,7 +1701,7 @@
             
             let endStr = '';
             if (targetEvent.endTime === 'TBD') endStr = '暫未確定';
-            else if (targetEvent.endTime && targetEvent.endTime.trim() !== '') endStr = formatAMPM(targetEvent.endTime);
+            else if (targetEvent.endTime && String(targetEvent.endTime).trim() !== '') endStr = formatAMPM(targetEvent.endTime);
             else endStr = '未設定時間'; 
             timeEl.innerText = `${formatAMPM(targetEvent.time)} - ${endStr}`;
 
