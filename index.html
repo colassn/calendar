@@ -32,6 +32,10 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
+        
+        /* 隱藏原生時間選擇器的圖標，讓版面更乾淨 (適用於 webkit 瀏覽器) */
+        input[type="time"]::-webkit-calendar-picker-indicator { display: none; background: transparent; }
+        input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
     </style>
 </head>
 <body class="antialiased selection:bg-zinc-200 min-h-screen flex flex-col font-sans bg-appbg" id="app-body">
@@ -113,7 +117,7 @@
     <!-- Modals Overlay -->
     <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-400">
 
-        <!-- 鋼琴班智能更改 Modal -->
+        <!-- 鋼琴班智能更改 Modal (人體工學重構版) -->
         <div id="piano-update-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[90vh]">
             <div class="bg-indigo-50 p-6 pb-6 text-center border-b border-indigo-100 relative shrink-0">
                 <button onclick="closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
@@ -123,34 +127,49 @@
                     <i data-lucide="music" class="w-7 h-7 text-indigo-500 fill-indigo-500"></i>
                 </div>
                 <h3 class="text-2xl font-black text-zinc-900 tracking-tight mb-1">鋼琴班智能更改</h3>
-                <p class="text-zinc-500 font-bold text-xs">貼上導師訊息，或直接手動輸入時間</p>
+                <p class="text-zinc-500 font-bold text-xs">貼上對話自動填寫，或直接手動設定</p>
             </div>
+            
             <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow">
-                <form id="piano-update-form" onsubmit="handlePianoSubmit(event)" class="space-y-5">
+                <form id="piano-update-form" onsubmit="handlePianoSubmit(event)" class="space-y-6">
+                    
+                    <!-- 智能輸入區 -->
                     <div>
-                        <label class="block text-xs font-bold text-zinc-500 mb-1.5 pl-1">貼上訊息自動填寫 (選用)</label>
-                        <textarea id="pu-text" rows="2" oninput="handlePianoPaste(event)" class="w-full px-4 py-3 text-sm bg-zinc-50 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-2xl resize-none font-medium placeholder:text-zinc-400" placeholder="請貼上對話，例如：&#10;27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
+                        <textarea id="pu-text" rows="2" oninput="handlePianoPaste(event)" class="w-full px-5 py-4 text-sm bg-zinc-50 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-[1.5rem] resize-none font-medium placeholder:text-zinc-400 leading-relaxed shadow-inner" placeholder="貼上導師訊息：&#10;27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
                     </div>
 
-                    <div id="pu-details" class="space-y-5 bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm">
-                        <div>
-                            <label class="block text-xs font-bold text-indigo-600 mb-1.5 pl-1 uppercase tracking-widest">確認或手動輸入時間</label>
-                            <input id="pu-date" required type="date" class="w-full px-4 py-3 text-base bg-indigo-50/50 border border-indigo-100 rounded-xl focus:outline-none text-zinc-900 font-bold mb-3">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-zinc-500 mb-1.5 pl-1">開始時間</label>
-                                <input id="pu-time" required type="time" class="w-full px-4 py-3 text-base bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-zinc-900 font-bold">
+                    <!-- 人體工學重構：日期與時間整合設定區 (預設為顯示) -->
+                    <div id="pu-details" class="space-y-3 block">
+                        <!-- 日期區塊 -->
+                        <div class="bg-indigo-50/60 p-2 pl-4 rounded-[1.25rem] flex items-center shadow-sm">
+                            <div class="flex-1">
+                                <label class="block text-[10px] font-bold text-indigo-600 mb-0.5 tracking-widest uppercase">上堂日期</label>
+                                <input id="pu-date" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-black text-lg">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-zinc-500 mb-1.5 pl-1">結束時間</label>
-                                <input id="pu-endtime" type="time" class="w-full px-4 py-3 text-base bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-zinc-900 font-bold">
+                            <div class="bg-white p-3 rounded-xl shadow-sm text-indigo-500 mr-1"><i data-lucide="calendar" class="w-5 h-5"></i></div>
+                        </div>
+
+                        <!-- 時間區塊 (黃金比例合併設計) -->
+                        <div class="flex items-center bg-zinc-50 rounded-[1.25rem] border border-zinc-200 p-1.5 shadow-sm relative">
+                            <div class="flex-1 px-2 py-3">
+                                <label class="block text-[10px] font-bold text-zinc-400 mb-1 text-center tracking-widest uppercase">開始</label>
+                                <input id="pu-time" required type="time" class="w-full text-center bg-transparent focus:outline-none text-zinc-900 font-black text-2xl tracking-wider">
+                            </div>
+                            
+                            <!-- 中央絕美分隔線/圖標 -->
+                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white border border-zinc-100 rounded-full flex items-center justify-center shadow-sm z-10">
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-zinc-400"></i>
+                            </div>
+
+                            <div class="flex-1 px-2 py-3">
+                                <label class="block text-[10px] font-bold text-zinc-400 mb-1 text-center tracking-widest uppercase">結束</label>
+                                <input id="pu-endtime" type="time" class="w-full text-center bg-transparent focus:outline-none text-zinc-900 font-black text-2xl tracking-wider">
                             </div>
                         </div>
                     </div>
 
-                    <div class="pt-2">
-                        <button type="submit" class="w-full py-4 text-base font-black text-white bg-indigo-500 rounded-2xl hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98]">確認發佈鋼琴班</button>
+                    <div class="pt-4">
+                        <button type="submit" class="w-full py-4 text-base font-black text-white bg-indigo-500 rounded-[1.5rem] hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98]">確認並發佈</button>
                     </div>
                 </form>
             </div>
@@ -330,7 +349,7 @@
             </div>
         </div>
 
-        <!-- Admin Modal (管理中心 - 重構排版) -->
+        <!-- Admin Modal (管理中心) -->
         <div id="admin-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
@@ -968,6 +987,7 @@
             });
         }
 
+        // --- 核心視圖與日曆導航函數 ---
         function updateAllViews() {
             renderAuth(); 
             renderCalendar(); 
@@ -980,7 +1000,10 @@
             }
         }
 
-        window.changeMonth = function(delta) { currentMonthDate.setMonth(currentMonthDate.getMonth() + delta); renderCalendar(); }
+        window.changeMonth = function(delta) { 
+            currentMonthDate.setMonth(currentMonthDate.getMonth() + delta); 
+            renderCalendar(); 
+        }
         
         window.goToToday = function() {
             const todayStr = formatDate(new Date());
@@ -995,130 +1018,21 @@
             updateAllViews();
             document.getElementById('agenda-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        window.clearDateSelection = function() { selectedDateStr = null; updateAllViews(); }
 
-
-        // --- Authentication ---
-        window.handleLoginClick = async function() {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                if (result.user.email !== 'chimhinhin@gmail.com') {
-                    await signOut(auth);
-                    window.showAlert("權限不足：這是一個私人的管理帳號。");
-                }
-            } catch (error) {
-                if (error.code !== 'auth/popup-closed-by-user') { 
-                    console.error("Login Error: ", error);
-                    window.showAlert("登入失敗 (" + error.code + ")"); 
-                }
-            }
-        }
-        window.handleLogout = async function() { 
-            await signOut(auth); 
-            updateAllViews();
-        }
-
-        // --- CRUD ---
-        window.toggleTBD = function(forceState) {
-            const overlay = document.getElementById('f-endtime-tbd-overlay');
-            let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
-            if (isTBD) overlay.classList.remove('hidden');
-            else overlay.classList.add('hidden');
-        }
-
-        window.toggleRepeatCount = function() {
-            const repeatType = document.getElementById('f-repeat').value;
-            const container = document.getElementById('repeat-count-container');
-            if (repeatType === 'none') {
-                container.classList.add('hidden');
-                container.classList.remove('flex');
-            } else {
-                container.classList.remove('hidden');
-                container.classList.add('flex');
-            }
-        }
-
-        window.handleAddOrEditEvent = async function(e) {
-            e.preventDefault();
-            if (!isAdmin) return;
-            
-            const timeVal = document.getElementById('f-time').value;
-            const isTBD = !document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden');
-            const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
-            
-            const repeatType = document.getElementById('f-repeat').value;
-            const repeatCountStr = document.getElementById('f-repeat-count').value;
-            const repeatCount = (repeatType === 'none' || editingId) ? 1 : parseInt(repeatCountStr, 10);
-
-            if (!editingId) {
-                localStorage.setItem('chim_app_last_time', timeVal);
-                localStorage.setItem('chim_app_last_endtime', document.getElementById('f-endtime').value);
-                localStorage.setItem('chim_app_last_tbd', isTBD);
-            }
-
-            const baseDateStr = document.getElementById('f-date').value;
-            const [year, month, day] = baseDateStr.split('-').map(Number);
-            const tagVal = document.getElementById('f-tag').value;
-            const titleVal = document.getElementById('f-title').value;
-            const locationVal = document.getElementById('f-location').value;
-
-            try {
-                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
-                
-                if (editingId) {
-                    const eventDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events', editingId);
-                    await updateDoc(eventDoc, {
-                        tag: tagVal,
-                        title: titleVal,
-                        date: baseDateStr,
-                        time: timeVal,
-                        endTime: endTimeVal,
-                        location: locationVal,
-                    });
-                } 
-                else {
-                    const newEvents = [];
-                    for (let i = 0; i < repeatCount; i++) {
-                        let targetDate = new Date(year, month - 1, day);
-                        if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
-                        else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
-
-                        newEvents.push({
-                            tag: tagVal,
-                            title: titleVal,
-                            date: formatDate(targetDate),
-                            time: timeVal,
-                            endTime: endTimeVal,
-                            location: locationVal,
-                            createdAt: new Date().toISOString()
-                        });
-                    }
-                    await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
-                }
-
-                window.closeModals();
-                e.target.reset();
-                document.getElementById('f-repeat').value = 'none';
-                document.getElementById('f-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
-                window.toggleRepeatCount();
-            } catch (error) { 
-                console.error(error);
-                window.showAlert("儲存失敗，請確認 Firebase 資料庫規則是否已設為允許讀寫。"); 
-            }
-        }
-
-        window.deleteEvent = async function(id) {
-            if (!isAdmin) return;
-            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), id)); } 
-            catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
+        window.clearDateSelection = function() { 
+            selectedDateStr = null; 
+            updateAllViews(); 
         }
 
         // --- 鋼琴班智能更改邏輯 (Piano Add Parser) ---
         window.openPianoUpdateModal = function() {
+            // 確保每次打開時，手動輸入區域都是顯示狀態
+            const detailsEl = document.getElementById('pu-details');
+            if (detailsEl) detailsEl.classList.remove('hidden');
+
             document.getElementById('piano-update-form').reset();
             document.getElementById('pu-date').value = formatDate(new Date());
             
-            // 預設填充現在時間方便手動輸入
             const now = new Date();
             const hh = String(now.getHours()).padStart(2, '0');
             const mm = String(now.getMinutes()).padStart(2, '0');
@@ -1132,7 +1046,7 @@
         window.handlePianoPaste = function(e) {
             const text = e.target.value;
             if(!text) return;
-            
+            let found = false;
             const dateMatch = text.match(/(\d{1,2})\/(\d{1,2})/g);
             if (dateMatch && dateMatch.length > 0) {
                 const lastMatch = dateMatch[dateMatch.length - 1]; 
@@ -1142,8 +1056,8 @@
                 const yearMatch = text.match(/20\d{2}/);
                 const y = yearMatch ? yearMatch[0] : new Date().getFullYear();
                 document.getElementById('pu-date').value = `${y}-${m}-${d}`;
+                found = true;
             }
-            
             const timeMatch = text.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
             if (timeMatch) {
                 const to24h = (t) => {
@@ -1154,6 +1068,7 @@
                 };
                 document.getElementById('pu-time').value = to24h(timeMatch[1]);
                 document.getElementById('pu-endtime').value = to24h(timeMatch[2]);
+                found = true;
             }
         }
 
@@ -1423,6 +1338,121 @@
             } catch (error) { window.showAlert("清除錯誤。"); }
         }
 
+
+        // --- Authentication ---
+        window.handleLoginClick = async function() {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                if (result.user.email !== 'chimhinhin@gmail.com') {
+                    await signOut(auth);
+                    window.showAlert("權限不足：這是一個私人的管理帳號。");
+                }
+            } catch (error) {
+                if (error.code !== 'auth/popup-closed-by-user') { 
+                    console.error("Login Error: ", error);
+                    window.showAlert("登入失敗 (" + error.code + ")"); 
+                }
+            }
+        }
+        window.handleLogout = async function() { 
+            await signOut(auth); 
+            updateAllViews();
+        }
+
+        // --- CRUD ---
+        window.toggleTBD = function(forceState) {
+            const overlay = document.getElementById('f-endtime-tbd-overlay');
+            let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
+            if (isTBD) overlay.classList.remove('hidden');
+            else overlay.classList.add('hidden');
+        }
+
+        window.toggleRepeatCount = function() {
+            const repeatType = document.getElementById('f-repeat').value;
+            const container = document.getElementById('repeat-count-container');
+            if (repeatType === 'none') {
+                container.classList.add('hidden');
+                container.classList.remove('flex');
+            } else {
+                container.classList.remove('hidden');
+                container.classList.add('flex');
+            }
+        }
+
+        window.handleAddOrEditEvent = async function(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+            
+            const timeVal = document.getElementById('f-time').value;
+            const isTBD = !document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden');
+            const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
+            
+            const repeatType = document.getElementById('f-repeat').value;
+            const repeatCountStr = document.getElementById('f-repeat-count').value;
+            const repeatCount = (repeatType === 'none' || editingId) ? 1 : parseInt(repeatCountStr, 10);
+
+            if (!editingId) {
+                localStorage.setItem('chim_app_last_time', timeVal);
+                localStorage.setItem('chim_app_last_endtime', document.getElementById('f-endtime').value);
+                localStorage.setItem('chim_app_last_tbd', isTBD);
+            }
+
+            const baseDateStr = document.getElementById('f-date').value;
+            const [year, month, day] = baseDateStr.split('-').map(Number);
+            const tagVal = document.getElementById('f-tag').value;
+            const titleVal = document.getElementById('f-title').value;
+            const locationVal = document.getElementById('f-location').value;
+
+            try {
+                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
+                
+                if (editingId) {
+                    const eventDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events', editingId);
+                    await updateDoc(eventDoc, {
+                        tag: tagVal,
+                        title: titleVal,
+                        date: baseDateStr,
+                        time: timeVal,
+                        endTime: endTimeVal,
+                        location: locationVal,
+                    });
+                } 
+                else {
+                    const newEvents = [];
+                    for (let i = 0; i < repeatCount; i++) {
+                        let targetDate = new Date(year, month - 1, day);
+                        if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
+                        else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
+
+                        newEvents.push({
+                            tag: tagVal,
+                            title: titleVal,
+                            date: formatDate(targetDate),
+                            time: timeVal,
+                            endTime: endTimeVal,
+                            location: locationVal,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                    await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
+                }
+
+                window.closeModals();
+                e.target.reset();
+                document.getElementById('f-repeat').value = 'none';
+                document.getElementById('f-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
+                window.toggleRepeatCount();
+            } catch (error) { 
+                console.error(error);
+                window.showAlert("儲存失敗，請確認 Firebase 資料庫規則是否已設為允許讀寫。"); 
+            }
+        }
+
+        window.deleteEvent = async function(id) {
+            if (!isAdmin) return;
+            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), id)); } 
+            catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
+        }
 
         // --- Modals ---
         function showOverlayAndModal(modalId) {
