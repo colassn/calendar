@@ -31,7 +31,7 @@
         .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .tabular-nums { font-numeric-variant: tabular-nums; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
     </style>
 </head>
 <body class="antialiased selection:bg-zinc-200 min-h-screen flex flex-col font-sans bg-appbg" id="app-body">
@@ -43,9 +43,10 @@
                 CHIM<span class="font-medium text-zinc-500">.APP</span>
             </h1>
             <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-full shadow-sm border border-zinc-100">
-                <button onclick="openQuickAddModal()" class="text-amber-500 hover:text-amber-600 hover:bg-amber-50 transition-colors p-1.5 rounded-full flex items-center gap-1" title="快捷發佈">
-                    <i data-lucide="zap" class="w-4 h-4 fill-amber-500/20"></i>
-                    <span class="text-[10px] font-bold pr-1">快捷發佈</span>
+                <!-- 鋼琴班更改按鈕 -->
+                <button onclick="openPianoUpdateModal()" class="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors p-1.5 rounded-full flex items-center gap-1" title="鋼琴班補堂/更改">
+                    <i data-lucide="music" class="w-4 h-4 fill-indigo-500/20"></i>
+                    <span class="text-[10px] font-bold pr-1">鋼琴班更改</span>
                 </button>
                 <div class="w-px h-4 bg-zinc-200 mx-1"></div>
 
@@ -66,7 +67,6 @@
 
     <!-- Main Content -->
     <main class="max-w-2xl mx-auto px-5 py-6 pb-32 w-full flex-1 flex flex-col gap-8">
-        
         <section id="agenda-section" class="w-full">
             <div class="flex justify-between items-center mb-4 px-2">
                 <div class="flex items-center gap-3">
@@ -77,35 +77,22 @@
                     顯示全部
                 </button>
             </div>
-            
-            <div id="agenda-list" class="space-y-6">
-                <!-- Agenda items -->
-            </div>
+            <div id="agenda-list" class="space-y-6"></div>
         </section>
 
         <section id="calendar-section" class="w-full">
             <div class="bg-white rounded-[2rem] p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-zinc-100/80">
                 <div class="flex justify-between items-center mb-5">
-                    <h2 id="calendar-month-title" class="text-xl font-bold tracking-tight text-zinc-900">
-                        <!-- Title -->
-                    </h2>
+                    <h2 id="calendar-month-title" class="text-xl font-bold tracking-tight text-zinc-900"></h2>
                     <div class="flex items-center gap-2">
                         <button onclick="goToToday()" class="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-all shadow-sm">今日</button>
                         <div class="flex gap-1 bg-zinc-50 rounded-full p-1">
-                            <button onclick="changeMonth(-1)" class="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all">
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="changeMonth(1)" class="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all">
-                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                            </button>
+                            <button onclick="changeMonth(-1)" class="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            <button onclick="changeMonth(1)" class="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 </div>
-
-                <div id="calendar-grid" class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-sm">
-                    <!-- Grid -->
-                </div>
-
+                <div id="calendar-grid" class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-sm"></div>
                 <div class="mt-5 pt-4 border-t border-zinc-50 flex items-center justify-center gap-4 text-[11px] font-bold text-zinc-400">
                     <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-400"></div>1項</div>
                     <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-amber-400"></div>2項</div>
@@ -113,7 +100,6 @@
                 </div>
             </div>
         </section>
-
     </main>
 
     <!-- FAB -->
@@ -124,8 +110,51 @@
         </button>
     </div>
 
-    <!-- MAIN Modals Overlay -->
+    <!-- Modals Overlay -->
     <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-400">
+
+        <!-- 鋼琴班智能更改 Modal -->
+        <div id="piano-update-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[90vh]">
+            <div class="bg-indigo-50 p-6 pb-6 text-center border-b border-indigo-100 relative shrink-0">
+                <button onclick="closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <i data-lucide="music" class="w-7 h-7 text-indigo-500 fill-indigo-500"></i>
+                </div>
+                <h3 class="text-2xl font-black text-zinc-900 tracking-tight mb-1">鋼琴班智能更改</h3>
+                <p class="text-zinc-500 font-bold text-xs">貼上導師訊息，或直接手動輸入時間</p>
+            </div>
+            <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow">
+                <form id="piano-update-form" onsubmit="handlePianoSubmit(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-500 mb-1.5 pl-1">貼上訊息自動填寫 (選用)</label>
+                        <textarea id="pu-text" rows="2" oninput="handlePianoPaste(event)" class="w-full px-4 py-3 text-sm bg-zinc-50 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-2xl resize-none font-medium placeholder:text-zinc-400" placeholder="請貼上對話，例如：&#10;27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
+                    </div>
+
+                    <div id="pu-details" class="space-y-5 bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm">
+                        <div>
+                            <label class="block text-xs font-bold text-indigo-600 mb-1.5 pl-1 uppercase tracking-widest">確認或手動輸入時間</label>
+                            <input id="pu-date" required type="date" class="w-full px-4 py-3 text-base bg-indigo-50/50 border border-indigo-100 rounded-xl focus:outline-none text-zinc-900 font-bold mb-3">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-zinc-500 mb-1.5 pl-1">開始時間</label>
+                                <input id="pu-time" required type="time" class="w-full px-4 py-3 text-base bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-zinc-900 font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-zinc-500 mb-1.5 pl-1">結束時間</label>
+                                <input id="pu-endtime" type="time" class="w-full px-4 py-3 text-base bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-zinc-900 font-bold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" class="w-full py-4 text-base font-black text-white bg-indigo-500 rounded-2xl hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98]">確認發佈鋼琴班</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- 快捷發佈 Modal -->
         <div id="quick-add-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400">
@@ -143,7 +172,6 @@
                 <form id="quick-add-form" onsubmit="handleQuickAddSubmit(event)" class="space-y-6">
                     <div>
                         <label class="block text-base font-bold text-zinc-700 mb-2 pl-1">📌 選擇預設活動：</label>
-                        <!-- 取代原生 Select，改用 Custom Select Modal -->
                         <input type="hidden" id="qa-preset" required>
                         <button type="button" onclick="openSelectModal('qa-preset')" id="qa-preset-btn" class="w-full flex justify-between items-center px-4 py-4 text-lg bg-zinc-50 border border-zinc-200 rounded-2xl text-zinc-400 font-bold transition-colors hover:bg-zinc-100">
                             -- 請選擇 -- <i data-lucide="chevron-down" class="w-5 h-5 text-zinc-400"></i>
@@ -192,17 +220,10 @@
                             <input id="p-tag" type="text" class="w-1/3 px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400" placeholder="標籤(可省)">
                             <input id="p-title" required type="text" class="w-2/3 px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400" placeholder="活動標題">
                         </div>
-                        <!-- 快捷標籤選項 -->
-                        <div class="flex gap-1.5 mt-2 px-1">
-                            <button type="button" onclick="document.getElementById('p-tag').value='鋼琴班'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold transition-colors">鋼琴班</button>
-                            <button type="button" onclick="document.getElementById('p-tag').value='補習'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold transition-colors">補習</button>
-                            <button type="button" onclick="document.getElementById('p-tag').value='生活'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold transition-colors">生活</button>
-                        </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-zinc-500 mb-1.5 ml-1">預設星期幾？</label>
-                        <!-- 取代原生 Select，改用 Custom Select Modal -->
                         <input type="hidden" id="p-dow" value="5">
                         <button type="button" onclick="openSelectModal('p-dow')" id="p-dow-btn" class="w-full flex justify-between items-center px-4 py-3 text-sm bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 font-bold transition-colors hover:bg-zinc-100">
                             星期五 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
@@ -237,7 +258,7 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto hide-scrollbar">
+            <div class="p-6 overflow-y-auto hide-scrollbar grow">
                 <form id="add-form" onsubmit="handleAddOrEditEvent(event)" class="space-y-4">
                     
                     <div>
@@ -245,11 +266,9 @@
                             <input id="f-tag" type="text" class="w-1/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold border-r border-zinc-200" placeholder="標籤(選)">
                             <input id="f-title" required type="text" class="w-2/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold" placeholder="準備做些什麼？">
                         </div>
-                        <!-- 快捷標籤選項 -->
-                        <div class="flex gap-1.5 mt-2 px-2">
-                            <button type="button" onclick="document.getElementById('f-tag').value='鋼琴班'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold transition-colors">鋼琴班</button>
-                            <button type="button" onclick="document.getElementById('f-tag').value='補習'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold transition-colors">補習</button>
-                            <button type="button" onclick="document.getElementById('f-tag').value='生活'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold transition-colors">生活</button>
+                        <!-- 動態標籤快選區 -->
+                        <div id="dynamic-tags-container" class="flex flex-wrap gap-1.5 mt-2 px-1">
+                            <!-- 標籤將會在這裡動態渲染 -->
                         </div>
                     </div>
 
@@ -270,15 +289,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-end mt-[-8px]">
-                        <button type="button" onclick="toggleTBD()" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-500 font-bold px-2.5 py-1.5 rounded-lg transition-colors">
-                            設定為「暫未確定」完結
+                    <div class="flex items-center justify-end mt-2">
+                        <button type="button" onclick="toggleTBD()" class="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> 設為「暫未確定」結束
                         </button>
                     </div>
                     
-                    <div id="repeat-section" class="grid grid-cols-2 gap-3">
+                    <div id="repeat-section" class="grid grid-cols-2 gap-3 mt-4">
                         <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
-                            <!-- 取代原生 Select，改用 Custom Select Modal -->
                             <input type="hidden" id="f-repeat" value="none">
                             <button type="button" onclick="openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-sm bg-transparent text-zinc-900 font-bold transition-colors">
                                 單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
@@ -312,7 +330,7 @@
             </div>
         </div>
 
-        <!-- Admin Modal (管理中心) -->
+        <!-- Admin Modal (管理中心 - 重構排版) -->
         <div id="admin-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 flex-col max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
@@ -322,8 +340,23 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
+            
             <div class="p-6 overflow-y-auto space-y-8 grow hide-scrollbar bg-white">
                 
+                <!-- 標籤管理區塊 -->
+                <div>
+                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5"></i> 自定義標籤管理</h4>
+                    <div class="flex gap-2 mb-3">
+                        <input id="new-tag-input" type="text" class="flex-1 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold" placeholder="新標籤 (例如: 補習)">
+                        <button onclick="addCustomTag()" class="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-bold hover:bg-zinc-800 transition-colors shadow-sm">新增</button>
+                    </div>
+                    <div id="admin-tags-list" class="flex flex-wrap gap-2">
+                        <!-- 標籤列表動態注入 -->
+                    </div>
+                </div>
+
+                <div class="h-px bg-zinc-100 w-full"></div>
+
                 <!-- 預設範本管理區塊 -->
                 <div>
                     <div class="flex justify-between items-center mb-3">
@@ -337,11 +370,15 @@
 
                 <div class="h-px bg-zinc-100 w-full"></div>
 
+                <!-- 系統維護區塊 -->
                 <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-3.5 h-3.5"></i> 日程資料庫</h4>
-                        <button onclick="clearEndedEvents()" class="text-[10px] font-bold bg-red-50 text-red-600 px-2 py-1 rounded-md hover:bg-red-100 transition-colors flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> 清除已結束</button>
+                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-3.5 h-3.5"></i> 系統維護</h4>
+                    <div class="bg-zinc-50 p-4 rounded-[1.5rem] border border-zinc-100 text-center mb-4">
+                        <button onclick="clearEndedEvents()" class="w-full py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors text-sm font-bold flex justify-center items-center gap-2 shadow-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> 一鍵清除所有已結束排程
+                        </button>
                     </div>
+                    
                     <div class="space-y-3" id="admin-event-list">
                         <!-- Admin list injected here -->
                     </div>
@@ -459,13 +496,25 @@
             
             <p id="dash-main-time" class="text-zinc-500 font-bold mt-6 md:mt-10 text-lg md:text-xl tracking-wide tabular-nums">--</p>
         </div>
+
+        <div class="absolute bottom-8 right-8 md:bottom-12 md:right-12 flex flex-col items-end text-right z-10 pointer-events-none max-w-[200px] md:max-w-xs">
+            <p class="text-zinc-600 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> 隨後安排
+            </p>
+            <p id="dash-next-title" class="text-zinc-300 font-bold text-sm md:text-base truncate w-full">無後續活動</p>
+            <p id="dash-next-time" class="text-zinc-500 font-bold text-xs md:text-sm mt-0.5 w-full tabular-nums">--</p>
+        </div>
     </div>
 
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let currentFont = localStorage.getItem('chim_app_font') || 'sans'; 
+        let currentBgColor = localStorage.getItem('chim_app_bg') || '#F2F2F7';
+        let currentHeaderColor = localStorage.getItem('chim_app_header') || 'bg-appbg/70';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBW95yx0j_bvxWjuZSB6On3bADoBu3wxnA",
@@ -490,7 +539,10 @@
         
         let events = [];
         let presets = []; 
+        let customTags = ['鋼琴班', '補習', '生活', '重要']; 
+        
         let unsubscribeSnapshot = null;
+        let unsubscribeTags = null;
         let unsubscribePresets = null;
         let dashboardInterval = null;
         let mainTimerInterval = null; 
@@ -524,6 +576,19 @@
                 updateAllViews();
                 if (dashboardInterval) forceDashboardUpdate(); 
             }, (error) => { console.error("Firestore error: ", error); });
+
+            if (unsubscribeTags) unsubscribeTags();
+            const tagsDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'settings', 'tags');
+            unsubscribeTags = onSnapshot(tagsDoc, (docSnap) => {
+                if (docSnap.exists() && docSnap.data().list) {
+                    customTags = docSnap.data().list;
+                }
+                renderTags();
+                const adminModal = document.getElementById('admin-modal');
+                if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) {
+                    renderAdminTagsList();
+                }
+            }, (error) => { console.error("Firestore tags error: ", error); });
 
             if (unsubscribePresets) unsubscribePresets();
             const presetPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets');
@@ -578,6 +643,7 @@
             const body = document.getElementById('app-body');
             body.classList.remove('font-sans', 'font-serif', 'font-wenkai');
             body.classList.add(`font-${fontName}`);
+            currentFont = fontName;
             localStorage.setItem('chim_app_font', fontName);
 
             document.querySelectorAll('.font-check-icon').forEach(icon => icon.classList.add('hidden'));
@@ -590,6 +656,8 @@
             const header = document.getElementById('app-header');
             header.className = `sticky top-0 z-30 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors ${headerClass}`;
             
+            currentBgColor = colorHex;
+            currentHeaderColor = headerClass;
             localStorage.setItem('chim_app_bg', colorHex);
             localStorage.setItem('chim_app_header', headerClass);
 
@@ -626,6 +694,55 @@
                 fab.classList.remove('flex');
             }
             if (window.lucide) window.lucide.createIcons();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('dynamic-tags-container');
+            if(!container) return;
+            let html = '';
+            customTags.forEach(tag => {
+                html += `<button type="button" onclick="document.getElementById('f-tag').value='${tag}'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1.5 rounded-md font-bold transition-colors">${tag}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.renderAdminTagsList = function() {
+            const container = document.getElementById('admin-tags-list');
+            if(!container) return;
+            let html = '';
+            customTags.forEach(tag => {
+                html += `
+                <div class="flex items-center bg-white border border-zinc-200 rounded-lg pl-3 pr-1 py-1 shadow-sm">
+                    <span class="text-xs font-bold text-zinc-700 mr-2">${tag}</span>
+                    <button onclick="deleteCustomTag('${tag}')" class="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>`;
+            });
+            container.innerHTML = html;
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.addCustomTag = async function() {
+            if (!isAdmin) return;
+            const input = document.getElementById('new-tag-input');
+            const val = input.value.trim();
+            if (!val) return;
+            if (customTags.includes(val)) { window.showAlert("標籤已存在！"); return; }
+            
+            const newTags = [...customTags, val];
+            try {
+                await setDoc(doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'settings', 'tags'), { list: newTags });
+                input.value = '';
+            } catch (err) { window.showAlert("新增標籤失敗"); }
+        }
+
+        window.deleteCustomTag = async function(tagToRemove) {
+            if (!isAdmin) return;
+            const newTags = customTags.filter(t => t !== tagToRemove);
+            try {
+                await setDoc(doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'settings', 'tags'), { list: newTags });
+            } catch (err) { window.showAlert("刪除標籤失敗"); }
         }
 
         function renderCalendar() {
@@ -795,194 +912,6 @@
             return html;
         }
 
-        // --- Custom Select Modal Logic ---
-        window.openSelectModal = function(type) {
-            const titleEl = document.getElementById('select-modal-title');
-            const optionsEl = document.getElementById('select-modal-options');
-            let html = '';
-
-            if (type === 'f-repeat') {
-                titleEl.innerText = "選擇重複頻率";
-                const options = [
-                    { val: 'none', label: '單次排程' },
-                    { val: 'weekly', label: '每週重複' },
-                    { val: 'monthly', label: '每月重複' }
-                ];
-                options.forEach(opt => {
-                    html += `<button type="button" onclick="handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors">${opt.label}</button>`;
-                });
-            } else if (type === 'p-dow') {
-                titleEl.innerText = "選擇預設星期幾";
-                const options = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-                options.forEach((label, idx) => {
-                    html += `<button type="button" onclick="handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors">${label}</button>`;
-                });
-            } else if (type === 'qa-preset') {
-                titleEl.innerText = "選擇預設活動";
-                if (presets.length === 0) {
-                    html = '<p class="text-center text-zinc-400 py-6 font-bold">管理員尚未設定任何快捷範本</p>';
-                } else {
-                    presets.forEach(p => {
-                        const label = p.tag ? `【${p.tag}】${p.title}` : p.title;
-                        html += `<button type="button" onclick="handleSelectOption('${type}', '${p.id}', '${label}')" class="w-full text-center px-5 py-4 bg-amber-50 hover:bg-amber-100 rounded-xl font-bold text-amber-700 transition-colors">${label}</button>`;
-                    });
-                }
-            }
-
-            optionsEl.innerHTML = html;
-            const overlay = document.getElementById('select-modal-overlay');
-            const modal = document.getElementById('select-modal');
-            
-            overlay.classList.remove('hidden');
-            modal.classList.remove('hidden');
-            
-            // Allow layout to render before animating
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                modal.classList.remove('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
-            }, 10);
-        }
-
-        window.handleSelectOption = function(type, value, label) {
-            document.getElementById(type).value = value;
-            document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
-            
-            if (type === 'f-repeat') window.toggleRepeatCount();
-            if (type === 'qa-preset') window.handleQuickAddPresetChange();
-            
-            window.closeSelectModal();
-            if (window.lucide) window.lucide.createIcons();
-        }
-
-        window.closeSelectModal = function() {
-            const overlay = document.getElementById('select-modal-overlay');
-            const modal = document.getElementById('select-modal');
-            
-            overlay.classList.add('opacity-0');
-            modal.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
-            
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        // --- 快捷發佈 Modal ---
-        window.openQuickAddModal = function() {
-            document.getElementById('qa-details').classList.add('hidden');
-            document.getElementById('qa-preset').value = '';
-            document.getElementById('qa-preset-btn').innerHTML = `-- 請選擇 -- <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
-            
-            showOverlayAndModal('quick-add-modal');
-            if (window.lucide) window.lucide.createIcons();
-        }
-
-        window.handleQuickAddPresetChange = function() {
-            const presetId = document.getElementById('qa-preset').value;
-            const detailSection = document.getElementById('qa-details');
-            if (!presetId) { detailSection.classList.add('hidden'); return; }
-
-            const p = presets.find(x => x.id === presetId);
-            if(p) {
-                document.getElementById('qa-date').value = getNextDayOfWeek(p.dayOfWeek);
-                document.getElementById('qa-time').value = p.time || '';
-                document.getElementById('qa-endtime').value = p.endTime || '';
-                detailSection.classList.remove('hidden');
-            }
-        }
-
-        window.handleQuickAddSubmit = async function(e) {
-            e.preventDefault();
-            const presetId = document.getElementById('qa-preset').value;
-            const p = presets.find(x => x.id === presetId);
-            if(!p) return;
-
-            const newEvent = {
-                tag: p.tag || '',
-                title: p.title,
-                location: p.location || '',
-                date: document.getElementById('qa-date').value,
-                time: document.getElementById('qa-time').value,
-                endTime: document.getElementById('qa-endtime').value,
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
-                await addDoc(dbPath, newEvent);
-                window.closeModals();
-                e.target.reset();
-                document.getElementById('qa-details').classList.add('hidden');
-                window.showAlert("⚡ 活動發佈成功！");
-            } catch (error) { window.showAlert("發佈失敗，請聯絡管理員確認權限設定。"); }
-        }
-
-        // --- 預設範本管理 ---
-        window.openPresetModal = function() {
-            document.getElementById('admin-modal').classList.add('hidden');
-            showOverlayAndModal('preset-modal');
-        }
-
-        window.closePresetModal = function() {
-            document.getElementById('preset-modal').classList.add('hidden');
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        window.handleAddPreset = async function(e) {
-            e.preventDefault();
-            if (!isAdmin) return;
-
-            const newPreset = {
-                tag: document.getElementById('p-tag').value,
-                title: document.getElementById('p-title').value,
-                dayOfWeek: parseInt(document.getElementById('p-dow').value, 10),
-                time: document.getElementById('p-time').value,
-                endTime: document.getElementById('p-endtime').value,
-                location: document.getElementById('p-location').value,
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                await addDoc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets'), newPreset);
-                e.target.reset();
-                closePresetModal();
-                window.showAlert("預設範本儲存成功！");
-            } catch (error) { window.showAlert("儲存失敗，請稍後再試。"); }
-        }
-        
-        window.deletePreset = async function(id) {
-            if (!isAdmin) return;
-            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets'), id)); } 
-            catch (error) { window.showAlert("刪除失敗。"); }
-        }
-
-        window.renderAdminPresetList = function() {
-            const listContainer = document.getElementById('admin-preset-list');
-            if (!listContainer) return;
-            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            
-            let html = '';
-            if(presets.length === 0) {
-                html = '<p class="text-center text-zinc-400 text-xs font-bold py-3">尚未建立任何範本</p>';
-            } else {
-                presets.forEach(p => {
-                    html += `
-                        <div class="flex items-center justify-between bg-zinc-50 p-3 rounded-[1rem] border border-zinc-100">
-                            <div class="flex-1 min-w-0 pr-2">
-                                <p class="text-sm font-bold text-zinc-800 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
-                                <p class="text-[10px] text-zinc-500 font-medium mt-0.5">逢${days[p.dayOfWeek]} · ${p.time}</p>
-                            </div>
-                            <button onclick="deletePreset('${p.id}')" class="p-2 text-red-400 hover:text-white hover:bg-red-400 rounded-lg transition-colors shrink-0">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
-                    `;
-                });
-            }
-            listContainer.innerHTML = html;
-            if (window.lucide) window.lucide.createIcons();
-        }
-
         function updateAgendaTimers() {
             const now = Date.now();
             document.querySelectorAll('.agenda-card').forEach(card => {
@@ -1040,9 +969,12 @@
         }
 
         function updateAllViews() {
-            renderAuth(); renderCalendar(); renderAgenda();
+            renderAuth(); 
+            renderCalendar(); 
+            renderAgenda();
             const adminModal = document.getElementById('admin-modal');
             if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) {
+                renderAdminTagsList();
                 renderAdminEventList();
                 renderAdminPresetList();
             }
@@ -1089,10 +1021,7 @@
         // --- CRUD ---
         window.toggleTBD = function(forceState) {
             const overlay = document.getElementById('f-endtime-tbd-overlay');
-            let isTBD;
-            if (typeof forceState === 'boolean') isTBD = forceState;
-            else isTBD = !overlay.classList.contains('hidden');
-            
+            let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
             if (isTBD) overlay.classList.remove('hidden');
             else overlay.classList.add('hidden');
         }
@@ -1182,6 +1111,243 @@
             if (!isAdmin) return;
             try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), id)); } 
             catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
+        }
+
+        // --- 鋼琴班智能更改邏輯 (Piano Add Parser) ---
+        window.openPianoUpdateModal = function() {
+            document.getElementById('piano-update-form').reset();
+            document.getElementById('pu-date').value = formatDate(new Date());
+            
+            // 預設填充現在時間方便手動輸入
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('pu-time').value = `${hh}:${mm}`;
+            document.getElementById('pu-endtime').value = '';
+            
+            showOverlayAndModal('piano-update-modal');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.handlePianoPaste = function(e) {
+            const text = e.target.value;
+            if(!text) return;
+            
+            const dateMatch = text.match(/(\d{1,2})\/(\d{1,2})/g);
+            if (dateMatch && dateMatch.length > 0) {
+                const lastMatch = dateMatch[dateMatch.length - 1]; 
+                const parts = lastMatch.split('/');
+                const d = parts[0].padStart(2, '0');
+                const m = parts[1].padStart(2, '0');
+                const yearMatch = text.match(/20\d{2}/);
+                const y = yearMatch ? yearMatch[0] : new Date().getFullYear();
+                document.getElementById('pu-date').value = `${y}-${m}-${d}`;
+            }
+            
+            const timeMatch = text.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+            if (timeMatch) {
+                const to24h = (t) => {
+                    let [h, m] = t.split(':');
+                    h = parseInt(h, 10);
+                    if (h >= 1 && h <= 11) h += 12;
+                    return `${String(h).padStart(2, '0')}:${m}`;
+                };
+                document.getElementById('pu-time').value = to24h(timeMatch[1]);
+                document.getElementById('pu-endtime').value = to24h(timeMatch[2]);
+            }
+        }
+
+        window.handlePianoSubmit = async function(e) {
+            e.preventDefault();
+            const newEvent = {
+                tag: '鋼琴班',
+                title: '鋼琴班補堂',
+                location: '',
+                date: document.getElementById('pu-date').value,
+                time: document.getElementById('pu-time').value,
+                endTime: document.getElementById('pu-endtime').value,
+                createdAt: new Date().toISOString()
+            };
+            try {
+                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
+                await addDoc(dbPath, newEvent);
+                window.closeModals();
+                e.target.reset();
+                window.showAlert("🎹 鋼琴班補堂已成功發佈！");
+            } catch (error) { window.showAlert("發佈失敗，請確認資料庫權限。"); }
+        }
+
+        // --- Custom Select Modal Logic ---
+        window.openSelectModal = function(type) {
+            const titleEl = document.getElementById('select-modal-title');
+            const optionsEl = document.getElementById('select-modal-options');
+            let html = '';
+
+            if (type === 'f-repeat') {
+                titleEl.innerText = "選擇重複頻率";
+                const options = [
+                    { val: 'none', label: '單次排程' },
+                    { val: 'weekly', label: '每週重複' },
+                    { val: 'monthly', label: '每月重複' }
+                ];
+                options.forEach(opt => {
+                    html += `<button type="button" onclick="handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors">${opt.label}</button>`;
+                });
+            } else if (type === 'p-dow') {
+                titleEl.innerText = "選擇預設星期幾";
+                const options = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                options.forEach((label, idx) => {
+                    html += `<button type="button" onclick="handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors">${label}</button>`;
+                });
+            } else if (type === 'qa-preset') {
+                titleEl.innerText = "選擇預設活動";
+                if (presets.length === 0) {
+                    html = '<p class="text-center text-zinc-400 py-6 font-bold">管理員尚未設定任何快捷範本</p>';
+                } else {
+                    presets.forEach(p => {
+                        const label = p.tag ? `【${p.tag}】${p.title}` : p.title;
+                        html += `<button type="button" onclick="handleSelectOption('${type}', '${p.id}', '${label}')" class="w-full text-center px-5 py-4 bg-amber-50 hover:bg-amber-100 rounded-xl font-bold text-amber-700 transition-colors">${label}</button>`;
+                    });
+                }
+            }
+
+            optionsEl.innerHTML = html;
+            const overlay = document.getElementById('select-modal-overlay');
+            const modal = document.getElementById('select-modal');
+            
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                modal.classList.remove('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
+            }, 10);
+        }
+
+        window.handleSelectOption = function(type, value, label) {
+            document.getElementById(type).value = value;
+            document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
+            if (type === 'f-repeat') window.toggleRepeatCount();
+            if (type === 'qa-preset') window.handleQuickAddPresetChange();
+            window.closeSelectModal();
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.closeSelectModal = function() {
+            const overlay = document.getElementById('select-modal-overlay');
+            const modal = document.getElementById('select-modal');
+            overlay.classList.add('opacity-0');
+            modal.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // --- 快捷發佈 Modal ---
+        window.openQuickAddModal = function() {
+            document.getElementById('qa-details').classList.add('hidden');
+            document.getElementById('qa-preset').value = '';
+            document.getElementById('qa-preset-btn').innerHTML = `-- 請選擇 -- <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
+            showOverlayAndModal('quick-add-modal');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.handleQuickAddPresetChange = function() {
+            const presetId = document.getElementById('qa-preset').value;
+            const detailSection = document.getElementById('qa-details');
+            if (!presetId) { detailSection.classList.add('hidden'); return; }
+            const p = presets.find(x => x.id === presetId);
+            if(p) {
+                document.getElementById('qa-date').value = getNextDayOfWeek(p.dayOfWeek);
+                document.getElementById('qa-time').value = p.time || '';
+                document.getElementById('qa-endtime').value = p.endTime || '';
+                detailSection.classList.remove('hidden');
+            }
+        }
+
+        window.handleQuickAddSubmit = async function(e) {
+            e.preventDefault();
+            const presetId = document.getElementById('qa-preset').value;
+            const p = presets.find(x => x.id === presetId);
+            if(!p) return;
+            const newEvent = {
+                tag: p.tag || '', title: p.title, location: p.location || '',
+                date: document.getElementById('qa-date').value,
+                time: document.getElementById('qa-time').value,
+                endTime: document.getElementById('qa-endtime').value,
+                createdAt: new Date().toISOString()
+            };
+            try {
+                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
+                await addDoc(dbPath, newEvent);
+                window.closeModals(); e.target.reset();
+                document.getElementById('qa-details').classList.add('hidden');
+                window.showAlert("⚡ 活動發佈成功！");
+            } catch (error) { window.showAlert("發佈失敗，請聯絡管理員確認權限設定。"); }
+        }
+
+        // --- 預設範本管理 ---
+        window.openPresetModal = function() {
+            document.getElementById('admin-modal').classList.add('hidden');
+            showOverlayAndModal('preset-modal');
+        }
+
+        window.closePresetModal = function() {
+            document.getElementById('preset-modal').classList.add('hidden');
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        window.handleAddPreset = async function(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+            const newPreset = {
+                tag: document.getElementById('p-tag').value,
+                title: document.getElementById('p-title').value,
+                dayOfWeek: parseInt(document.getElementById('p-dow').value, 10),
+                time: document.getElementById('p-time').value,
+                endTime: document.getElementById('p-endtime').value,
+                location: document.getElementById('p-location').value,
+                createdAt: new Date().toISOString()
+            };
+            try {
+                await addDoc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets'), newPreset);
+                e.target.reset();
+                closePresetModal();
+                window.showAlert("預設範本儲存成功！");
+            } catch (error) { window.showAlert("儲存失敗，請稍後再試。"); }
+        }
+        
+        window.deletePreset = async function(id) {
+            if (!isAdmin) return;
+            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets'), id)); } 
+            catch (error) { window.showAlert("刪除失敗。"); }
+        }
+
+        window.renderAdminPresetList = function() {
+            const listContainer = document.getElementById('admin-preset-list');
+            if (!listContainer) return;
+            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            let html = '';
+            if(presets.length === 0) {
+                html = '<p class="text-center text-zinc-400 text-xs font-bold py-3">尚未建立任何範本</p>';
+            } else {
+                presets.forEach(p => {
+                    html += `
+                        <div class="flex items-center justify-between bg-zinc-50 p-3 rounded-[1rem] border border-zinc-100">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <p class="text-sm font-bold text-zinc-800 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
+                                <p class="text-[10px] text-zinc-500 font-medium mt-0.5">逢${days[p.dayOfWeek]} · ${p.time}</p>
+                            </div>
+                            <button onclick="deletePreset('${p.id}')" class="p-2 text-red-400 hover:text-white hover:bg-red-400 rounded-lg transition-colors shrink-0">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            listContainer.innerHTML = html;
+            if (window.lucide) window.lucide.createIcons();
         }
 
         window.renderAdminEventList = function() {
@@ -1276,10 +1442,14 @@
             document.getElementById('add-form').reset();
             
             document.getElementById('f-date').value = (typeof specificDate === 'string') ? specificDate : (selectedDateStr || formatDate(new Date()));
-            document.getElementById('f-time').value = localStorage.getItem('chim_app_last_time') || '12:00';
-            document.getElementById('f-endtime').value = localStorage.getItem('chim_app_last_endtime') || '';
-            const lastTBD = localStorage.getItem('chim_app_last_tbd') === 'true';
-            window.toggleTBD(lastTBD);
+            
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('f-time').value = `${hh}:${mm}`;
+            
+            document.getElementById('f-endtime').value = '';
+            window.toggleTBD(false); 
             
             document.getElementById('repeat-section').classList.remove('hidden');
             document.getElementById('f-repeat').value = 'none';
@@ -1347,6 +1517,7 @@
         }
 
         window.openAdminModal = function() { 
+            renderAdminTagsList();
             renderAdminEventList();
             showOverlayAndModal('admin-modal'); 
         }
@@ -1368,7 +1539,7 @@
             alertModal.classList.add('translate-y-8', 'scale-95');
             setTimeout(() => {
                 alertModal.classList.add('hidden');
-                const otherModalsOpen = ['quick-add-modal', 'preset-modal', 'add-modal', 'settings-modal', 'detail-modal', 'admin-modal'].some(id => {
+                const otherModalsOpen = ['piano-update-modal', 'quick-add-modal', 'preset-modal', 'add-modal', 'settings-modal', 'detail-modal', 'admin-modal'].some(id => {
                     const el = document.getElementById(id);
                     return el && !el.classList.contains('hidden');
                 });
@@ -1382,7 +1553,7 @@
 
         window.closeModals = function() {
             const overlay = document.getElementById('modal-overlay');
-            const modals = ['quick-add-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal'];
+            const modals = ['piano-update-modal', 'quick-add-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal'];
             overlay.classList.add('opacity-0');
             modals.forEach(id => {
                 const el = document.getElementById(id);
@@ -1527,13 +1698,8 @@
         }
 
         window.onload = () => {
-            // 從 localStorage 安全取得設定並套用，解決之前的 ReferenceError
-            const font = localStorage.getItem('chim_app_font') || 'sans';
-            const bgColor = localStorage.getItem('chim_app_bg') || '#F2F2F7';
-            const headColor = localStorage.getItem('chim_app_header') || 'bg-appbg/70';
-            
-            window.applyFont(font);
-            window.applyBgColor(bgColor, headColor);
+            window.applyFont(currentFont);
+            window.applyBgColor(currentBgColor, currentHeaderColor);
             updateAllViews();
         };
     </script>
