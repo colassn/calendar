@@ -217,58 +217,72 @@
                 </button>
             </div>
             <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow w-full">
-                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-5">
+                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-6">
                     
-                    <div>
-                        <div class="bg-zinc-50 p-2 rounded-2xl border border-zinc-100 flex gap-2">
-                            <input id="f-tag" type="text" class="w-1/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold border-r border-zinc-200 no-min-h" placeholder="標籤(選)">
-                            <input id="f-title" required type="text" class="w-2/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold no-min-h" placeholder="準備做些什麼？">
+                    <!-- Block 1: 事項與標籤 -->
+                    <div class="space-y-3">
+                        <input id="f-title" required type="text" class="w-full px-2 py-2 text-2xl bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-300 font-black transition-all" placeholder="準備做些什麼？">
+                        <div class="flex items-center gap-2 px-2 overflow-x-auto hide-scrollbar pb-1">
+                            <i data-lucide="tag" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+                            <input type="hidden" id="f-tag" value="">
+                            <div id="dynamic-tags-container" class="flex flex-nowrap gap-2 flex-1"></div>
                         </div>
-                        <div id="dynamic-tags-container" class="flex flex-wrap gap-2 mt-3 px-1"></div>
                     </div>
 
-                    <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px]">
-                        <div class="bg-white p-3 rounded-xl ml-1 shadow-sm shrink-0"><i data-lucide="calendar" class="text-zinc-500 w-5 h-5"></i></div>
-                        <input id="f-date" required type="date" class="w-full pl-4 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px]">
-                            <div class="bg-white p-3 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-11 h-11 flex items-center justify-center leading-none shrink-0">開始</div>
-                            <input id="f-time" required type="time" class="w-full pl-3 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h">
+                    <!-- Block 2: 時間設定卡片 -->
+                    <div class="bg-zinc-50 rounded-[1.5rem] p-2 border border-zinc-100 shadow-sm">
+                        <div class="flex items-center px-4 py-3 border-b border-zinc-100/80 min-h-[52px]">
+                            <i data-lucide="calendar" class="w-5 h-5 text-zinc-400 mr-3 shrink-0"></i>
+                            <input id="f-date" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-bold text-base no-min-h tracking-wide">
                         </div>
-                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px]">
-                            <div class="bg-white p-3 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-11 h-11 flex items-center justify-center leading-none shrink-0">完結</div>
-                            <input id="f-endtime" type="time" class="w-full pl-3 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h">
-                            <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-zinc-50/90 backdrop-blur-md flex items-center justify-center cursor-pointer hidden transition-opacity duration-300" onclick="window.toggleTBD()">
-                                <span class="text-sm font-bold text-zinc-600 tracking-wider">暫未確定</span>
+                        <div class="flex items-center justify-between p-2 gap-2">
+                            <div class="flex-1 bg-white rounded-xl px-3 py-3 text-center shadow-sm border border-zinc-100/50">
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">開始</p>
+                                <input id="f-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 font-black text-lg no-min-h h-8">
+                            </div>
+                            <i data-lucide="arrow-right" class="w-5 h-5 text-zinc-300 shrink-0"></i>
+                            <div class="flex-1 bg-white rounded-xl px-3 py-3 text-center shadow-sm border border-zinc-100/50 relative overflow-hidden">
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">結束</p>
+                                <input id="f-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 font-black text-lg no-min-h h-8">
+                                <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300" onclick="window.toggleTBD()">
+                                    <span class="text-sm font-bold text-zinc-500 tracking-wider">暫未確定</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 一鍵時長按鈕 (Quick Durations) -->
+                        <div class="flex items-center justify-start gap-2 p-2 pt-1 overflow-x-auto hide-scrollbar">
+                            <span class="text-[10px] font-bold text-zinc-400 pl-1 pr-1 shrink-0">快捷:</span>
+                            <button type="button" onclick="window.setQuickDuration(30)" class="shrink-0 px-3 py-1.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]">+30分</button>
+                            <button type="button" onclick="window.setQuickDuration(60)" class="shrink-0 px-3 py-1.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]">+1小時</button>
+                            <button type="button" onclick="window.setQuickDuration(120)" class="shrink-0 px-3 py-1.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]">+2小時</button>
+                            <button type="button" onclick="window.toggleTBD()" class="shrink-0 ml-auto px-3 py-1.5 bg-zinc-800 text-white hover:bg-zinc-700 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]"><i data-lucide="help-circle" class="w-3.5 h-3.5 inline-block mr-1"></i>TBD</button>
+                        </div>
+                    </div>
+
+                    <!-- Block 3: 細節設定 -->
+                    <div class="space-y-3 pt-2">
+                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[52px]">
+                            <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm shrink-0"><i data-lucide="map-pin" class="text-zinc-500 w-4 h-4"></i></div>
+                            <input id="f-location" type="text" class="w-full pl-4 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h" placeholder="活動地點 (選填)">
+                        </div>
+                        
+                        <div id="repeat-section" class="grid grid-cols-2 gap-3">
+                            <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
+                                <input type="hidden" id="f-repeat" value="none">
+                                <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-2.5 text-sm bg-transparent text-zinc-900 font-bold transition-colors min-h-[44px]">
+                                    單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
+                                </button>
+                            </div>
+                            <div id="repeat-count-container" class="hidden bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 items-center relative overflow-hidden">
+                                <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-10 h-10 flex items-center justify-center leading-none shrink-0">次數</div>
+                                <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-2.5 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h" placeholder="重複次數">
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end mt-1">
-                        <button type="button" onclick="window.toggleTBD()" class="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-sm min-h-[44px]">
-                            <i data-lucide="help-circle" class="w-4 h-4"></i> 設為「暫未確定」結束
-                        </button>
-                    </div>
-                    
-                    <div id="repeat-section" class="grid grid-cols-2 gap-3 mt-5">
-                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
-                            <input type="hidden" id="f-repeat" value="none">
-                            <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-3 text-sm bg-transparent text-zinc-900 font-bold transition-colors min-h-[44px]">
-                                單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
-                            </button>
-                        </div>
-                        <div id="repeat-count-container" class="hidden bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 items-center relative overflow-hidden">
-                            <div class="bg-white p-3 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-11 h-11 flex items-center justify-center leading-none shrink-0">次數</div>
-                            <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h" placeholder="重複次數">
-                        </div>
-                    </div>
 
-                    <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px] mt-4">
-                        <div class="bg-white p-3 rounded-xl ml-1 shadow-sm shrink-0"><i data-lucide="map-pin" class="text-zinc-500 w-5 h-5"></i></div>
-                        <input id="f-location" type="text" class="w-full pl-4 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h" placeholder="輸入地點 (選填)">
-                    </div>
-                    <div class="pt-6 shrink-0">
-                        <button type="submit" id="form-submit-btn" class="w-full py-4 text-base font-bold text-white bg-zinc-900 rounded-2xl hover:bg-zinc-800 transition-colors ease-golden shadow-lg shadow-zinc-900/20 active:scale-[0.98] min-h-[56px]">確認建立</button>
+                    <div class="pt-4 shrink-0">
+                        <button type="submit" id="form-submit-btn" class="w-full py-4 text-base font-black text-white bg-zinc-900 rounded-[1.5rem] hover:bg-zinc-800 transition-colors ease-golden shadow-lg shadow-zinc-900/20 active:scale-[0.98] min-h-[56px] tracking-wide">確認建立</button>
                     </div>
                 </form>
             </div>
@@ -831,14 +845,65 @@
             } catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
         }
 
+        // --- 優化：動態標籤選擇器 (Visual Tag Selector) ---
         window.renderTags = function() {
             const container = document.getElementById('dynamic-tags-container');
             if(!container) return;
+            
+            const currentTag = document.getElementById('f-tag')?.value || '';
             let html = '';
+            
+            // 「無標籤」選項
+            const isNoTag = currentTag === '';
+            html += `<button type="button" onclick="window.selectAddTag('')" class="shrink-0 text-xs px-3 py-2 rounded-xl font-bold transition-all min-h-[36px] border ${isNoTag ? 'bg-zinc-800 text-white border-zinc-800 shadow-md' : 'bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50'}">無</button>`;
+
             customTags.forEach(tag => {
-                html += `<button type="button" onclick="document.getElementById('f-tag').value='${tag}'" class="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-3 py-2 rounded-lg font-bold transition-colors min-h-[36px]">${tag}</button>`;
+                const style = tagStyles[tag] || tagStyles['default'];
+                const isSelected = currentTag === tag;
+                const activeClass = isSelected ? `${style.bg} ${style.text} border-transparent ring-2 ring-offset-1 ring-${style.text.split('-')[1]}-400 shadow-sm` : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50';
+                
+                html += `<button type="button" onclick="window.selectAddTag('${tag}')" class="shrink-0 text-xs px-3 py-2 rounded-xl font-bold transition-all min-h-[36px] flex items-center gap-1.5 border ${activeClass}">
+                            <i data-lucide="${style.icon}" class="w-3.5 h-3.5"></i>${tag}
+                         </button>`;
             });
             container.innerHTML = html;
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.selectAddTag = function(tag) {
+            const input = document.getElementById('f-tag');
+            if(input) {
+                input.value = tag;
+                window.renderTags(); // 重新渲染以更新選取高亮狀態
+            }
+        }
+
+        // --- 優化：一鍵時長設定 (Quick Durations) ---
+        window.setQuickDuration = function(minutes) {
+            const startTimeStr = document.getElementById('f-time').value;
+            if (!startTimeStr) {
+                window.showAlert("請先設定開始時間！");
+                return;
+            }
+            
+            // 確保先關閉 TBD 狀態
+            window.toggleTBD(false);
+
+            const [h, m] = startTimeStr.split(':').map(Number);
+            const startDate = new Date();
+            startDate.setHours(h, m, 0, 0);
+            
+            // 加上分鐘數
+            startDate.setMinutes(startDate.getMinutes() + minutes);
+            
+            const newH = String(startDate.getHours()).padStart(2, '0');
+            const newM = String(startDate.getMinutes()).padStart(2, '0');
+            document.getElementById('f-endtime').value = `${newH}:${newM}`;
+            
+            // 給予小小的動畫回饋
+            const endInput = document.getElementById('f-endtime');
+            endInput.classList.add('scale-110', 'text-indigo-600');
+            setTimeout(() => endInput.classList.remove('scale-110', 'text-indigo-600'), 300);
         }
 
         window.renderAdminTagsList = function() {
@@ -1580,6 +1645,7 @@
             document.getElementById('f-time').value = `${hh}:${mm}`;
             
             document.getElementById('f-endtime').value = '';
+            document.getElementById('f-tag').value = ''; // 預設無標籤
             window.toggleTBD(false); 
             
             document.getElementById('repeat-section').classList.remove('hidden');
@@ -1587,6 +1653,7 @@
             document.getElementById('f-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
             window.toggleRepeatCount();
             
+            window.renderTags(); // 渲染視覺化標籤
             window.showOverlayAndModal('add-modal');
         }
 
@@ -1614,6 +1681,7 @@
             
             document.getElementById('repeat-section').classList.add('hidden');
             
+            window.renderTags(); // 渲染視覺化標籤
             window.showOverlayAndModal('add-modal');
         }
 
