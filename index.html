@@ -22,7 +22,7 @@
                         appbg: '#F2F2F7', 
                     },
                     transitionTimingFunction: {
-                        'golden': 'cubic-bezier(0.4, 0, 0.2, 1)',
+                        'golden': 'cubic-bezier(0.16, 1, 0.3, 1)', /* 改為更具彈性的原生 Apple 曲線 */
                     }
                 }
             }
@@ -31,14 +31,25 @@
     <style>
         /* 核心過渡動畫與基本重置 */
         body { 
-            transition: font-family 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: font-family 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
             -webkit-tap-highlight-color: transparent; 
         }
         
         /* Modal 動畫 (Golden Ratio Scale & Cubic Bezier) */
         .modal-enter { opacity: 0; transform: translateY(20px) scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         
+        /* 瀑布流載入動畫 (Staggered Slide Up) */
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-item {
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; /* 初始隱藏，靠動畫顯示 */
+            will-change: transform, opacity;
+        }
+
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -55,7 +66,7 @@
 <body class="antialiased selection:bg-zinc-200 min-h-screen flex flex-col font-sans bg-appbg" id="app-body">
 
     <!-- Header -->
-    <header class="sticky top-0 z-30 bg-appbg/70 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors duration-300 ease-golden" id="app-header">
+    <header class="sticky top-0 z-40 bg-appbg/80 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors duration-300 ease-golden shadow-sm" id="app-header">
         <div class="flex justify-between items-center px-6 py-4 max-w-2xl mx-auto w-full">
             <h1 class="text-xl font-black tracking-tight text-zinc-900">
                 CHIM<span class="font-medium text-zinc-500">.APP</span>
@@ -96,6 +107,15 @@
                 </button>
             </div>
             <div id="filter-bar" class="flex gap-2 px-2 mb-6 overflow-x-auto hide-scrollbar"></div>
+            
+            <!-- 焦點預告 (Up Next 置頂區) -->
+            <div id="up-next-container" class="hidden mb-10 px-2">
+                <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-500 fill-amber-500/20"></i> 焦點預告
+                </h3>
+                <div id="up-next-card"></div>
+            </div>
+
             <div id="agenda-list" class="space-y-6"></div>
         </section>
 
@@ -1032,13 +1052,20 @@
             }
             const sortedEvents = [...filteredEvents].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
             
+            // 渲染置頂預告區域
+            window.renderUpNext(filteredEvents);
+
             let html = '';
+            let globalDelayIndex = 0; // 用於瀑布流動畫的延遲計算
 
             if (selectedDateStr) {
                 const d = new Date(selectedDateStr);
                 titleEl.innerText = d.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
                 showAllBtn.classList.remove('hidden');
-                html += window.renderDayGroup(selectedDateStr, sortedEvents.filter(e => e.date === selectedDateStr));
+                
+                const dayEvents = sortedEvents.filter(e => e.date === selectedDateStr);
+                const result = window.renderDayGroup(selectedDateStr, dayEvents, null, globalDelayIndex);
+                html += result.html;
             } else {
                 titleEl.innerText = '近期安排';
                 showAllBtn.classList.add('hidden');
@@ -1046,17 +1073,26 @@
                 const todayStr = formatDate(new Date());
                 const tomorrowStr = getTomorrowDate();
                 
-                html += window.renderDayGroup(todayStr, sortedEvents.filter(e => e.date === todayStr), '今日');
-                html += window.renderDayGroup(tomorrowStr, sortedEvents.filter(e => e.date === tomorrowStr), '明日');
+                const todayResult = window.renderDayGroup(todayStr, sortedEvents.filter(e => e.date === todayStr), '今日', globalDelayIndex);
+                html += todayResult.html;
+                globalDelayIndex = todayResult.nextIndex;
+
+                const tomorrowResult = window.renderDayGroup(tomorrowStr, sortedEvents.filter(e => e.date === tomorrowStr), '明日', globalDelayIndex);
+                html += tomorrowResult.html;
+                globalDelayIndex = tomorrowResult.nextIndex;
 
                 const otherEvents = sortedEvents.filter(e => e.date > tomorrowStr);
                 const grouped = {};
                 otherEvents.forEach(e => { if (!grouped[e.date]) grouped[e.date] = []; grouped[e.date].push(e); });
-                Object.keys(grouped).forEach(date => { html += window.renderDayGroup(date, grouped[date]); });
+                Object.keys(grouped).forEach(date => { 
+                    const result = window.renderDayGroup(date, grouped[date], null, globalDelayIndex);
+                    html += result.html;
+                    globalDelayIndex = result.nextIndex;
+                });
             }
 
             listContainer.innerHTML = html;
-            window.renderFilters(); // Ensure filters are rendered
+            window.renderFilters(); 
             if (window.lucide) window.lucide.createIcons(); 
             
             window.updateAgendaTimers();
@@ -1065,17 +1101,78 @@
             }
         }
 
-        window.renderDayGroup = function(dateStr, dayEvents, customLabel = null) {
+        // --- 優化：置頂焦點預告 (Up Next) 渲染邏輯 ---
+        window.renderUpNext = function(filteredEvents) {
+            const container = document.getElementById('up-next-container');
+            const cardEl = document.getElementById('up-next-card');
+
+            // 如果選了特定日期，就不顯示置頂，專心看那天
+            if (selectedDateStr) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            const now = new Date();
+            const upcomingEvents = filteredEvents.map(e => {
+                const startObj = new Date(`${e.date}T${e.time}:00`);
+                let endObj;
+                if (e.endTime === 'TBD' || !e.endTime || String(e.endTime).trim() === '') {
+                    endObj = new Date(startObj.getTime() + 60*60*1000);
+                } else {
+                    endObj = new Date(`${e.date}T${e.endTime}:00`);
+                    if (endObj < startObj) endObj.setDate(endObj.getDate() + 1);
+                }
+                return { ...e, startMs: startObj.getTime(), endMs: endObj.getTime() };
+            }).filter(e => e.endMs > now.getTime()).sort((a,b) => a.startMs - b.startMs);
+
+            if (upcomingEvents.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            const nextEvent = upcomingEvents[0];
+            container.classList.remove('hidden');
+
+            const displayTime = formatAMPM(nextEvent.time);
+            let endStr = '';
+            if (nextEvent.endTime === 'TBD') endStr = ' - 暫未確定';
+            else if (nextEvent.endTime && String(nextEvent.endTime).trim() !== '') endStr = ' - ' + formatAMPM(nextEvent.endTime);
+            const dateLabel = isToday(nextEvent.date) ? '今日' : new Date(nextEvent.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric', weekday:'short'});
+
+            // 加入 animate-item 讓置頂卡片也有載入動畫
+            cardEl.innerHTML = `
+                <div onclick="window.openEventDetail('${nextEvent.id}')" class="animate-item bg-zinc-900 text-white p-6 md:p-8 rounded-[2rem] shadow-[0_12px_40px_rgba(0,0,0,0.15)] relative overflow-hidden group cursor-pointer border border-zinc-800 flex items-center justify-between active:scale-[0.98] transition-all ease-golden duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-50"></div>
+                    <div class="flex-1 min-w-0 pr-4 relative z-10">
+                        <div class="flex items-center gap-2.5 mb-3">
+                            ${nextEvent.tag ? `<span class="px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-bold tracking-wider">${nextEvent.tag}</span>` : ''}
+                            <span id="up-next-countdown" data-start="${nextEvent.startMs}" data-end="${nextEvent.endMs}" class="text-amber-400 text-xs font-bold tracking-wider">計算中...</span>
+                        </div>
+                        <h4 class="text-2xl font-black text-white truncate mb-2">${nextEvent.title}</h4>
+                        <p class="text-zinc-400 text-sm font-medium flex items-center gap-1.5">
+                            <i data-lucide="calendar-clock" class="w-4 h-4 text-zinc-500"></i> ${dateLabel} · ${displayTime}${endStr}
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors relative z-10">
+                        <i data-lucide="arrow-right" class="w-5 h-5 text-white"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.renderDayGroup = function(dateStr, dayEvents, customLabel = null, startIndex = 0) {
             const dateObj = new Date(dateStr);
             const displayLabel = customLabel || dateObj.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
+            let currentDelayIndex = startIndex;
             
-            let html = `<div class="mb-10">`;
+            let html = `<div class="mb-10 relative">`;
             
+            // 升級：加入 sticky 黏性標題與毛玻璃背景
             html += `
-                <div class="flex justify-between items-center mb-4 px-2">
-                    <h3 class="text-sm font-bold text-zinc-500">${displayLabel} <span class="font-medium text-zinc-400 ml-1.5">${dateStr}</span></h3>
+                <div class="sticky top-[76px] z-20 -mx-2 px-4 py-2.5 mb-4 backdrop-blur-xl bg-appbg/85 rounded-2xl flex justify-between items-center transition-all">
+                    <h3 class="text-sm font-bold text-zinc-800 tracking-wide">${displayLabel} <span class="font-medium text-zinc-400 ml-1.5 text-xs">${dateStr}</span></h3>
                     ${isAdmin ? `
-                    <button onclick="window.openAddModal('${dateStr}')" class="flex items-center justify-center w-8 h-8 bg-white text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-full shadow-sm border border-zinc-100 transition-all active:scale-95 no-min-h" title="在此日新增排程">
+                    <button onclick="window.openAddModal('${dateStr}')" class="flex items-center justify-center w-8 h-8 bg-white text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-full shadow-sm border border-zinc-200 transition-all active:scale-95 no-min-h" title="在此日新增排程">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                     </button>
                     ` : ''}
@@ -1084,7 +1181,7 @@
             
             if (dayEvents.length === 0) {
                 html += `
-                    <div class="bg-white/50 rounded-[2rem] py-10 px-8 text-center shadow-sm flex flex-col items-center justify-center border border-zinc-100/50">
+                    <div style="animation-delay: ${currentDelayIndex * 40}ms" class="animate-item bg-white/50 rounded-[2rem] py-10 px-8 text-center shadow-sm flex flex-col items-center justify-center border border-zinc-100/50 mx-2">
                         <p class="text-zinc-400 text-sm font-bold tracking-widest uppercase ${isAdmin ? 'mb-5' : ''}">這天可以好好放鬆 ☕️</p>
                         ${isAdmin ? `
                         <button onclick="window.openAddModal('${dateStr}')" class="px-6 py-3 bg-zinc-900 text-white rounded-xl text-sm font-bold hover:bg-zinc-800 transition-colors shadow-md flex items-center gap-2 active:scale-95 min-h-[44px]">
@@ -1092,11 +1189,14 @@
                         </button>
                         ` : ''}
                     </div>`;
+                currentDelayIndex++;
             } else {
-                html += `<div class="space-y-5">`;
+                html += `<div class="space-y-4 px-2">`;
                 dayEvents.forEach(e => {
-                    const displayTime = formatAMPM(e.time);
-                    let displayEndTime = '';
+                    const displayTimeFull = formatAMPM(e.time);
+                    const timeMatch = displayTimeFull.match(/([上下]午)\s*(\d{1,2}:\d{2})/);
+                    const ampm = timeMatch ? timeMatch[1] : '';
+                    const timeOnly = timeMatch ? timeMatch[2] : displayTimeFull;
                     
                     const startObj = new Date(`${e.date}T${e.time}:00`);
                     let endObj;
@@ -1105,120 +1205,149 @@
                     } else {
                         endObj = new Date(`${e.date}T${e.endTime}:00`);
                         if (endObj < startObj) endObj.setDate(endObj.getDate() + 1); 
-                        displayEndTime = ' - ' + formatAMPM(e.endTime);
                     }
                     const startMs = startObj.getTime();
                     const endMs = endObj.getTime();
 
-                    let endText = '';
-                    if (e.endTime === 'TBD') endText = ' - 暫未確定';
-                    else if (!e.endTime || String(e.endTime).trim() === '') endText = ' - 未設定時間';
-                    else endText = displayEndTime;
-
                     const tStyle = tagStyles[e.tag] || tagStyles['default'];
-                    const displayTag = e.tag ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${tStyle.bg} ${tStyle.text} text-xs font-bold align-middle border border-white shadow-sm mb-3"><i data-lucide="${tStyle.icon}" class="w-3.5 h-3.5"></i>${e.tag}</span>` : '';
+                    const displayTag = e.tag ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${tStyle.bg} ${tStyle.text} text-[10px] font-black tracking-wider uppercase"><i data-lucide="${tStyle.icon}" class="w-3 h-3"></i>${e.tag}</span>` : '';
 
+                    // 升級：時間軸排版 (左側時間，右側內容)
                     html += `
-                        <div onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" class="agenda-card bg-white p-8 md:p-10 rounded-[2rem] shadow-md relative overflow-hidden group cursor-pointer hover:shadow-lg flex flex-col items-center text-center border-0 min-h-[140px]">
-                            <div class="card-indicator absolute top-0 left-0 right-0 h-2 bg-zinc-900 transition-colors duration-500 ease-golden"></div>
+                        <div onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white p-4 md:p-5 rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 transition-all duration-400 ease-golden active:scale-[0.98]">
                             
-                            <div class="w-full mt-2">
-                                ${e.tag ? `<div class="flex justify-center">${displayTag}</div>` : ''}
-                                <h4 class="card-title text-2xl md:text-3xl font-black text-zinc-900 leading-snug tracking-wide mb-4">${e.title}</h4>
+                            <!-- 左側狀態顏色條 -->
+                            <div class="card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-zinc-900 transition-colors duration-500 ease-golden"></div>
+                            
+                            <!-- 左欄：時間軸 -->
+                            <div class="w-[72px] shrink-0 flex flex-col items-center justify-center border-r border-zinc-100 pr-3 mr-4 ml-2">
+                                <span class="text-xl md:text-2xl font-black text-zinc-900 tabular-nums leading-none tracking-tight card-time-text">${timeOnly}</span>
+                                <span class="text-[10px] font-bold text-zinc-400 mt-1.5 tracking-widest">${ampm}</span>
+                            </div>
+
+                            <!-- 右欄：詳細資訊 -->
+                            <div class="flex-1 min-w-0 py-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    ${displayTag}
+                                </div>
+                                <h4 class="card-title text-lg md:text-xl font-black text-zinc-900 leading-tight truncate mb-2">${e.title}</h4>
                                 
-                                <div class="flex flex-col items-center gap-3 mb-2">
-                                    <span class="flex items-center justify-center gap-2 text-zinc-500 text-sm md:text-base font-bold opacity-80 tabular-nums">
-                                        <i data-lucide="clock" class="w-4 h-4"></i> ${displayTime}${endText}
-                                    </span>
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                                    <span class="card-timer-badge flex items-center gap-1.5 text-[11px] font-bold text-zinc-500"></span>
                                     ${e.location && String(e.location).trim() !== '' ? `
-                                    <span class="flex items-center justify-center gap-2 text-zinc-500 text-sm md:text-base font-bold opacity-80">
-                                        <i data-lucide="map-pin" class="w-4 h-4"></i> ${e.location}
+                                    <span class="flex items-center gap-1 text-zinc-400 text-[11px] font-bold truncate">
+                                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${e.location}
                                     </span>
                                     ` : ''}
-                                    <div class="card-timer-badge mt-2"></div>
                                 </div>
                             </div>
                             
                             ${isAdmin ? `
-                            <div class="absolute top-5 right-5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                                <button onclick="event.stopPropagation(); window.openEditModal('${e.id}')" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-full transition-colors shadow-sm no-min-h" title="編輯">
-                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 bg-white/80 backdrop-blur-sm p-1 rounded-full shadow-sm border border-zinc-100">
+                                <button onclick="event.stopPropagation(); window.openEditModal('${e.id}')" class="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-full transition-colors no-min-h" title="編輯">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                 </button>
-                                <button onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-colors shadow-sm no-min-h" title="刪除">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <button onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-colors no-min-h" title="刪除">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                             ` : ''}
                         </div>
                     `;
+                    currentDelayIndex++;
                 });
                 html += `</div>`;
             }
             html += `</div>`;
-            return html;
+            return { html: html, nextIndex: currentDelayIndex };
         }
 
         window.updateAgendaTimers = function() {
             const now = Date.now();
+
+            // 更新置頂焦點倒數計時
+            const upNextCd = document.getElementById('up-next-countdown');
+            if (upNextCd && upNextCd.dataset.start && upNextCd.dataset.end) {
+                const start = parseInt(upNextCd.dataset.start);
+                const end = parseInt(upNextCd.dataset.end);
+                if (now >= start && now <= end) {
+                    upNextCd.innerHTML = `<span class="flex items-center gap-1.5"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>正在進行中！</span>`;
+                    upNextCd.className = "text-emerald-400 text-xs font-bold tracking-wider";
+                } else if (now < start) {
+                    const diff = start - now;
+                    if (diff < 24 * 60 * 60 * 1000) {
+                        upNextCd.innerText = `倒數 ${window.formatDiffDash(diff)}`;
+                        upNextCd.className = "text-amber-400 text-xs font-bold tracking-wider";
+                    } else {
+                        const days = Math.ceil(diff / (24*60*60*1000));
+                        upNextCd.innerText = `還有 ${days} 天`;
+                        upNextCd.className = "text-zinc-400 text-xs font-bold tracking-wider";
+                    }
+                }
+            }
+
             document.querySelectorAll('.agenda-card').forEach(card => {
                 const start = parseInt(card.dataset.start);
                 const end = parseInt(card.dataset.end);
                 const indicator = card.querySelector('.card-indicator');
                 const badge = card.querySelector('.card-timer-badge');
                 const title = card.querySelector('.card-title');
+                const timeText = card.querySelector('.card-time-text');
 
-                card.className = "agenda-card p-8 md:p-10 rounded-[2rem] relative overflow-hidden group cursor-pointer flex flex-col items-center text-center transition-all duration-500 border-0 min-h-[140px]";
+                // 保留時間軸排版類別，僅改變顏色狀態
+                card.className = card.className.replace(/bg-zinc-50\/70|shadow-none|bg-emerald-50\/40|shadow-md|bg-blue-50\/20|bg-white/g, '').trim();
                 
                 if (now > end) {
                     card.classList.add('bg-zinc-50/70', 'shadow-none');
-                    indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-zinc-300 transition-colors duration-500";
-                    title.className = "card-title text-2xl md:text-3xl font-black text-zinc-400 leading-snug tracking-wide mb-4";
+                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-zinc-300 transition-colors duration-500";
+                    title.className = "card-title text-lg md:text-xl font-black text-zinc-400 leading-tight truncate mb-2";
+                    if(timeText) timeText.classList.add('text-zinc-400');
                     
-                    badge.className = "card-timer-badge flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-zinc-500 bg-zinc-200/50 mt-2";
-                    badge.innerHTML = `${svgCheck} 已結束`;
+                    badge.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>已結束`;
+                    badge.className = "card-timer-badge flex items-center gap-1 text-[11px] font-bold text-zinc-400";
 
                 } else if (now >= start && now <= end) {
-                    card.classList.add('bg-emerald-50/40', 'shadow-lg');
-                    indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-emerald-500 shadow-sm transition-colors duration-500";
-                    title.className = "card-title text-2xl md:text-3xl font-black text-zinc-900 leading-snug tracking-wide mb-4";
+                    card.classList.add('bg-emerald-50/20', 'shadow-md');
+                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-400 shadow-sm transition-colors duration-500";
+                    title.className = "card-title text-lg md:text-xl font-black text-zinc-900 leading-tight truncate mb-2";
+                    if(timeText) timeText.classList.remove('text-zinc-400');
 
                     const diff = end - now;
-                    badge.className = "card-timer-badge flex items-center px-4 py-2 rounded-full text-xs font-bold text-emerald-700 bg-emerald-100 shadow-sm tabular-nums mt-2";
                     badge.innerHTML = `
-                        <span class="relative flex h-2.5 w-2.5 mr-2">
+                        <span class="relative flex h-2 w-2 mr-0.5">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span> 
                         進行中 · 剩餘 ${window.formatDiffDash(diff)}
                     `;
+                    badge.className = "card-timer-badge flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[11px] font-bold tabular-nums";
 
                 } else {
                     const diff = start - now;
-                    title.className = "card-title text-2xl md:text-3xl font-black text-zinc-900 leading-snug tracking-wide mb-4";
+                    card.classList.add('bg-white', 'shadow-sm');
+                    title.className = "card-title text-lg md:text-xl font-black text-zinc-900 leading-tight truncate mb-2";
+                    if(timeText) timeText.classList.remove('text-zinc-400');
 
                     if (diff < 24 * 60 * 60 * 1000) {
-                        card.classList.add('bg-blue-50/20', 'shadow-md');
-                        indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-blue-500 transition-colors duration-500";
-                        
-                        badge.className = "card-timer-badge flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-blue-600 bg-blue-50 tabular-nums mt-2";
-                        badge.innerHTML = `${svgClock} 倒數 ${window.formatDiffDash(diff)}`;
+                        indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-amber-400 transition-colors duration-500";
+                        badge.innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5"></i>倒數 ${window.formatDiffDash(diff)}`;
+                        badge.className = "card-timer-badge flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[11px] font-bold tabular-nums";
                     } else {
-                        card.classList.add('bg-white', 'shadow-md');
-                        indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-zinc-800 transition-colors duration-500";
-                        
+                        indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-zinc-800 transition-colors duration-500";
                         const days = Math.ceil(diff / (24*60*60*1000));
-                        badge.className = "card-timer-badge flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-zinc-500 bg-zinc-100 mt-2";
-                        badge.innerHTML = `${svgCal} ${days} 天後`;
+                        badge.innerHTML = `<i data-lucide="calendar" class="w-3.5 h-3.5"></i>${days} 天後`;
+                        badge.className = "card-timer-badge flex items-center gap-1 text-[11px] font-bold text-zinc-500";
                     }
                 }
             });
+            if (window.lucide) window.lucide.createIcons();
         }
 
         // --- 核心視圖與日曆導航 ---
         window.updateAllViews = function() {
             window.renderAuth(); 
             window.renderCalendar(); 
-            window.renderFilters();
+            if (typeof window.renderFilters === 'function') window.renderFilters();
             window.renderAgenda();
             const adminModal = document.getElementById('admin-modal');
             if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) {
@@ -1252,11 +1381,7 @@
             window.updateAllViews(); 
         }
 
-        // --- 鋼琴班智能更改邏輯 (Piano Add Parser) ---
         window.openPianoUpdateModal = function() {
-            const detailsEl = document.getElementById('pu-details');
-            if (detailsEl) detailsEl.classList.remove('hidden');
-
             document.getElementById('piano-update-form').reset();
             document.getElementById('pu-date').value = formatDate(new Date());
             
