@@ -2,7 +2,8 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 升級：加入 viewport-fit=cover 完美適配 iPhone 瀏海與全螢幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CHIM.SCHEDULE | 專屬日程</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -26,6 +27,9 @@
                     },
                     transitionTimingFunction: {
                         'golden': 'cubic-bezier(0.16, 1, 0.3, 1)', 
+                    },
+                    screens: {
+                        'xs': '375px', // 針對小尺寸手機的最佳化斷點
                     }
                 }
             }
@@ -37,8 +41,8 @@
             -webkit-tap-highlight-color: transparent; 
         }
         
-        .modal-enter { opacity: 0; transform: translateY(20px) scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        /* 確保 iOS 底部橫條不會蓋住內容 */
+        .pb-safe { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
         
         @keyframes slideUpFade {
             0% { opacity: 0; transform: translateY(30px) scale(0.98); }
@@ -71,396 +75,398 @@
 </head>
 <body class="antialiased selection:bg-zinc-200 dark:selection:bg-zinc-700 min-h-screen flex flex-col font-sans bg-appbg dark:bg-darkbg text-zinc-900 dark:text-zinc-100" id="app-body">
 
-    <!-- Header -->
+    <!-- Header (響應式：手機版 padding 較小) -->
     <header class="sticky top-0 z-40 bg-appbg/80 dark:bg-darkbg/80 backdrop-blur-xl border-b border-zinc-200/50 dark:border-zinc-800/50 w-full transition-colors duration-300 ease-golden shadow-sm" id="app-header">
-        <div class="flex justify-between items-center px-6 py-4 max-w-2xl mx-auto w-full">
-            <h1 class="text-xl font-black tracking-tight text-zinc-900 dark:text-white">
+        <div class="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 max-w-2xl mx-auto w-full pt-[max(0.75rem,env(safe-area-inset-top))]">
+            <h1 class="text-lg sm:text-xl font-black tracking-tight text-zinc-900 dark:text-white shrink-0">
                 CHIM<span class="font-medium text-zinc-500 dark:text-zinc-400">.APP</span>
             </h1>
-            <div class="flex items-center gap-2 bg-white dark:bg-darkcard px-3 py-1.5 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-800 min-h-[44px] transition-colors">
-                <button type="button" onclick="window.openPianoUpdateModal()" class="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/20 transition-colors ease-golden duration-300 p-2 rounded-full flex items-center gap-1.5" title="更改琴班">
+            <div class="flex items-center gap-1 sm:gap-2 bg-white dark:bg-darkcard px-2 sm:px-3 py-1.5 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-800 min-h-[44px] transition-colors shrink-0">
+                <button type="button" onclick="window.openPianoUpdateModal()" class="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/20 transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center gap-1.5" title="更改琴班">
                     <i data-lucide="music" class="w-4 h-4 fill-purple-500/20 dark:fill-purple-400/20"></i>
-                    <span class="text-[11px] font-bold pr-1">更改琴班</span>
+                    <span class="hidden xs:inline text-[11px] font-bold pr-1">更改琴班</span>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
 
-                <button type="button" onclick="window.openSearchModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full" title="全域搜尋">
-                    <i data-lucide="search" class="w-5 h-5"></i>
+                <button type="button" onclick="window.openSearchModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center" title="全域搜尋">
+                    <i data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
-                <button type="button" onclick="window.openDashboard()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full" title="全螢幕動態看板">
-                    <i data-lucide="monitor-play" class="w-5 h-5"></i>
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
+                <button type="button" onclick="window.openDashboard()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center" title="全螢幕動態看板">
+                    <i data-lucide="monitor-play" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
-                <button type="button" onclick="window.openSettingsModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full" title="個性化設定">
-                    <i data-lucide="palette" class="w-5 h-5"></i>
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
+                <button type="button" onclick="window.openSettingsModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center" title="個性化設定">
+                    <i data-lucide="palette" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
-                <div id="auth-container" class="flex items-center gap-1.5 min-h-[44px]"></div>
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
+                <div id="auth-container" class="flex items-center gap-1 min-h-[44px]"></div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-2xl mx-auto px-5 py-8 pb-32 w-full flex-1 flex flex-col gap-10">
+    <!-- Main Content (響應式：縮減手機端多餘的 gap 與 padding) -->
+    <main class="max-w-2xl mx-auto px-4 sm:px-5 py-6 sm:py-8 pb-32 w-full flex-1 flex flex-col gap-8 sm:gap-10">
         <section id="agenda-section" class="w-full">
-            <div class="flex justify-between items-center mb-4 px-2">
+            <div class="flex justify-between items-center mb-4 px-1 sm:px-2">
                 <div class="flex items-center gap-3">
-                    <h2 id="agenda-title" class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">即將到來</h2>
+                    <h2 id="agenda-title" class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">即將到來</h2>
                     <button type="button" onclick="window.goToToday()" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-bold transition-colors ease-golden duration-300 shadow-sm min-h-[44px]">今日</button>
                 </div>
                 <button type="button" id="show-all-btn" class="hidden px-4 py-2 bg-zinc-200/50 dark:bg-zinc-800/50 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-bold transition-colors ease-golden duration-300 min-h-[44px]" onclick="window.clearDateSelection()">
                     顯示全部
                 </button>
             </div>
-            <div id="filter-bar" class="flex gap-2 px-2 mb-6 overflow-x-auto hide-scrollbar"></div>
+            <div id="filter-bar" class="flex gap-2 px-1 sm:px-2 mb-5 sm:mb-6 overflow-x-auto hide-scrollbar pr-4"></div>
             
             <!-- 焦點預告 -->
-            <div id="up-next-container" class="hidden mb-10 px-2">
-                <h3 class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                    <i data-lucide="zap" class="w-4 h-4 text-amber-500 fill-amber-500/20"></i> 焦點預告
+            <div id="up-next-container" class="hidden mb-8 sm:mb-10 px-1 sm:px-2">
+                <h3 class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <i data-lucide="zap" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-500/20"></i> 焦點預告
                 </h3>
                 <div id="up-next-card"></div>
             </div>
 
-            <div id="agenda-list" class="space-y-6"></div>
+            <div id="agenda-list" class="space-y-5 sm:space-y-6 px-1 sm:px-0"></div>
         </section>
 
-        <section id="calendar-section" class="w-full">
-            <div class="bg-white dark:bg-darkcard rounded-[2rem] p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] dark:shadow-none border border-zinc-100/80 dark:border-zinc-800 transition-all ease-golden duration-300">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 id="calendar-month-title" class="text-xl font-bold tracking-tight text-zinc-900 dark:text-white"></h2>
+        <section id="calendar-section" class="w-full px-1 sm:px-0">
+            <div class="bg-white dark:bg-darkcard rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] dark:shadow-none border border-zinc-100/80 dark:border-zinc-800 transition-all ease-golden duration-300">
+                <div class="flex justify-between items-center mb-5 sm:mb-6">
+                    <h2 id="calendar-month-title" class="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white"></h2>
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="window.goToToday()" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-bold transition-all ease-golden duration-300 shadow-sm min-h-[44px]">今日</button>
+                        <button type="button" onclick="window.goToToday()" class="hidden xs:inline-block px-3 sm:px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-bold transition-all ease-golden duration-300 shadow-sm min-h-[44px]">今日</button>
                         <div class="flex gap-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-full p-1 min-h-[44px] items-center border border-zinc-100 dark:border-zinc-800">
                             <button type="button" onclick="window.changeMonth(-1)" class="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all ease-golden duration-300 min-h-[36px] w-10 flex items-center justify-center no-min-h"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
                             <button type="button" onclick="window.changeMonth(1)" class="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 rounded-full transition-all ease-golden duration-300 min-h-[36px] w-10 flex items-center justify-center no-min-h"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
                         </div>
                     </div>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-y-4 gap-x-2 text-center text-sm font-medium"></div>
-                <div class="mt-6 pt-5 border-t border-zinc-50 dark:border-zinc-800/50 flex items-center justify-center gap-6 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                    <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>1項</div>
-                    <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>2項</div>
-                    <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>3項+</div>
+                <!-- 響應式 Calendar Grid -->
+                <div id="calendar-grid" class="grid grid-cols-7 gap-y-3 sm:gap-y-4 gap-x-1 sm:gap-x-2 text-center text-[13px] sm:text-sm font-medium"></div>
+                <div class="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-zinc-50 dark:border-zinc-800/50 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                    <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>1項</div>
+                    <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>2項</div>
+                    <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>3項+</div>
                 </div>
             </div>
         </section>
     </main>
 
     <!-- FAB -->
-    <div id="fab-container" class="hidden fixed bottom-10 left-0 right-0 pointer-events-none z-40 justify-center">
-        <button type="button" onclick="window.openAddModal()" class="pointer-events-auto flex items-center gap-2 px-8 py-4 bg-zinc-900/90 dark:bg-zinc-100/90 backdrop-blur-md text-white dark:text-zinc-900 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)] hover:bg-zinc-800 dark:hover:bg-white hover:scale-105 transition-all ease-golden duration-300 min-h-[56px]">
+    <div id="fab-container" class="hidden fixed bottom-6 sm:bottom-10 left-0 right-0 pointer-events-none z-30 justify-center pb-safe">
+        <button type="button" onclick="window.openAddModal()" class="pointer-events-auto flex items-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-zinc-900/95 dark:bg-zinc-100/95 backdrop-blur-md text-white dark:text-zinc-900 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.25)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.15)] hover:bg-zinc-800 dark:hover:bg-white hover:scale-105 transition-all ease-golden duration-300 min-h-[52px] sm:min-h-[56px]">
             <i data-lucide="plus" class="w-5 h-5"></i>
             <span class="font-bold text-sm tracking-wide">新增排程</span>
         </button>
     </div>
 
-    <!-- MAIN Modals Overlay -->
-    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
+    <!-- MAIN Modals Overlay (手機版底部抽屜，iPad 版置中) -->
+    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
 
-        <!-- 搜尋 Modal (Spotlight) -->
-        <div id="search-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 relative flex items-center">
-                <i data-lucide="search" class="w-6 h-6 text-zinc-400 dark:text-zinc-500 absolute left-8"></i>
-                <input type="text" id="search-input" oninput="window.performSearch()" class="w-full pl-12 pr-12 py-3 text-xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-bold" placeholder="搜尋行程、地點、標籤...">
-                <button type="button" onclick="window.closeModals()" class="absolute right-6 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 rounded-full transition-colors min-h-[36px] w-[36px] flex items-center justify-center no-min-h">
+        <!-- 搜尋 Modal -->
+        <div id="search-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[85vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 relative flex items-center">
+                <i data-lucide="search" class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400 dark:text-zinc-500 absolute left-6 sm:left-8"></i>
+                <input type="text" id="search-input" oninput="window.performSearch()" class="w-full pl-10 sm:pl-12 pr-12 py-3 text-lg sm:text-xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-bold" placeholder="搜尋行程、地點...">
+                <button type="button" onclick="window.closeModals()" class="absolute right-4 sm:right-6 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 rounded-full transition-colors min-h-[36px] w-[36px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="search-results" class="p-6 overflow-y-auto hide-scrollbar bg-zinc-50/50 dark:bg-darkbg/50 grow w-full space-y-3 min-h-[300px]">
+            <div id="search-results" class="p-4 sm:p-6 overflow-y-auto hide-scrollbar bg-zinc-50/50 dark:bg-darkbg/50 grow w-full space-y-3 min-h-[300px]">
                 <div class="text-center text-zinc-400 dark:text-zinc-600 text-sm font-bold py-10">請輸入關鍵字開始搜尋</div>
             </div>
         </div>
 
         <!-- 鋼琴班智能更改 Modal -->
-        <div id="piano-update-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="bg-purple-50 dark:bg-purple-500/10 p-6 pb-5 text-center relative shrink-0 border-b border-purple-100 dark:border-purple-500/20">
-                <button type="button" onclick="window.closeModals()" class="absolute top-6 right-6 bg-white dark:bg-darkcard text-zinc-400 hover:text-zinc-800 dark:hover:text-white p-2.5 rounded-full shadow-sm transition-colors ease-golden min-h-[44px] w-[44px] flex items-center justify-center">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+        <div id="piano-update-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="bg-purple-50 dark:bg-purple-500/10 p-5 sm:p-6 pb-4 sm:pb-5 text-center relative shrink-0 border-b border-purple-100 dark:border-purple-500/20">
+                <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white dark:bg-darkcard text-zinc-400 hover:text-zinc-800 dark:hover:text-white p-2 sm:p-2.5 rounded-full shadow-sm transition-colors ease-golden min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
+                    <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-14 h-14 bg-white dark:bg-darkcard rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-purple-100 dark:border-purple-500/20">
-                    <i data-lucide="music" class="w-6 h-6 text-purple-500 fill-purple-500/50"></i>
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-white dark:bg-darkcard rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-sm border border-purple-100 dark:border-purple-500/20">
+                    <i data-lucide="music" class="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 fill-purple-500/50"></i>
                 </div>
-                <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight mb-1">更改琴班</h3>
-                <p class="text-zinc-500 dark:text-zinc-400 font-bold text-xs">直接貼上老師的 WhatsApp 對話自動解析！</p>
+                <h3 class="text-lg sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight mb-1">更改琴班</h3>
+                <p class="text-zinc-500 dark:text-zinc-400 font-bold text-[11px] sm:text-xs">直接貼上老師的 WhatsApp 對話自動解析！</p>
             </div>
-            <div class="bg-zinc-50/70 dark:bg-darkbg/50 px-6 py-4 shrink-0 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3 overflow-x-auto hide-scrollbar min-h-[76px]" id="pu-existing-list"></div>
-            <div class="p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full space-y-6">
-                <form id="piano-update-form" onsubmit="window.handlePianoSubmit(event)" class="space-y-6">
+            <div class="bg-zinc-50/70 dark:bg-darkbg/50 px-5 sm:px-6 py-3 sm:py-4 shrink-0 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3 overflow-x-auto hide-scrollbar min-h-[64px] sm:min-h-[76px]" id="pu-existing-list"></div>
+            <div class="p-5 sm:p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full space-y-5 sm:space-y-6">
+                <form id="piano-update-form" onsubmit="window.handlePianoSubmit(event)" class="space-y-5 sm:space-y-6">
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mb-2 uppercase tracking-widest pl-1">智能解析 (貼上訊息)</label>
-                        <textarea id="pu-text" rows="2" oninput="window.handlePianoPaste(event)" class="w-full px-4 py-4 text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400 text-zinc-900 dark:text-white rounded-2xl resize-none font-medium placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-shadow min-h-[88px]" placeholder="例如：27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
+                        <!-- 防縮放：text-base sm:text-sm -->
+                        <textarea id="pu-text" rows="2" oninput="window.handlePianoPaste(event)" class="w-full px-4 py-3 sm:py-4 text-base sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl resize-none font-medium placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-shadow min-h-[80px] sm:min-h-[88px]" placeholder="例如：27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mb-2 uppercase tracking-widest pl-1">時間設定</label>
-                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-[1.5rem] p-1.5 shadow-sm relative">
-                            <div class="flex items-center px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 min-h-[56px] relative">
-                                <i data-lucide="calendar" class="w-5 h-5 text-purple-500 mr-3 shrink-0 pointer-events-none"></i>
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl sm:rounded-[1.5rem] p-1.5 shadow-sm relative">
+                            <div class="flex items-center px-3 sm:px-4 py-2 sm:py-3 border-b border-zinc-100 dark:border-zinc-800 min-h-[48px] sm:min-h-[56px] relative">
+                                <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 mr-2 sm:mr-3 shrink-0 pointer-events-none"></i>
                                 <input id="pu-date" onchange="window.checkPianoConflict()" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold text-base tracking-wide no-min-h relative z-10">
                             </div>
-                            <div class="flex items-center justify-between p-2 gap-2 relative">
-                                <div class="flex-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl px-3 py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
-                                    <p class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 pointer-events-none">開始</p>
-                                    <input id="pu-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-xl no-min-h h-8 relative z-10">
+                            <div class="flex items-center justify-between p-1.5 sm:p-2 gap-2 relative">
+                                <div class="flex-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
+                                    <p class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">開始</p>
+                                    <input id="pu-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 </div>
-                                <i data-lucide="arrow-right" class="w-5 h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
-                                <div class="flex-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl px-3 py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
-                                    <p class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 pointer-events-none">結束</p>
-                                    <input id="pu-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-xl no-min-h h-8 relative z-10">
+                                <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
+                                <div class="flex-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
+                                    <p class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">結束</p>
+                                    <input id="pu-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div class="bg-purple-50/40 dark:bg-purple-500/10 p-1.5 rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 flex items-center relative overflow-hidden">
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-3 sm:mt-4">
+                        <div class="bg-purple-50/40 dark:bg-purple-500/10 p-1 sm:p-1.5 rounded-xl sm:rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 flex items-center relative overflow-hidden">
                             <input type="hidden" id="pu-repeat" value="none">
-                            <button type="button" onclick="window.openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-3 text-sm bg-transparent text-purple-900 dark:text-purple-300 font-bold transition-colors min-h-[44px]">
+                            <button type="button" onclick="window.openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full flex justify-between items-center pl-3 sm:pl-4 pr-2 sm:pr-3 py-2.5 sm:py-3 text-[13px] sm:text-sm bg-transparent text-purple-900 dark:text-purple-300 font-bold transition-colors min-h-[44px]">
                                 單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400"></i>
                             </button>
                         </div>
-                        <div id="pu-repeat-count-container" class="hidden bg-purple-50/40 dark:bg-purple-500/10 p-1.5 rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 items-center relative overflow-hidden">
-                            <div class="bg-white dark:bg-darkcard p-3 rounded-xl ml-0.5 shadow-sm text-purple-500 text-[10px] font-bold text-center w-10 h-10 flex items-center justify-center leading-none shrink-0 border border-purple-50 dark:border-zinc-800">次數</div>
-                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-3 text-sm bg-transparent focus:outline-none text-purple-900 dark:text-purple-300 font-bold no-min-h" placeholder="重複次數">
+                        <div id="pu-repeat-count-container" class="hidden bg-purple-50/40 dark:bg-purple-500/10 p-1 sm:p-1.5 rounded-xl sm:rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 items-center relative overflow-hidden">
+                            <div class="bg-white dark:bg-darkcard p-2 sm:p-3 rounded-lg sm:rounded-xl ml-0.5 shadow-sm text-purple-500 text-[10px] font-bold text-center w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center leading-none shrink-0 border border-purple-50 dark:border-zinc-800">次數</div>
+                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-2 sm:pl-3 pr-1 sm:pr-2 py-2.5 sm:py-3 text-base sm:text-sm bg-transparent focus:outline-none text-purple-900 dark:text-purple-300 font-bold no-min-h" placeholder="重複次數">
                         </div>
                     </div>
-                    <div id="pu-conflict-warning" class="hidden bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-5 rounded-[1.5rem] flex flex-col gap-3">
-                        <div class="flex items-start gap-3">
-                            <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500 shrink-0 mt-0.5"></i>
+                    <div id="pu-conflict-warning" class="hidden bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5 rounded-xl sm:rounded-[1.5rem] flex flex-col gap-3">
+                        <div class="flex items-start gap-2.5 sm:gap-3">
+                            <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0 mt-0.5"></i>
                             <div>
                                 <p class="text-sm font-bold text-amber-800 dark:text-amber-400 mb-1">發現該日已有鋼琴班</p>
-                                <p class="text-xs font-medium text-amber-600 dark:text-amber-500/80 leading-relaxed">原本設定時間為 <span id="pu-conflict-time" class="font-black border-b border-amber-300"></span>。確認發佈將會覆蓋舊時間。</p>
+                                <p class="text-[11px] sm:text-xs font-medium text-amber-600 dark:text-amber-500/80 leading-relaxed">原本設定時間為 <span id="pu-conflict-time" class="font-black border-b border-amber-300"></span>。確認發佈將會覆蓋舊時間。</p>
                             </div>
                         </div>
                     </div>
-                    <div id="pu-submit-section" class="pt-4">
-                        <button type="submit" id="pu-submit-btn" class="w-full py-4 text-base font-black text-white bg-purple-500 rounded-[1.5rem] hover:bg-purple-600 transition-colors ease-golden shadow-lg shadow-purple-500/30 active:scale-[0.98] tracking-wide min-h-[56px]">確認並發佈</button>
+                    <div id="pu-submit-section" class="pt-2 sm:pt-4">
+                        <button type="submit" id="pu-submit-btn" class="w-full py-3.5 sm:py-4 text-sm sm:text-base font-black text-white bg-purple-500 rounded-xl sm:rounded-[1.5rem] hover:bg-purple-600 transition-colors ease-golden shadow-lg shadow-purple-500/30 active:scale-[0.98] tracking-wide min-h-[52px] sm:min-h-[56px]">確認並發佈</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Add / Edit Modal -->
-        <div id="add-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
+        <div id="add-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 id="form-modal-title" class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">新增排程</h3>
-                <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
+                <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full">
-                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-6">
-                    <div class="space-y-3">
-                        <input id="f-title" required type="text" class="w-full px-2 py-2 text-2xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-black transition-all" placeholder="準備做些什麼？">
-                        <div class="flex items-center gap-2 px-2 overflow-x-auto hide-scrollbar pb-1">
+            <div class="p-5 sm:p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full">
+                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-5 sm:space-y-6">
+                    <div class="space-y-2 sm:space-y-3">
+                        <input id="f-title" required type="text" class="w-full px-2 py-1.5 sm:py-2 text-xl sm:text-2xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-black transition-all" placeholder="準備做些什麼？">
+                        <div class="flex items-center gap-2 px-1 sm:px-2 overflow-x-auto hide-scrollbar pb-1">
                             <i data-lucide="tag" class="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0"></i>
                             <input type="hidden" id="f-tag" value="">
                             <div id="dynamic-tags-container" class="flex flex-nowrap gap-2 flex-1"></div>
                         </div>
                     </div>
-                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-[1.5rem] p-2 border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
-                        <div class="flex items-center px-4 py-3 border-b border-zinc-100/80 dark:border-zinc-800 min-h-[52px] relative">
-                            <i data-lucide="calendar" class="w-5 h-5 text-zinc-400 dark:text-zinc-500 mr-3 shrink-0 pointer-events-none"></i>
+                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-[1.5rem] p-1.5 sm:p-2 border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
+                        <div class="flex items-center px-3 sm:px-4 py-2 sm:py-3 border-b border-zinc-100/80 dark:border-zinc-800 min-h-[48px] sm:min-h-[52px] relative">
+                            <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500 mr-2 sm:mr-3 shrink-0 pointer-events-none"></i>
                             <input id="f-date" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold text-base no-min-h tracking-wide relative z-10">
                         </div>
-                        <div class="flex items-center justify-between p-2 gap-2 relative">
-                            <div class="flex-1 bg-white dark:bg-darkcard rounded-xl px-3 py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
-                                <p class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 pointer-events-none">開始</p>
-                                <input id="f-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-8 relative z-10">
+                        <div class="flex items-center justify-between p-1.5 sm:p-2 gap-1.5 sm:gap-2 relative">
+                            <div class="flex-1 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
+                                <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">開始</p>
+                                <input id="f-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-7 sm:h-8 relative z-10">
                             </div>
-                            <i data-lucide="arrow-right" class="w-5 h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
-                            <div class="flex-1 bg-white dark:bg-darkcard rounded-xl px-3 py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
-                                <p class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5 pointer-events-none">結束</p>
-                                <input id="f-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-8 relative z-10">
+                            <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
+                            <div class="flex-1 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
+                                <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">結束</p>
+                                <input id="f-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-7 sm:h-8 relative z-10">
                                 <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-white/95 dark:bg-darkcard/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300 z-20" onclick="window.toggleTBD()">
-                                    <span class="text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">暫未確定</span>
+                                    <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">暫未確定</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center justify-start gap-2 p-2 pt-1 overflow-x-auto hide-scrollbar">
-                            <span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 pl-1 pr-1 shrink-0">快捷:</span>
-                            <button type="button" onclick="window.setQuickDuration(30)" class="shrink-0 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]">+30分</button>
-                            <button type="button" onclick="window.setQuickDuration(60)" class="shrink-0 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]">+1小時</button>
-                            <button type="button" onclick="window.setQuickDuration(120)" class="shrink-0 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]">+2小時</button>
-                            <button type="button" onclick="window.toggleTBD()" class="shrink-0 ml-auto px-3 py-1.5 bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-white rounded-lg text-xs font-bold transition-colors shadow-sm min-h-[36px]"><i data-lucide="help-circle" class="w-3.5 h-3.5 inline-block mr-1"></i>TBD</button>
+                        <div class="flex items-center justify-start gap-1.5 sm:gap-2 p-1.5 sm:p-2 pt-1 overflow-x-auto hide-scrollbar">
+                            <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 pl-1 pr-0.5 sm:pr-1 shrink-0">快捷:</span>
+                            <button type="button" onclick="window.setQuickDuration(30)" class="shrink-0 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h">+30分</button>
+                            <button type="button" onclick="window.setQuickDuration(60)" class="shrink-0 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h">+1小時</button>
+                            <button type="button" onclick="window.setQuickDuration(120)" class="shrink-0 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h">+2小時</button>
+                            <button type="button" onclick="window.toggleTBD()" class="shrink-0 ml-auto px-2.5 sm:px-3 py-1.5 bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-white rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h"><i data-lucide="help-circle" class="w-3 sm:w-3.5 h-3 sm:h-3.5 inline-block mr-1"></i>TBD</button>
                         </div>
                     </div>
-                    <div class="space-y-3 pt-2">
-                        <div class="bg-zinc-50 dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden min-h-[52px]">
-                            <div class="bg-white dark:bg-darkcard p-2.5 rounded-xl ml-1 shadow-sm shrink-0 border border-zinc-50 dark:border-zinc-800/50"><i data-lucide="map-pin" class="text-zinc-500 dark:text-zinc-400 w-4 h-4"></i></div>
-                            <input id="f-location" type="text" class="w-full pl-4 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-bold no-min-h" placeholder="活動地點 (選填)">
+                    <div class="space-y-2 sm:space-y-3 pt-1 sm:pt-2">
+                        <div class="bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden min-h-[48px] sm:min-h-[52px]">
+                            <div class="bg-white dark:bg-darkcard p-2 sm:p-2.5 rounded-lg sm:rounded-xl ml-1 shadow-sm shrink-0 border border-zinc-50 dark:border-zinc-800/50"><i data-lucide="map-pin" class="text-zinc-500 dark:text-zinc-400 w-4 h-4"></i></div>
+                            <input id="f-location" type="text" class="w-full pl-3 sm:pl-4 pr-2 py-2.5 sm:py-3 text-base sm:text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-bold no-min-h" placeholder="活動地點 (選填)">
                         </div>
-                        <div id="repeat-section" class="grid grid-cols-2 gap-3">
-                            <div class="bg-zinc-50 dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden">
+                        <div id="repeat-section" class="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div class="bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden">
                                 <input type="hidden" id="f-repeat" value="none">
-                                <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-2.5 text-sm bg-transparent text-zinc-900 dark:text-white font-bold transition-colors min-h-[44px]">
+                                <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-3 sm:pl-4 pr-2 sm:pr-3 py-2.5 text-[13px] sm:text-sm bg-transparent text-zinc-900 dark:text-white font-bold transition-colors min-h-[44px]">
                                     單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500"></i>
                                 </button>
                             </div>
-                            <div id="repeat-count-container" class="hidden bg-zinc-50 dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-100 dark:border-zinc-800 items-center relative overflow-hidden">
-                                <div class="bg-white dark:bg-darkcard p-2.5 rounded-xl ml-1 shadow-sm text-zinc-500 dark:text-zinc-400 text-[11px] font-bold text-center w-10 h-10 flex items-center justify-center leading-none shrink-0 border border-zinc-50 dark:border-zinc-800/50">次數</div>
-                                <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-2.5 text-base bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold no-min-h" placeholder="重複次數">
+                            <div id="repeat-count-container" class="hidden bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 items-center relative overflow-hidden">
+                                <div class="bg-white dark:bg-darkcard p-2 sm:p-2.5 rounded-lg sm:rounded-xl ml-1 shadow-sm text-zinc-500 dark:text-zinc-400 text-[10px] sm:text-[11px] font-bold text-center w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center leading-none shrink-0 border border-zinc-50 dark:border-zinc-800/50">次數</div>
+                                <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-2 sm:pl-3 pr-1 sm:pr-2 py-2.5 text-base sm:text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold no-min-h" placeholder="重複次數">
                             </div>
                         </div>
                     </div>
-                    <div class="pt-4 shrink-0">
-                        <button type="submit" id="form-submit-btn" class="w-full py-4 text-base font-black text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-[1.5rem] hover:bg-zinc-800 dark:hover:bg-white transition-colors ease-golden shadow-lg shadow-zinc-900/20 dark:shadow-white/10 active:scale-[0.98] min-h-[56px] tracking-wide">確認建立</button>
+                    <div class="pt-2 sm:pt-4 shrink-0">
+                        <button type="submit" id="form-submit-btn" class="w-full py-3.5 sm:py-4 text-sm sm:text-base font-black text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-xl sm:rounded-[1.5rem] hover:bg-zinc-800 dark:hover:bg-white transition-colors ease-golden shadow-lg shadow-zinc-900/20 dark:shadow-white/10 active:scale-[0.98] min-h-[52px] sm:min-h-[56px] tracking-wide">確認建立</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Series Action Modal (Smart Recurring Edit/Delete) -->
-        <div id="series-action-modal" class="hidden bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex flex-col p-8 pt-10">
-                <div class="w-14 h-14 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-5 mx-auto">
-                    <i data-lucide="copy" class="text-blue-500 w-7 h-7"></i>
+        <div id="series-action-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex flex-col p-6 sm:p-8 pt-8 sm:pt-10">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5 mx-auto">
+                    <i data-lucide="copy" class="text-blue-500 w-6 h-6 sm:w-7 sm:h-7"></i>
                 </div>
-                <h3 class="text-xl font-black text-center text-zinc-900 dark:text-white mb-2">這是一個重複行程</h3>
-                <p class="text-zinc-500 dark:text-zinc-400 text-sm text-center mb-8 font-medium">您希望如何套用這次的更改？</p>
-                <div class="space-y-3">
-                    <button type="button" onclick="window.handleSeriesAction('single')" class="w-full py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[56px]">僅此行程</button>
-                    <button type="button" onclick="window.handleSeriesAction('following')" class="w-full py-4 bg-blue-500 text-white rounded-2xl hover:bg-blue-600 transition-colors text-sm font-bold min-h-[56px] shadow-md shadow-blue-500/20">此行程及後續所有行程</button>
+                <h3 class="text-lg sm:text-xl font-black text-center text-zinc-900 dark:text-white mb-1.5 sm:mb-2">這是一個重複行程</h3>
+                <p class="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm text-center mb-6 sm:mb-8 font-medium">您希望如何套用這次的更改？</p>
+                <div class="space-y-2.5 sm:space-y-3">
+                    <button type="button" onclick="window.handleSeriesAction('single')" class="w-full py-3.5 sm:py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px]">僅此行程</button>
+                    <button type="button" onclick="window.handleSeriesAction('following')" class="w-full py-3.5 sm:py-4 bg-blue-500 text-white rounded-xl sm:rounded-2xl hover:bg-blue-600 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px] shadow-md shadow-blue-500/20">此行程及後續所有行程</button>
                 </div>
-                <button type="button" onclick="window.closeModals()" class="mt-4 text-xs font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-2 text-center">取消</button>
+                <button type="button" onclick="window.closeModals()" class="mt-3 sm:mt-4 text-[11px] sm:text-xs font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-2 text-center min-h-[44px]">取消</button>
             </div>
         </div>
 
         <!-- Alert Modal -->
-        <div id="alert-modal" class="hidden bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 z-[110] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex flex-col items-center text-center p-10 pt-12">
-                <div class="w-14 h-14 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-5">
-                    <i data-lucide="info" class="text-amber-500 w-7 h-7"></i>
+        <div id="alert-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[110] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex flex-col items-center text-center p-8 sm:p-10 pt-10 sm:pt-12">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5">
+                    <i data-lucide="info" class="text-amber-500 w-6 h-6 sm:w-7 sm:h-7"></i>
                 </div>
-                <p id="alert-msg" class="text-zinc-800 dark:text-zinc-200 text-base mb-8 font-bold leading-relaxed tracking-wide">訊息內容</p>
-                <button type="button" onclick="window.closeAlertModal()" class="w-full py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[56px]">我知道了</button>
+                <p id="alert-msg" class="text-zinc-800 dark:text-zinc-200 text-sm sm:text-base mb-6 sm:mb-8 font-bold leading-relaxed tracking-wide">訊息內容</p>
+                <button type="button" onclick="window.closeAlertModal()" class="w-full py-3.5 sm:py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px]">我知道了</button>
             </div>
         </div>
 
         <!-- Admin Modal -->
-        <div id="admin-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <i data-lucide="shield-alert" class="w-5 h-5 text-emerald-500"></i> 管理中心
+        <div id="admin-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500"></i> 管理中心
                 </h3>
-                <div class="flex gap-2">
-                    <button type="button" onclick="window.openArchiveModal()" class="text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-3 py-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1.5 min-h-[36px] no-min-h"><i data-lucide="archive" class="w-3.5 h-3.5"></i> 歷史庫</button>
-                    <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] flex items-center justify-center no-min-h">
+                <div class="flex gap-1 sm:gap-2">
+                    <button type="button" onclick="window.openArchiveModal()" class="text-[11px] sm:text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-3 py-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1.5 min-h-[36px] no-min-h"><i data-lucide="archive" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i> 歷史庫</button>
+                    <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
-            <div class="p-6 overflow-y-auto space-y-8 bg-white dark:bg-darkcard grow hide-scrollbar w-full">
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-6 sm:space-y-8 bg-white dark:bg-darkcard grow hide-scrollbar w-full">
                 <!-- 標籤管理區塊 -->
                 <div>
-                    <h4 class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-4 h-4"></i> 自定義標籤管理</h4>
-                    <div class="flex gap-2 mb-4">
-                        <input id="new-tag-input" type="text" class="flex-1 px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none text-sm font-bold min-h-[44px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600" placeholder="新標籤 (例如: 補習)">
-                        <button type="button" onclick="window.addCustomTag()" class="px-5 py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-white transition-colors shadow-sm min-h-[44px]">新增</button>
+                    <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-2 sm:mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 自定義標籤管理</h4>
+                    <div class="flex gap-2 mb-3 sm:mb-4">
+                        <input id="new-tag-input" type="text" class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none text-base sm:text-sm font-bold min-h-[44px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600" placeholder="新標籤 (例如: 補習)">
+                        <button type="button" onclick="window.addCustomTag()" class="px-4 sm:px-5 py-2.5 sm:py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-white transition-colors shadow-sm min-h-[44px]">新增</button>
                     </div>
-                    <div id="admin-tags-list" class="flex flex-wrap gap-2.5"></div>
+                    <div id="admin-tags-list" class="flex flex-wrap gap-2 sm:gap-2.5"></div>
                 </div>
                 <div class="h-px bg-zinc-100 dark:bg-zinc-800 w-full"></div>
                 <!-- 預設範本管理區塊 -->
                 <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="zap" class="w-4 h-4"></i> 快捷發佈範本</h4>
-                        <button type="button" onclick="window.openPresetModal()" class="text-xs font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors flex items-center gap-1.5 min-h-[36px] no-min-h"><i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增範本</button>
+                    <div class="flex justify-between items-center mb-3 sm:mb-4">
+                        <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 快捷發佈範本</h4>
+                        <button type="button" onclick="window.openPresetModal()" class="text-[11px] sm:text-xs font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors flex items-center gap-1 sm:gap-1.5 min-h-[32px] sm:min-h-[36px] no-min-h"><i data-lucide="plus" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i> 新增範本</button>
                     </div>
-                    <div class="space-y-3" id="admin-preset-list"></div>
+                    <div class="space-y-2.5 sm:space-y-3" id="admin-preset-list"></div>
                 </div>
                 <div class="h-px bg-zinc-100 dark:bg-zinc-800 w-full"></div>
                 <!-- 系統維護區塊 -->
                 <div>
-                    <h4 class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-4 h-4"></i> 系統維護</h4>
-                    <div class="bg-zinc-50 dark:bg-zinc-900 p-5 rounded-[1.5rem] border border-zinc-100 dark:border-zinc-800 text-center mb-5">
-                        <button type="button" onclick="window.clearEndedEvents()" class="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm font-bold flex justify-center items-center gap-2 shadow-sm min-h-[56px]">
-                            <i data-lucide="archive" class="w-5 h-5"></i> 一鍵封存過期行程
+                    <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-2 sm:mb-3 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 系統維護</h4>
+                    <div class="bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-100 dark:border-zinc-800 text-center mb-4 sm:mb-5">
+                        <button type="button" onclick="window.clearEndedEvents()" class="w-full py-3.5 sm:py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm font-bold flex justify-center items-center gap-2 shadow-sm min-h-[52px] sm:min-h-[56px]">
+                            <i data-lucide="archive" class="w-4 h-4 sm:w-5 sm:h-5"></i> 一鍵封存過期行程
                         </button>
                     </div>
-                    <div class="space-y-3" id="admin-event-list"></div>
+                    <div class="space-y-2.5 sm:space-y-3" id="admin-event-list"></div>
                 </div>
             </div>
         </div>
 
         <!-- Archive Modal (歷史庫) -->
-        <div id="archive-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <i data-lucide="archive" class="w-5 h-5 text-zinc-500"></i> 歷史庫
+        <div id="archive-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <i data-lucide="archive" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500"></i> 歷史庫
                 </h3>
-                <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center no-min-h">
+                <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4 bg-zinc-50/50 dark:bg-darkbg/50 grow hide-scrollbar w-full" id="archive-list">
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-3 sm:space-y-4 bg-zinc-50/50 dark:bg-darkbg/50 grow hide-scrollbar w-full" id="archive-list">
                 <p class="text-center text-zinc-400 dark:text-zinc-500 text-sm font-bold py-10">載入中...</p>
             </div>
         </div>
 
         <!-- Settings Modal -->
-        <div id="settings-modal" class="hidden bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <i data-lucide="settings-2" class="w-5 h-5 text-zinc-400 dark:text-zinc-500"></i> App 設定
+        <div id="settings-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0 max-h-[85vh]">
+            <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <i data-lucide="settings-2" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> App 設定
                 </h3>
-                <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
+                <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-6 space-y-8 overflow-y-auto max-h-[70vh] hide-scrollbar">
+            <div class="p-5 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto hide-scrollbar grow w-full">
                 <div>
-                    <label class="block text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 ml-1">通知與提醒</label>
-                    <div class="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center"><i data-lucide="bell" class="w-4 h-4 text-blue-500"></i></div>
+                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">通知與提醒</label>
+                    <div class="bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center"><i data-lucide="bell" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500"></i></div>
                             <div>
-                                <p class="text-sm font-bold text-zinc-900 dark:text-white">行程前桌面推播</p>
-                                <p class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">提早 15 分鐘通知</p>
+                                <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">行程前桌面推播</p>
+                                <p class="text-[9px] sm:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">提早 15 分鐘通知</p>
                             </div>
                         </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
+                        <label class="relative inline-flex items-center cursor-pointer min-h-[44px]">
                             <input type="checkbox" id="push-toggle" onchange="window.togglePush()" class="sr-only peer">
-                            <div class="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                            <div class="w-10 sm:w-11 h-5 sm:h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
                         </label>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 ml-1">深色模式</label>
-                    <div class="flex gap-3 bg-zinc-50 dark:bg-zinc-900 p-2 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onclick="window.setTheme('light')" id="theme-light-btn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">日曆白</button>
-                        <button type="button" onclick="window.setTheme('dark')" id="theme-dark-btn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">星空黑</button>
-                        <button type="button" onclick="window.setTheme('system')" id="theme-sys-btn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">跟隨系統</button>
+                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">深色模式</label>
+                    <div class="flex gap-2 sm:gap-3 bg-zinc-50 dark:bg-zinc-900 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                        <button type="button" onclick="window.setTheme('light')" id="theme-light-btn" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">日曆白</button>
+                        <button type="button" onclick="window.setTheme('dark')" id="theme-dark-btn" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">星空黑</button>
+                        <button type="button" onclick="window.setTheme('system')" id="theme-sys-btn" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">跟隨系統</button>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 ml-1">字體風格</label>
-                    <div class="space-y-2.5 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onclick="window.applyFont('sans')" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-sans min-h-[56px]">
-                            <span class="text-sm font-bold text-zinc-800 dark:text-zinc-200">現代黑體 (預設)</span>
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 hidden font-check-icon" id="check-sans"></i>
+                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">字體風格</label>
+                    <div class="space-y-2 bg-zinc-50 dark:bg-zinc-900 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                        <button type="button" onclick="window.applyFont('sans')" class="w-full flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-sans min-h-[48px] sm:min-h-[56px]">
+                            <span class="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200">現代黑體 (預設)</span>
+                            <i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 hidden font-check-icon" id="check-sans"></i>
                         </button>
-                        <button type="button" onclick="window.applyFont('serif')" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-serif min-h-[56px]">
-                            <span class="text-sm font-bold text-zinc-800 dark:text-zinc-200">優雅明體 (傳統)</span>
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 hidden font-check-icon" id="check-serif"></i>
+                        <button type="button" onclick="window.applyFont('serif')" class="w-full flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-serif min-h-[48px] sm:min-h-[56px]">
+                            <span class="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200">優雅明體 (傳統)</span>
+                            <i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 hidden font-check-icon" id="check-serif"></i>
                         </button>
-                        <button type="button" onclick="window.applyFont('wenkai')" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-wenkai min-h-[56px]">
-                            <span class="text-sm font-bold text-zinc-800 dark:text-zinc-200">霞鶩文楷 (書卷)</span>
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 hidden font-check-icon" id="check-wenkai"></i>
+                        <button type="button" onclick="window.applyFont('wenkai')" class="w-full flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-wenkai min-h-[48px] sm:min-h-[56px]">
+                            <span class="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200">霞鶩文楷 (書卷)</span>
+                            <i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 hidden font-check-icon" id="check-wenkai"></i>
                         </button>
                     </div>
                 </div>
                 <div id="bgcolor-setting-section">
-                    <label class="block text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3 ml-1">微背景色 (Light 專用)</label>
-                    <div class="flex gap-4 justify-center bg-zinc-50 dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onclick="window.applyBgColor('#F2F2F7', 'bg-appbg/80')" class="w-12 h-12 rounded-full border border-zinc-200 bg-[#F2F2F7] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[48px]" id="bg-btn-#F2F2F7" title="iOS 原生灰">
-                            <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
+                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">微背景色 (Light 專用)</label>
+                    <div class="flex gap-3 sm:gap-4 justify-center bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                        <button type="button" onclick="window.applyBgColor('#F2F2F7', 'bg-appbg/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#F2F2F7] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px]" id="bg-btn-#F2F2F7" title="iOS 原生灰">
+                            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
-                        <button type="button" onclick="window.applyBgColor('#FDF8F5', 'bg-[#FDF8F5]/80')" class="w-12 h-12 rounded-full border border-zinc-200 bg-[#FDF8F5] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[48px]" id="bg-btn-#FDF8F5" title="奶茶米色">
-                            <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
+                        <button type="button" onclick="window.applyBgColor('#FDF8F5', 'bg-[#FDF8F5]/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#FDF8F5] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px]" id="bg-btn-#FDF8F5" title="奶茶米色">
+                            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
-                        <button type="button" onclick="window.applyBgColor('#F0F4F8', 'bg-[#F0F4F8]/80')" class="w-12 h-12 rounded-full border border-zinc-200 bg-[#F0F4F8] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[48px]" id="bg-btn-#F0F4F8" title="科技藍灰">
-                            <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
+                        <button type="button" onclick="window.applyBgColor('#F0F4F8', 'bg-[#F0F4F8]/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#F0F4F8] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px]" id="bg-btn-#F0F4F8" title="科技藍灰">
+                            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
                     </div>
                 </div>
@@ -468,66 +474,66 @@
         </div>
 
         <!-- Detail Modal -->
-        <div id="detail-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="p-10 md:p-12 relative flex flex-col items-center text-center overflow-y-auto hide-scrollbar w-full">
-                <button type="button" onclick="window.closeModals()" class="absolute top-6 right-6 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+        <div id="detail-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="p-8 md:p-12 relative flex flex-col items-center text-center overflow-y-auto hide-scrollbar w-full grow">
+                <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-full mt-6">
-                    <p class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-5" id="detail-date">日期</p>
-                    <h3 class="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug mb-6" id="detail-title">標題</h3>
-                    <div class="flex flex-col items-center gap-4 mb-10">
-                        <p class="text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide tabular-nums flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-4 py-2 rounded-xl"><i data-lucide="clock" class="w-5 h-5 text-zinc-400 dark:text-zinc-500"></i> <span id="detail-time">時間</span></p>
-                        <p id="detail-location-container" class="text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-4 py-2 rounded-xl hidden"><i data-lucide="map-pin" class="w-5 h-5 text-zinc-400 dark:text-zinc-500"></i> <span id="detail-location">地點</span></p>
+                <div class="w-full mt-4 sm:mt-6">
+                    <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-3 sm:mb-5" id="detail-date">日期</p>
+                    <h3 class="text-2xl sm:text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug mb-4 sm:mb-6" id="detail-title">標題</h3>
+                    <div class="flex flex-col items-center gap-3 sm:gap-4 mb-8 sm:mb-10">
+                        <p class="text-base sm:text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide tabular-nums flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl"><i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> <span id="detail-time">時間</span></p>
+                        <p id="detail-location-container" class="text-base sm:text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hidden"><i data-lucide="map-pin" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> <span id="detail-location">地點</span></p>
                     </div>
                 </div>
-                <div class="w-full mt-2 shrink-0">
-                    <button type="button" onclick="window.closeModals()" class="w-full py-4 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-2xl hover:bg-zinc-800 dark:hover:bg-white transition-colors text-base font-bold shadow-md min-h-[56px] active:scale-[0.98]">關閉</button>
+                <div class="w-full mt-auto shrink-0 pt-4">
+                    <button type="button" onclick="window.closeModals()" class="w-full py-3.5 sm:py-4 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl sm:rounded-2xl hover:bg-zinc-800 dark:hover:bg-white transition-colors text-sm sm:text-base font-bold shadow-md min-h-[52px] sm:min-h-[56px] active:scale-[0.98]">關閉</button>
                 </div>
             </div>
         </div>
         
         <!-- Preset Modal -->
-        <div id="preset-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh] z-[105] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <i data-lucide="file-plus-2" class="w-5 h-5 text-blue-500"></i> 新增快捷範本
+        <div id="preset-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <i data-lucide="file-plus-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500"></i> 新增快捷範本
                 </h3>
-                <button type="button" onclick="window.closePresetModal()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
+                <button type="button" onclick="window.closePresetModal()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full">
-                <p class="text-sm text-zinc-500 dark:text-zinc-400 font-bold mb-6 leading-relaxed">設定後，任何人即可在「快捷發佈」快速選擇並一鍵帶入時間。</p>
-                <form id="preset-form" onsubmit="window.handleAddPreset(event)" class="space-y-5">
+            <div class="p-5 sm:p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full">
+                <p class="text-[11px] sm:text-sm text-zinc-500 dark:text-zinc-400 font-bold mb-4 sm:mb-6 leading-relaxed">設定後，任何人即可在「快捷發佈」快速選擇並一鍵帶入時間。</p>
+                <form id="preset-form" onsubmit="window.handleAddPreset(event)" class="space-y-4 sm:space-y-5">
                     <div>
                         <div class="flex gap-2">
-                            <input id="p-tag" type="text" class="w-1/3 px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[48px]" placeholder="標籤(可省)">
-                            <input id="p-title" required type="text" class="w-2/3 px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[48px]" placeholder="活動標題">
+                            <input id="p-tag" type="text" class="w-1/3 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="標籤(可省)">
+                            <input id="p-title" required type="text" class="w-2/3 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="活動標題">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-zinc-500 mb-2 ml-1">預設星期幾？</label>
+                        <label class="block text-[10px] sm:text-xs font-bold text-zinc-500 mb-1.5 sm:mb-2 ml-1">預設星期幾？</label>
                         <input type="hidden" id="p-dow" value="5">
-                        <button type="button" onclick="window.openSelectModal('p-dow')" id="p-dow-btn" class="w-full flex justify-between items-center px-4 py-4 text-base bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white font-bold transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[56px]">
-                            星期五 <i data-lucide="chevron-down" class="w-5 h-5 text-zinc-400 dark:text-zinc-500"></i>
+                        <button type="button" onclick="window.openSelectModal('p-dow')" id="p-dow-btn" class="w-full flex justify-between items-center px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl text-zinc-900 dark:text-white font-bold transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[48px] sm:min-h-[56px]">
+                            星期五 <i data-lucide="chevron-down" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i>
                         </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-zinc-500 mb-2 ml-1">預設開始時間</label>
-                            <input id="p-time" required type="time" value="16:00" class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[48px]">
+                            <label class="block text-[10px] sm:text-xs font-bold text-zinc-500 mb-1.5 sm:mb-2 ml-1">預設開始時間</label>
+                            <input id="p-time" required type="time" value="16:00" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[44px] sm:min-h-[48px]">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-zinc-500 mb-2 ml-1">預設結束時間</label>
-                            <input id="p-endtime" type="time" value="17:00" class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[48px]">
+                            <label class="block text-[10px] sm:text-xs font-bold text-zinc-500 mb-1.5 sm:mb-2 ml-1">預設結束時間</label>
+                            <input id="p-endtime" type="time" value="17:00" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[44px] sm:min-h-[48px]">
                         </div>
                     </div>
                     <div>
-                        <input id="p-location" type="text" class="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[48px]" placeholder="預設地點 (選填)">
+                        <input id="p-location" type="text" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="預設地點 (選填)">
                     </div>
-                    <div class="pt-4">
-                        <button type="submit" class="w-full py-4 text-base font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 active:scale-[0.98] min-h-[56px]">儲存範本</button>
+                    <div class="pt-2 sm:pt-4">
+                        <button type="submit" class="w-full py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 active:scale-[0.98] min-h-[52px] sm:min-h-[56px]">儲存範本</button>
                     </div>
                 </form>
             </div>
@@ -537,45 +543,45 @@
 
     <!-- 自定義下拉選單專用 Modal -->
     <div id="select-modal-overlay" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
-        <div id="select-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80vh] border border-zinc-100 dark:border-zinc-800">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
-                <h3 id="select-modal-title" class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">請選擇</h3>
-                <button type="button" onclick="window.closeSelectModal()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
+        <div id="select-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+                <h3 id="select-modal-title" class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight">請選擇</h3>
+                <button type="button" onclick="window.closeSelectModal()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="select-modal-options" class="p-6 overflow-y-auto space-y-3 bg-white dark:bg-darkcard"></div>
+            <div id="select-modal-options" class="p-5 sm:p-6 overflow-y-auto space-y-2.5 sm:space-y-3 bg-white dark:bg-darkcard"></div>
         </div>
     </div>
 
     <!-- Dashboard Overlay (全螢幕看板) -->
     <div id="dashboard-overlay" class="fixed inset-0 z-[100] bg-zinc-950 text-white hidden opacity-0 transition-opacity duration-500 font-sans">
-        <div class="absolute top-8 left-8 md:top-12 md:left-12 flex flex-col items-start z-10 pointer-events-none">
-            <div class="text-zinc-400 font-bold tracking-[0.2em] text-xs md:text-sm uppercase mb-2" id="dash-current-date">--</div>
-            <div class="text-zinc-500 font-bold tracking-widest text-lg md:text-2xl tabular-nums" id="dash-current-time">--:--:--</div>
+        <div class="absolute top-8 left-6 sm:left-8 md:top-12 md:left-12 flex flex-col items-start z-10 pointer-events-none">
+            <div class="text-zinc-400 font-bold tracking-[0.2em] text-[10px] sm:text-xs md:text-sm uppercase mb-1 sm:mb-2" id="dash-current-date">--</div>
+            <div class="text-zinc-500 font-bold tracking-widest text-base sm:text-lg md:text-2xl tabular-nums" id="dash-current-time">--:--:--</div>
         </div>
-        <div class="absolute top-8 right-8 md:top-12 md:right-12 flex gap-4 z-20">
-            <button type="button" onclick="window.toggleOrientation()" class="text-zinc-400 hover:text-white transition-colors p-3 md:p-4 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg min-h-[44px]" title="強制旋轉螢幕">
-                <i data-lucide="smartphone-charging" class="w-5 h-5 md:w-6 md:h-6"></i>
+        <div class="absolute top-8 right-6 sm:right-8 md:top-12 md:right-12 flex gap-3 sm:gap-4 z-20">
+            <button type="button" onclick="window.toggleOrientation()" class="text-zinc-400 hover:text-white transition-colors p-2.5 sm:p-3 md:p-4 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg min-h-[40px] sm:min-h-[44px]" title="強制旋轉螢幕">
+                <i data-lucide="smartphone-charging" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i>
             </button>
-            <button type="button" onclick="window.closeDashboard()" class="text-zinc-400 hover:text-white transition-colors p-3 md:p-4 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg min-h-[44px]" title="離開看板">
-                <i data-lucide="shrink" class="w-5 h-5 md:w-6 md:h-6"></i>
+            <button type="button" onclick="window.closeDashboard()" class="text-zinc-400 hover:text-white transition-colors p-2.5 sm:p-3 md:p-4 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg min-h-[40px] sm:min-h-[44px]" title="離開看板">
+                <i data-lucide="shrink" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"></i>
             </button>
         </div>
-        <div class="w-full h-full flex flex-col items-center justify-center text-center px-6 z-10 pointer-events-none">
-            <p id="dash-status-label" class="text-zinc-400 font-bold mb-6 md:mb-8 tracking-[0.3em] uppercase text-sm md:text-base border border-zinc-800 px-5 py-2 rounded-full">加載中</p>
-            <h2 id="dash-main-title" class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-8 md:mb-12 leading-tight max-w-5xl px-4">--</h2>
-            <div id="dash-countdown" class="text-7xl md:text-8xl lg:text-[12rem] font-black tracking-widest tabular-nums leading-none text-zinc-100 drop-shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-colors duration-500">
+        <div class="w-full h-full flex flex-col items-center justify-center text-center px-4 sm:px-6 z-10 pointer-events-none">
+            <p id="dash-status-label" class="text-zinc-400 font-bold mb-4 sm:mb-6 md:mb-8 tracking-[0.3em] uppercase text-xs sm:text-sm md:text-base border border-zinc-800 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full">加載中</p>
+            <h2 id="dash-main-title" class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 sm:mb-8 md:mb-12 leading-tight max-w-5xl px-2 sm:px-4">--</h2>
+            <div id="dash-countdown" class="text-5xl sm:text-7xl md:text-8xl lg:text-[12rem] font-black tracking-widest tabular-nums leading-none text-zinc-100 drop-shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-colors duration-500">
                 --:--:--
             </div>
-            <p id="dash-main-time" class="text-zinc-500 font-bold mt-8 md:mt-12 text-xl md:text-2xl tracking-wide tabular-nums">--</p>
+            <p id="dash-main-time" class="text-zinc-500 font-bold mt-6 sm:mt-8 md:mt-12 text-base sm:text-xl md:text-2xl tracking-wide tabular-nums">--</p>
         </div>
-        <div class="absolute bottom-8 right-8 md:bottom-12 md:right-12 flex flex-col items-end text-right z-10 pointer-events-none max-w-[250px] md:max-w-sm">
-            <p class="text-zinc-600 text-[11px] md:text-sm font-bold uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> 隨後安排
+        <div class="absolute bottom-safe right-6 sm:right-8 md:bottom-12 md:right-12 flex flex-col items-end text-right z-10 pointer-events-none max-w-[200px] sm:max-w-[250px] md:max-w-sm mb-6 sm:mb-0">
+            <p class="text-zinc-600 text-[9px] sm:text-[11px] md:text-sm font-bold uppercase tracking-[0.2em] mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 隨後安排
             </p>
-            <p id="dash-next-title" class="text-zinc-300 font-bold text-base md:text-lg truncate w-full">無後續活動</p>
-            <p id="dash-next-time" class="text-zinc-500 font-bold text-sm md:text-base mt-1 w-full tabular-nums">--</p>
+            <p id="dash-next-title" class="text-zinc-300 font-bold text-sm sm:text-base md:text-lg truncate w-full">無後續活動</p>
+            <p id="dash-next-time" class="text-zinc-500 font-bold text-[11px] sm:text-sm md:text-base mt-0.5 sm:mt-1 w-full tabular-nums">--</p>
         </div>
     </div>
 
@@ -715,7 +721,7 @@
             if (modal) modal.classList.remove('hidden');
             setTimeout(() => {
                 if (overlay) overlay.classList.remove('opacity-0');
-                if (modal) modal.classList.remove('translate-y-8', 'scale-95');
+                if (modal) modal.classList.remove('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
             }, 10);
         }
 
@@ -737,13 +743,13 @@
             if (alertModal) alertModal.classList.remove('hidden');
             setTimeout(() => {
                 if (overlay) overlay.classList.remove('opacity-0');
-                if (alertModal) alertModal.classList.remove('translate-y-8', 'scale-95');
+                if (alertModal) alertModal.classList.remove('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
             }, 10);
         }
 
         window.closeAlertModal = function() {
             const alertModal = document.getElementById('alert-modal');
-            if (alertModal) alertModal.classList.add('translate-y-8', 'scale-95');
+            if (alertModal) alertModal.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
             setTimeout(() => {
                 if (alertModal) alertModal.classList.add('hidden');
                 const otherModalsOpen = ['piano-update-modal', 'preset-modal', 'add-modal', 'settings-modal', 'detail-modal', 'admin-modal', 'archive-modal', 'search-modal', 'series-action-modal'].some(id => {
@@ -765,8 +771,7 @@
             modals.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
-                    if(id === 'select-modal') el.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
-                    else el.classList.add('translate-y-8', 'scale-95');
+                    el.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
                 }
             });
             setTimeout(() => {
@@ -780,208 +785,6 @@
 
         window.closeSelectModal = function() {
             window.closeModals();
-        }
-
-        // --- Piano Update Logic ---
-        window.openPianoUpdateModal = function() {
-            const form = document.getElementById('piano-update-form');
-            if (form) form.reset();
-            document.getElementById('pu-date').value = formatDate(new Date());
-            
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('pu-time').value = `${hh}:${mm}`;
-            document.getElementById('pu-endtime').value = '';
-            
-            const puRepeatEl = document.getElementById('pu-repeat');
-            if (puRepeatEl) {
-                puRepeatEl.value = 'none';
-                const puRepeatBtn = document.getElementById('pu-repeat-btn');
-                if (puRepeatBtn) puRepeatBtn.innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400"></i>`;
-                if (typeof window.togglePuRepeatCount === 'function') window.togglePuRepeatCount();
-            }
-            
-            if (typeof window.renderUpcomingPiano === 'function') window.renderUpcomingPiano();
-            if (typeof window.checkPianoConflict === 'function') window.checkPianoConflict();
-            
-            window.showOverlayAndModal('piano-update-modal');
-            if (window.lucide) window.lucide.createIcons();
-        }
-
-        window.renderUpcomingPiano = function() {
-            const listContainer = document.getElementById('pu-existing-list');
-            if (!listContainer) return;
-            const now = new Date();
-            const pianoEvents = events
-                .filter(e => e.tag === '鋼琴班' && !e.isArchived && new Date(`${e.date}T${e.time}:00`) >= now)
-                .sort((a,b) => new Date(`${a.date}T${a.time}:00`) - new Date(`${b.date}T${b.time}:00`));
-
-            if(pianoEvents.length === 0) {
-                listContainer.innerHTML = '<span class="text-xs text-zinc-400 dark:text-zinc-500 font-bold ml-1 py-2">未來暫無已排定之鋼琴班</span>';
-                return;
-            }
-
-            let html = '';
-            pianoEvents.forEach(e => {
-                const d = new Date(e.date);
-                const dateStr = d.toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
-                html += `
-                <button type="button" onclick="window.loadPianoEvent('${e.id}')" class="shrink-0 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 px-4 py-2.5 rounded-xl flex flex-col items-start transition-colors text-left min-w-[80px] min-h-[56px]">
-                    <span class="text-[11px] font-bold text-purple-500 dark:text-purple-400 mb-0.5">${dateStr}</span>
-                    <span class="text-base font-black text-purple-700 dark:text-purple-300">${formatAMPM(e.time)}</span>
-                </button>`;
-            });
-            listContainer.innerHTML = html;
-        }
-
-        window.loadPianoEvent = function(id) {
-            const e = events.find(x => x.id === id);
-            if(e) {
-                document.getElementById('pu-date').value = e.date;
-                document.getElementById('pu-time').value = e.time;
-                document.getElementById('pu-endtime').value = e.endTime === 'TBD' ? '' : (e.endTime || '');
-                document.getElementById('pu-text').value = ''; 
-                window.checkPianoConflict();
-            }
-        }
-
-        window.handlePianoPaste = function(e) {
-            const text = e.target.value;
-            if(!text) return;
-            let found = false;
-            
-            const dateMatch = text.match(/(\d{1,2})\/(\d{1,2})/g);
-            if (dateMatch && dateMatch.length > 0) {
-                const lastMatch = dateMatch[dateMatch.length - 1]; 
-                const parts = lastMatch.split('/');
-                const d = parts[0].padStart(2, '0');
-                const m = parts[1].padStart(2, '0');
-                const yearMatch = text.match(/20\d{2}/);
-                const y = yearMatch ? yearMatch[0] : new Date().getFullYear();
-                document.getElementById('pu-date').value = `${y}-${m}-${d}`;
-                found = true;
-            }
-            
-            const timeMatch = text.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
-            if (timeMatch) {
-                const to24h = (t) => {
-                    let [h, m] = t.split(':');
-                    h = parseInt(h, 10);
-                    if (h >= 1 && h <= 11) h += 12;
-                    return `${String(h).padStart(2, '0')}:${m}`;
-                };
-                document.getElementById('pu-time').value = to24h(timeMatch[1]);
-                document.getElementById('pu-endtime').value = to24h(timeMatch[2]);
-                found = true;
-            }
-            if (found) window.checkPianoConflict();
-        }
-
-        window.checkPianoConflict = function() {
-            const dateVal = document.getElementById('pu-date').value;
-            const conflict = events.find(e => e.tag === '鋼琴班' && !e.isArchived && e.date === dateVal);
-            const warningEl = document.getElementById('pu-conflict-warning');
-            const submitBtn = document.getElementById('pu-submit-btn');
-
-            if (conflict) {
-                document.getElementById('pu-conflict-time').innerText = formatAMPM(conflict.time);
-                warningEl.classList.remove('hidden');
-                submitBtn.innerText = "確認覆蓋更改";
-                submitBtn.classList.replace('bg-purple-500', 'bg-rose-500');
-                submitBtn.classList.replace('hover:bg-purple-600', 'hover:bg-rose-600');
-                submitBtn.classList.replace('shadow-purple-500/30', 'shadow-rose-500/30');
-            } else {
-                warningEl.classList.add('hidden');
-                submitBtn.innerText = "確認並發佈";
-                submitBtn.classList.replace('bg-rose-500', 'bg-purple-500');
-                submitBtn.classList.replace('hover:bg-rose-600', 'hover:bg-purple-600');
-                submitBtn.classList.replace('shadow-rose-500/30', 'shadow-purple-500/30');
-            }
-        }
-
-        window.togglePuRepeatCount = function() {
-            const repeatType = document.getElementById('pu-repeat').value;
-            const container = document.getElementById('pu-repeat-count-container');
-            if (repeatType === 'none' || repeatType === 'weekly_month') {
-                container.classList.add('hidden');
-                container.classList.remove('flex');
-            } else {
-                container.classList.remove('hidden');
-                container.classList.add('flex');
-            }
-        }
-
-        window.executePianoSubmit = async function() {
-            const dateVal = document.getElementById('pu-date').value;
-            const timeVal = document.getElementById('pu-time').value;
-            const endtimeVal = document.getElementById('pu-endtime').value;
-            
-            const [year, month, day] = dateVal.split('-').map(Number);
-
-            const repeatType = document.getElementById('pu-repeat').value;
-            const repeatCountStr = document.getElementById('pu-repeat-count').value;
-            
-            let repeatCount = 1;
-            if (repeatType !== 'none') {
-                if (repeatType === 'weekly_month') {
-                    let currentD = new Date(year, month - 1, day);
-                    const endOfMonth = new Date(year, month, 0);
-                    repeatCount = 0;
-                    while (currentD <= endOfMonth) {
-                        repeatCount++;
-                        currentD.setDate(currentD.getDate() + 7);
-                    }
-                } else {
-                    repeatCount = parseInt(repeatCountStr, 10);
-                }
-            }
-
-            const newEvents = [];
-            const datesToCheck = [];
-
-            for (let i = 0; i < repeatCount; i++) {
-                let targetDate = new Date(year, month - 1, day);
-                if (repeatType === 'weekly' || repeatType === 'weekly_month') targetDate.setDate(targetDate.getDate() + 7 * i);
-                else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
-
-                const dStr = formatDate(targetDate);
-                datesToCheck.push(dStr);
-
-                newEvents.push({
-                    tag: '鋼琴班',
-                    title: '鋼琴班補堂',
-                    location: '',
-                    date: dStr,
-                    time: timeVal,
-                    endTime: endtimeVal,
-                    isArchived: false,
-                    createdAt: new Date().toISOString()
-                });
-            }
-
-            try {
-                const conflicts = events.filter(ev => ev.tag === '鋼琴班' && !ev.isArchived && datesToCheck.includes(ev.date));
-                const deletePromises = conflicts.map(c => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events', c.id)));
-                await Promise.all(deletePromises);
-
-                const dbPath = collection(db, 'artifacts', appId, 'public', 'data', 'events');
-                await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
-
-                window.closeModals();
-                const form = document.getElementById('piano-update-form');
-                if (form) form.reset();
-                window.checkPianoConflict();
-                window.showAlert("🎹 鋼琴班排程已成功發佈/更新！");
-            } catch (error) { 
-                console.error(error);
-                window.showAlert("發佈失敗，請確認資料庫權限 (Rules)。"); 
-            }
-        }
-        
-        window.handlePianoSubmit = function(e) {
-            e.preventDefault();
-            window.executePianoSubmit();
         }
 
         // --- Settings & Theme ---
@@ -1136,14 +939,14 @@
             const fab = document.getElementById('fab-container');
             if (isAdmin) {
                 container.innerHTML = `
-                    <button type="button" onclick="window.openAdminModal()" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-colors mr-1">管理中心</button>
-                    <button type="button" onclick="window.handleLogout()" class="text-[11px] font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-2 ml-1">登出</button>
+                    <button type="button" onclick="window.openAdminModal()" class="text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors mr-0.5 sm:mr-1 min-h-[36px] no-min-h">管理中心</button>
+                    <button type="button" onclick="window.handleLogout()" class="text-[11px] sm:text-xs font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-1.5 sm:px-2 ml-0.5 sm:ml-1 min-h-[36px] no-min-h">登出</button>
                 `;
                 fab.classList.remove('hidden'); fab.classList.add('flex');
             } else {
                 container.innerHTML = `
-                    <button type="button" onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 rounded-full ml-1" title="管理員登入">
-                        <i data-lucide="lock" class="w-5 h-5"></i>
+                    <button type="button" onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 rounded-full ml-0.5 sm:ml-1 flex items-center justify-center" title="管理員登入">
+                        <i data-lucide="lock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                     </button>
                 `;
                 fab.classList.add('hidden'); fab.classList.remove('flex');
@@ -1195,14 +998,14 @@
         window.renderFilters = function() {
             const container = document.getElementById('filter-bar');
             if (!container) return;
-            let html = `<button type="button" onclick="window.setFilter(null)" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${activeFilter === null ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-md' : 'bg-white dark:bg-darkcard text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'}">
-                            <i data-lucide="sparkles" class="w-3.5 h-3.5 ${activeFilter === null ? 'text-amber-400' : 'text-zinc-400 dark:text-zinc-500'}"></i>智能分類
+            let html = `<button type="button" onclick="window.setFilter(null)" class="shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 border min-h-[36px] sm:min-h-[44px] ${activeFilter === null ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-md' : 'bg-white dark:bg-darkcard text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'}">
+                            <i data-lucide="sparkles" class="w-3 h-3 sm:w-3.5 sm:h-3.5 ${activeFilter === null ? 'text-amber-400' : 'text-zinc-400 dark:text-zinc-500'}"></i>智能分類
                         </button>`;
             customTags.forEach(tag => {
                 const style = tagStyles[tag] || tagStyles['default'];
                 const isActive = activeFilter === tag;
                 const activeClass = isActive ? `${style.bg} ${style.text} ${style.border} shadow-sm` : 'bg-white dark:bg-darkcard text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800';
-                html += `<button type="button" onclick="window.setFilter('${tag}')" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${activeClass}"><i data-lucide="${style.icon}" class="w-3.5 h-3.5"></i>${tag}</button>`;
+                html += `<button type="button" onclick="window.setFilter('${tag}')" class="shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 border min-h-[36px] sm:min-h-[44px] ${activeClass}"><i data-lucide="${style.icon}" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>${tag}</button>`;
             });
             container.innerHTML = html;
         }
@@ -1215,15 +1018,15 @@
             let html = '';
             
             const isNoTag = currentTag === '';
-            html += `<button type="button" onclick="window.selectAddTag('')" class="shrink-0 text-xs px-3 py-2 rounded-xl font-bold transition-all min-h-[36px] border ${isNoTag ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white shadow-md' : 'bg-white dark:bg-darkcard text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800'}">無</button>`;
+            html += `<button type="button" onclick="window.selectAddTag('')" class="shrink-0 text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold transition-all min-h-[32px] sm:min-h-[36px] border ${isNoTag ? 'bg-zinc-800 dark:bg-white text-white dark:text-zinc-900 border-zinc-800 dark:border-white shadow-md' : 'bg-white dark:bg-darkcard text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800'}">無</button>`;
 
             customTags.forEach(tag => {
                 const style = tagStyles[tag] || tagStyles['default'];
                 const isSelected = currentTag === tag;
                 const activeClass = isSelected ? `${style.bg} ${style.text} ${style.border} shadow-sm ring-2 ring-offset-1 ring-${style.text.split('-')[1]}-400 dark:ring-offset-darkcard` : 'bg-white dark:bg-darkcard text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800';
                 
-                html += `<button type="button" onclick="window.selectAddTag('${tag}')" class="shrink-0 text-xs px-3 py-2 rounded-xl font-bold transition-all min-h-[36px] flex items-center gap-1.5 border ${activeClass}">
-                            <i data-lucide="${style.icon}" class="w-3.5 h-3.5"></i>${tag}
+                html += `<button type="button" onclick="window.selectAddTag('${tag}')" class="shrink-0 text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold transition-all min-h-[32px] sm:min-h-[36px] flex items-center gap-1 sm:gap-1.5 border ${activeClass}">
+                            <i data-lucide="${style.icon}" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>${tag}
                          </button>`;
             });
             container.innerHTML = html;
@@ -1298,7 +1101,253 @@
             }
         }
 
-        // --- Add Schedule & Admin Modals (Restored) ---
+        // --- Piano Update Logic ---
+        window.openPianoUpdateModal = function() {
+            const form = document.getElementById('piano-update-form');
+            if (form) form.reset();
+            document.getElementById('pu-date').value = formatDate(new Date());
+            
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('pu-time').value = `${hh}:${mm}`;
+            document.getElementById('pu-endtime').value = '';
+            
+            const puRepeatEl = document.getElementById('pu-repeat');
+            if (puRepeatEl) {
+                puRepeatEl.value = 'none';
+                const puRepeatBtn = document.getElementById('pu-repeat-btn');
+                if (puRepeatBtn) puRepeatBtn.innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400"></i>`;
+                if (typeof window.togglePuRepeatCount === 'function') window.togglePuRepeatCount();
+            }
+            
+            if (typeof window.renderUpcomingPiano === 'function') window.renderUpcomingPiano();
+            if (typeof window.checkPianoConflict === 'function') window.checkPianoConflict();
+            
+            window.showOverlayAndModal('piano-update-modal');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        window.renderUpcomingPiano = function() {
+            const listContainer = document.getElementById('pu-existing-list');
+            if (!listContainer) return;
+            const now = new Date();
+            const pianoEvents = events
+                .filter(e => e.tag === '鋼琴班' && !e.isArchived && new Date(`${e.date}T${e.time}:00`) >= now)
+                .sort((a,b) => new Date(`${a.date}T${a.time}:00`) - new Date(`${b.date}T${b.time}:00`));
+
+            if(pianoEvents.length === 0) {
+                listContainer.innerHTML = '<span class="text-xs text-zinc-400 dark:text-zinc-500 font-bold ml-1 py-2">未來暫無已排定之鋼琴班</span>';
+                return;
+            }
+
+            let html = '';
+            pianoEvents.forEach(e => {
+                const d = new Date(e.date);
+                const dateStr = d.toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
+                html += `
+                <button type="button" onclick="window.loadPianoEvent('${e.id}')" class="shrink-0 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl flex flex-col items-start transition-colors text-left min-w-[72px] sm:min-w-[80px] min-h-[48px] sm:min-h-[56px]">
+                    <span class="text-[10px] sm:text-[11px] font-bold text-purple-500 dark:text-purple-400 mb-0.5">${dateStr}</span>
+                    <span class="text-sm sm:text-base font-black text-purple-700 dark:text-purple-300">${formatAMPM(e.time)}</span>
+                </button>`;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        window.loadPianoEvent = function(id) {
+            const e = events.find(x => x.id === id);
+            if(e) {
+                document.getElementById('pu-date').value = e.date;
+                document.getElementById('pu-time').value = e.time;
+                document.getElementById('pu-endtime').value = e.endTime === 'TBD' ? '' : (e.endTime || '');
+                document.getElementById('pu-text').value = ''; 
+                window.checkPianoConflict();
+            }
+        }
+
+        window.handlePianoPaste = function(e) {
+            const text = e.target.value;
+            if(!text) return;
+            let found = false;
+            
+            const dateMatch = text.match(/(\d{1,2})\/(\d{1,2})/g);
+            if (dateMatch && dateMatch.length > 0) {
+                const lastMatch = dateMatch[dateMatch.length - 1]; 
+                const parts = lastMatch.split('/');
+                const d = parts[0].padStart(2, '0');
+                const m = parts[1].padStart(2, '0');
+                const yearMatch = text.match(/20\d{2}/);
+                const y = yearMatch ? yearMatch[0] : new Date().getFullYear();
+                document.getElementById('pu-date').value = `${y}-${m}-${d}`;
+                found = true;
+            }
+            
+            const timeMatch = text.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+            if (timeMatch) {
+                const to24h = (t) => {
+                    let [h, m] = t.split(':');
+                    h = parseInt(h, 10);
+                    if (h >= 1 && h <= 11) h += 12;
+                    return `${String(h).padStart(2, '0')}:${m}`;
+                };
+                document.getElementById('pu-time').value = to24h(timeMatch[1]);
+                document.getElementById('pu-endtime').value = to24h(timeMatch[2]);
+                found = true;
+            }
+            if (found) window.checkPianoConflict();
+        }
+
+        window.checkPianoConflict = function() {
+            const dateVal = document.getElementById('pu-date').value;
+            const conflict = events.find(e => e.tag === '鋼琴班' && !e.isArchived && e.date === dateVal);
+            const warningEl = document.getElementById('pu-conflict-warning');
+            const submitBtn = document.getElementById('pu-submit-btn');
+
+            if (conflict) {
+                document.getElementById('pu-conflict-time').innerText = formatAMPM(conflict.time);
+                warningEl.classList.remove('hidden');
+                submitBtn.innerText = "確認覆蓋更改";
+                submitBtn.classList.replace('bg-purple-500', 'bg-rose-500');
+                submitBtn.classList.replace('hover:bg-purple-600', 'hover:bg-rose-600');
+                submitBtn.classList.replace('shadow-purple-500/30', 'shadow-rose-500/30');
+            } else {
+                warningEl.classList.add('hidden');
+                submitBtn.innerText = "確認並發佈";
+                submitBtn.classList.replace('bg-rose-500', 'bg-purple-500');
+                submitBtn.classList.replace('hover:bg-rose-600', 'hover:bg-purple-600');
+                submitBtn.classList.replace('shadow-rose-500/30', 'shadow-purple-500/30');
+            }
+        }
+
+        window.togglePuRepeatCount = function() {
+            const repeatType = document.getElementById('pu-repeat').value;
+            const container = document.getElementById('pu-repeat-count-container');
+            if (repeatType === 'none' || repeatType === 'weekly_month') {
+                container.classList.add('hidden');
+                container.classList.remove('flex');
+            } else {
+                container.classList.remove('hidden');
+                container.classList.add('flex');
+            }
+        }
+
+        window.executePianoSubmit = async function() {
+            const dateVal = document.getElementById('pu-date').value;
+            const timeVal = document.getElementById('pu-time').value;
+            const endtimeVal = document.getElementById('pu-endtime').value;
+            
+            const [year, month, day] = dateVal.split('-').map(Number);
+
+            const repeatType = document.getElementById('pu-repeat').value;
+            const repeatCountStr = document.getElementById('pu-repeat-count').value;
+            
+            let repeatCount = 1;
+            if (repeatType !== 'none') {
+                if (repeatType === 'weekly_month') {
+                    let currentD = new Date(year, month - 1, day);
+                    const endOfMonth = new Date(year, month, 0);
+                    repeatCount = 0;
+                    while (currentD <= endOfMonth) {
+                        repeatCount++;
+                        currentD.setDate(currentD.getDate() + 7);
+                    }
+                } else {
+                    repeatCount = parseInt(repeatCountStr, 10);
+                }
+            }
+
+            const newEvents = [];
+            const datesToCheck = [];
+
+            for (let i = 0; i < repeatCount; i++) {
+                let targetDate = new Date(year, month - 1, day);
+                if (repeatType === 'weekly' || repeatType === 'weekly_month') targetDate.setDate(targetDate.getDate() + 7 * i);
+                else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
+
+                const dStr = formatDate(targetDate);
+                datesToCheck.push(dStr);
+
+                newEvents.push({
+                    tag: '鋼琴班',
+                    title: '鋼琴班補堂',
+                    location: '',
+                    date: dStr,
+                    time: timeVal,
+                    endTime: endtimeVal,
+                    isArchived: false,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            try {
+                const conflicts = events.filter(ev => ev.tag === '鋼琴班' && !ev.isArchived && datesToCheck.includes(ev.date));
+                const deletePromises = conflicts.map(c => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events', c.id)));
+                await Promise.all(deletePromises);
+
+                const dbPath = collection(db, 'artifacts', appId, 'public', 'data', 'events');
+                await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
+
+                window.closeModals();
+                const form = document.getElementById('piano-update-form');
+                if (form) form.reset();
+                window.checkPianoConflict();
+                window.showAlert("🎹 鋼琴班排程已成功發佈/更新！");
+            } catch (error) { 
+                console.error(error);
+                window.showAlert("發佈失敗，請確認資料庫權限 (Rules)。"); 
+            }
+        }
+        
+        window.handlePianoSubmit = function(e) {
+            e.preventDefault();
+            window.executePianoSubmit();
+        }
+
+        // --- Custom Select Modal Logic ---
+        window.openSelectModal = function(type) {
+            const titleEl = document.getElementById('select-modal-title');
+            const optionsEl = document.getElementById('select-modal-options');
+            let html = '';
+
+            if (type === 'f-repeat' || type === 'pu-repeat') {
+                titleEl.innerText = "選擇重複頻率";
+                const options = [
+                    { val: 'none', label: '單次排程' },
+                    { val: 'weekly_month', label: '每週重複 (自動計算至月底)' },
+                    { val: 'weekly', label: '每週重複 (自訂次數)' },
+                    { val: 'monthly', label: '每月重複 (自訂次數)' }
+                ];
+                options.forEach(opt => {
+                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl font-bold text-zinc-900 dark:text-white transition-colors min-h-[52px] sm:min-h-[56px]">${opt.label}</button>`;
+                });
+            } else if (type === 'p-dow') {
+                titleEl.innerText = "選擇預設星期幾";
+                const options = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                options.forEach((label, idx) => {
+                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl font-bold text-zinc-900 dark:text-white transition-colors min-h-[52px] sm:min-h-[56px]">${label}</button>`;
+                });
+            }
+
+            optionsEl.innerHTML = html;
+            window.showOverlayAndModal('select-modal');
+        }
+
+        window.handleSelectOption = function(type, value, label) {
+            document.getElementById(type).value = value;
+            
+            if(type === 'pu-repeat') {
+                document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>`;
+                window.togglePuRepeatCount();
+            } else {
+                document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500"></i>`;
+                if (type === 'f-repeat') window.toggleRepeatCount();
+            }
+            
+            window.closeSelectModal();
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // --- Add Schedule & Admin Modals ---
         window.toggleTBD = function(forceState) {
             const overlay = document.getElementById('f-endtime-tbd-overlay');
             if(!overlay) return;
@@ -1396,13 +1445,13 @@
             } else {
                 presets.forEach(p => {
                     html += `
-                        <div class="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 min-h-[64px]">
+                        <div class="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 min-h-[56px] sm:min-h-[64px]">
                             <div class="flex-1 min-w-0 pr-3">
-                                <p class="text-base font-bold text-zinc-800 dark:text-zinc-200 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
-                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-1">逢${days[p.dayOfWeek]} · ${p.time}</p>
+                                <p class="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
+                                <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-1">逢${days[p.dayOfWeek]} · ${p.time}</p>
                             </div>
-                            <button type="button" onclick="window.deletePreset('${p.id}')" class="p-3 text-red-400 hover:text-white hover:bg-red-400 rounded-xl transition-colors shrink-0 min-h-[44px]">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <button type="button" onclick="window.deletePreset('${p.id}')" class="p-2 sm:p-3 text-red-400 hover:text-white hover:bg-red-400 rounded-lg sm:rounded-xl transition-colors shrink-0 min-h-[36px] sm:min-h-[44px]">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                             </button>
                         </div>
                     `;
@@ -1439,22 +1488,22 @@
                     
                     const isEnded = now > endObj.getTime();
                     const statusBadge = isEnded 
-                        ? `<span class="px-2.5 py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-md text-[11px] font-bold">已結束</span>`
-                        : `<span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[11px] font-bold">未結束</span>`;
+                        ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-md text-[9px] sm:text-[11px] font-bold">已結束</span>`
+                        : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[9px] sm:text-[11px] font-bold">未結束</span>`;
 
                     html += `
-                        <div class="flex items-center justify-between bg-white dark:bg-darkcard p-4 md:p-5 rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow min-h-[80px]">
-                            <div class="flex-1 min-w-0 pr-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <p class="text-base md:text-lg font-bold text-zinc-900 dark:text-white truncate">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
+                        <div class="flex items-center justify-between bg-white dark:bg-darkcard p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow min-h-[72px] sm:min-h-[80px]">
+                            <div class="flex-1 min-w-0 pr-3 sm:pr-4">
+                                <div class="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                    <p class="text-sm sm:text-base md:text-lg font-bold text-zinc-900 dark:text-white truncate">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
                                 </div>
-                                <div class="flex items-center gap-2.5">
+                                <div class="flex items-center gap-2 sm:gap-2.5">
                                     ${statusBadge}
-                                    <p class="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium">${e.date} ${e.time}</p>
+                                    <p class="text-[10px] sm:text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium">${e.date} ${e.time}</p>
                                 </div>
                             </div>
-                            <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-3 text-red-500 hover:text-white bg-red-50 dark:bg-red-500/10 hover:bg-red-500 dark:hover:bg-red-500 rounded-xl transition-colors shrink-0 shadow-sm min-h-[44px]">
-                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-2.5 sm:p-3 text-red-500 hover:text-white bg-red-50 dark:bg-red-500/10 hover:bg-red-500 dark:hover:bg-red-500 rounded-lg sm:rounded-xl transition-colors shrink-0 shadow-sm min-h-[40px] sm:min-h-[44px]">
+                                <i data-lucide="trash-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                             </button>
                         </div>
                     `;
@@ -1686,7 +1735,7 @@
                         ondragleave="window.handleDragLeave(event)" 
                         ondrop="window.handleDrop(event, '${dateStr}')"
                         onclick="window.selectDate('${dateStr}')" 
-                        class="w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-all duration-300 ease-golden no-min-h text-sm font-bold ${colorClass} ${selectedClass} ${todayClass}">
+                        class="w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-full flex items-center justify-center transition-all duration-300 ease-golden no-min-h text-xs sm:text-sm font-bold ${colorClass} ${selectedClass} ${todayClass}">
                         ${i}
                     </button>
                 `;
@@ -1778,20 +1827,20 @@
             const dateLabel = isToday(nextEvent.date) ? '今日' : new Date(nextEvent.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric', weekday:'short'});
 
             cardEl.innerHTML = `
-                <div onclick="window.openEventDetail('${nextEvent.id}')" class="animate-item bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-6 md:p-8 rounded-[2rem] shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(255,255,255,0.1)] relative overflow-hidden group cursor-pointer border border-zinc-800 dark:border-white flex items-center justify-between active:scale-[0.98] transition-all ease-golden duration-300">
+                <div onclick="window.openEventDetail('${nextEvent.id}')" class="animate-item bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-5 sm:p-6 md:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(255,255,255,0.1)] relative overflow-hidden group cursor-pointer border border-zinc-800 dark:border-white flex items-center justify-between active:scale-[0.98] transition-all ease-golden duration-300">
                     <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 dark:from-amber-500/20 to-transparent opacity-50 dark:opacity-100"></div>
-                    <div class="flex-1 min-w-0 pr-4 relative z-10">
-                        <div class="flex items-center gap-2.5 mb-3">
-                            ${nextEvent.tag ? `<span class="px-2.5 py-1 rounded-lg bg-zinc-800 dark:bg-zinc-100 border border-zinc-700 dark:border-zinc-200 text-zinc-300 dark:text-zinc-600 text-[10px] font-bold tracking-wider">${nextEvent.tag}</span>` : ''}
-                            <span id="up-next-countdown" data-start="${nextEvent.startMs}" data-end="${nextEvent.endMs}" class="text-amber-400 dark:text-amber-500 text-xs font-bold tracking-wider">計算中...</span>
+                    <div class="flex-1 min-w-0 pr-3 sm:pr-4 relative z-10">
+                        <div class="flex items-center gap-2 mb-2.5 sm:mb-3">
+                            ${nextEvent.tag ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg bg-zinc-800 dark:bg-zinc-100 border border-zinc-700 dark:border-zinc-200 text-zinc-300 dark:text-zinc-600 text-[9px] sm:text-[10px] font-bold tracking-wider">${nextEvent.tag}</span>` : ''}
+                            <span id="up-next-countdown" data-start="${nextEvent.startMs}" data-end="${nextEvent.endMs}" class="text-amber-400 dark:text-amber-500 text-[10px] sm:text-xs font-bold tracking-wider">計算中...</span>
                         </div>
-                        <h4 class="text-2xl font-black truncate mb-2">${nextEvent.title}</h4>
-                        <p class="text-zinc-400 dark:text-zinc-500 text-sm font-medium flex items-center gap-1.5">
-                            <i data-lucide="calendar-clock" class="w-4 h-4"></i> ${dateLabel} · ${displayTime}${endStr}
+                        <h4 class="text-xl sm:text-2xl font-black truncate mb-1.5 sm:mb-2">${nextEvent.title}</h4>
+                        <p class="text-zinc-400 dark:text-zinc-500 text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                            <i data-lucide="calendar-clock" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> ${dateLabel} · ${displayTime}${endStr}
                         </p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-white/10 dark:bg-black/5 flex items-center justify-center shrink-0 group-hover:bg-white/20 dark:group-hover:bg-black/10 transition-colors relative z-10">
-                        <i data-lucide="arrow-right" class="w-5 h-5 text-white dark:text-zinc-900"></i>
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 dark:bg-black/5 flex items-center justify-center shrink-0 group-hover:bg-white/20 dark:group-hover:bg-black/10 transition-colors relative z-10">
+                        <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-zinc-900"></i>
                     </div>
                 </div>
             `;
@@ -1802,13 +1851,13 @@
             const displayLabel = customLabel || dateObj.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
             let currentDelayIndex = startIndex;
             
-            let html = `<div class="mb-10 relative">`;
+            let html = `<div class="mb-8 sm:mb-10 relative">`;
             html += `
-                <div class="sticky top-[76px] z-20 -mx-2 px-4 py-2.5 mb-4 backdrop-blur-xl bg-appbg/85 dark:bg-darkbg/85 rounded-2xl flex justify-between items-center transition-all">
-                    <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 tracking-wide">${displayLabel} <span class="font-medium text-zinc-400 dark:text-zinc-500 ml-1.5 text-xs">${dateStr}</span></h3>
+                <div class="sticky top-[64px] sm:top-[76px] z-20 -mx-1 sm:-mx-2 px-3 sm:px-4 py-2 sm:py-2.5 mb-3 sm:mb-4 backdrop-blur-xl bg-appbg/85 dark:bg-darkbg/85 rounded-xl sm:rounded-2xl flex justify-between items-center transition-all">
+                    <h3 class="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200 tracking-wide">${displayLabel} <span class="font-medium text-zinc-400 dark:text-zinc-500 ml-1.5 text-[10px] sm:text-xs">${dateStr}</span></h3>
                     ${isAdmin ? `
-                    <button type="button" onclick="window.openAddModal('${dateStr}')" class="flex items-center justify-center w-8 h-8 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-full shadow-sm border border-zinc-200 dark:border-zinc-700 transition-all active:scale-95 no-min-h" title="在此日新增排程">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    <button type="button" onclick="window.openAddModal('${dateStr}')" class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-full shadow-sm border border-zinc-200 dark:border-zinc-700 transition-all active:scale-95 no-min-h" title="在此日新增排程">
+                        <i data-lucide="plus" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </button>
                     ` : ''}
                 </div>
@@ -1816,17 +1865,17 @@
             
             if (dayEvents.length === 0) {
                 html += `
-                    <div style="animation-delay: ${currentDelayIndex * 40}ms" class="animate-item bg-white/50 dark:bg-darkcard/50 rounded-[2rem] py-10 px-8 text-center shadow-sm flex flex-col items-center justify-center border border-zinc-100/50 dark:border-zinc-800/50 mx-2">
-                        <p class="text-zinc-400 dark:text-zinc-500 text-sm font-bold tracking-widest uppercase ${isAdmin ? 'mb-5' : ''}">這天可以好好放鬆 ☕️</p>
+                    <div style="animation-delay: ${currentDelayIndex * 40}ms" class="animate-item bg-white/50 dark:bg-darkcard/50 rounded-2xl sm:rounded-[2rem] py-8 sm:py-10 px-6 sm:px-8 text-center shadow-sm flex flex-col items-center justify-center border border-zinc-100/50 dark:border-zinc-800/50 mx-1 sm:mx-2">
+                        <p class="text-zinc-400 dark:text-zinc-500 text-xs sm:text-sm font-bold tracking-widest uppercase ${isAdmin ? 'mb-4 sm:mb-5' : ''}">這天可以好好放鬆 ☕️</p>
                         ${isAdmin ? `
-                        <button type="button" onclick="window.openAddModal('${dateStr}')" class="px-6 py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-white transition-colors shadow-md flex items-center gap-2 active:scale-95 min-h-[44px]">
-                            <i data-lucide="plus" class="w-4 h-4"></i> 新增排程
+                        <button type="button" onclick="window.openAddModal('${dateStr}')" class="px-5 sm:px-6 py-2.5 sm:py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold hover:bg-zinc-800 dark:hover:bg-white transition-colors shadow-md flex items-center gap-1.5 sm:gap-2 active:scale-95 min-h-[40px] sm:min-h-[44px]">
+                            <i data-lucide="plus" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 新增排程
                         </button>
                         ` : ''}
                     </div>`;
                 currentDelayIndex++;
             } else {
-                html += `<div class="space-y-4 px-2">`;
+                html += `<div class="space-y-3 sm:space-y-4">`;
                 dayEvents.forEach(e => {
                     const displayTimeFull = formatAMPM(e.time);
                     const timeMatch = displayTimeFull.match(/([上下]午)\s*(\d{1,2}:\d{2})/);
@@ -1845,40 +1894,40 @@
                     const endMs = endObj.getTime();
 
                     const tStyle = tagStyles[e.tag] || tagStyles['default'];
-                    const displayTag = e.tag ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${tStyle.bg} ${tStyle.text} text-[10px] font-black tracking-wider uppercase"><i data-lucide="${tStyle.icon}" class="w-3 h-3"></i>${e.tag}</span>` : '';
-                    const seriesIcon = e.seriesId ? `<i data-lucide="copy" class="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-600" title="重複行程"></i>` : '';
+                    const displayTag = e.tag ? `<span class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-[4px] sm:rounded-md ${tStyle.bg} ${tStyle.text} text-[9px] sm:text-[10px] font-black tracking-wider uppercase"><i data-lucide="${tStyle.icon}" class="w-2.5 h-2.5 sm:w-3 sm:h-3"></i>${e.tag}</span>` : '';
+                    const seriesIcon = e.seriesId ? `<i data-lucide="copy" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-300 dark:text-zinc-600" title="重複行程"></i>` : '';
 
                     html += `
-                        <div draggable="${isAdmin}" ondragstart="window.handleDragStart(event, '${e.id}')" ondragend="window.handleDragEnd(event)" onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white dark:bg-darkcard p-4 md:p-5 rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 dark:border-zinc-800 transition-all duration-400 ease-golden active:scale-[0.98]">
-                            <div class="card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-zinc-900 dark:bg-zinc-100 transition-colors duration-500 ease-golden"></div>
+                        <div draggable="${isAdmin}" ondragstart="window.handleDragStart(event, '${e.id}')" ondragend="window.handleDragEnd(event)" onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white dark:bg-darkcard p-3.5 sm:p-4 md:p-5 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 dark:border-zinc-800 transition-all duration-400 ease-golden active:scale-[0.98]">
+                            <div class="card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-zinc-900 dark:bg-zinc-100 transition-colors duration-500 ease-golden"></div>
                             
-                            <div class="w-[72px] shrink-0 flex flex-col items-center justify-center border-r border-zinc-100 dark:border-zinc-800 pr-3 mr-4 ml-2">
-                                <span class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tabular-nums leading-none tracking-tight card-time-text">${timeOnly}</span>
-                                <span class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-1.5 tracking-widest">${ampm}</span>
+                            <div class="w-[60px] sm:w-[72px] shrink-0 flex flex-col items-center justify-center border-r border-zinc-100 dark:border-zinc-800 pr-2 sm:pr-3 mr-3 sm:mr-4 ml-1 sm:ml-2">
+                                <span class="text-lg sm:text-xl md:text-2xl font-black text-zinc-900 dark:text-white tabular-nums leading-none tracking-tight card-time-text">${timeOnly}</span>
+                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-1 sm:mt-1.5 tracking-widest">${ampm}</span>
                             </div>
 
-                            <div class="flex-1 min-w-0 py-1">
-                                <div class="flex items-center gap-2 mb-1">
+                            <div class="flex-1 min-w-0 py-0.5 sm:py-1">
+                                <div class="flex items-center gap-1.5 sm:gap-2 mb-1">
                                     ${displayTag} ${seriesIcon}
                                 </div>
-                                <h4 class="card-title text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight truncate mb-2">${e.title}</h4>
-                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                                    <span class="card-timer-badge flex items-center gap-1.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400"></span>
+                                <h4 class="card-title text-base sm:text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight truncate mb-1.5 sm:mb-2">${e.title}</h4>
+                                <div class="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 sm:gap-y-1.5">
+                                    <span class="card-timer-badge flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400"></span>
                                     ${e.location && String(e.location).trim() !== '' ? `
-                                    <span class="flex items-center gap-1 text-zinc-400 dark:text-zinc-500 text-[11px] font-bold truncate">
-                                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${e.location}
+                                    <span class="flex items-center gap-1 text-zinc-400 dark:text-zinc-500 text-[10px] sm:text-[11px] font-bold truncate">
+                                        <i data-lucide="map-pin" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i> ${e.location}
                                     </span>
                                     ` : ''}
                                 </div>
                             </div>
                             
                             ${isAdmin ? `
-                            <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-1 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-700">
-                                <button type="button" onclick="event.stopPropagation(); window.openEditModal('${e.id}')" class="w-8 h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded-full transition-colors no-min-h" title="編輯">
-                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                            <div class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-1 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-700">
+                                <button type="button" onclick="event.stopPropagation(); window.openEditModal('${e.id}')" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded-full transition-colors no-min-h" title="編輯">
+                                    <i data-lucide="edit-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                                 </button>
-                                <button type="button" onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="w-8 h-8 flex items-center justify-center bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 dark:hover:text-white rounded-full transition-colors no-min-h" title="刪除">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <button type="button" onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 dark:hover:text-white rounded-full transition-colors no-min-h" title="刪除">
+                                    <i data-lucide="trash-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
                                 </button>
                             </div>
                             ` : ''}
@@ -1917,17 +1966,17 @@
                 const start = parseInt(upNextCd.dataset.start);
                 const end = parseInt(upNextCd.dataset.end);
                 if (now >= start && now <= end) {
-                    upNextCd.innerHTML = `<span class="flex items-center gap-1.5"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>正在進行中！</span>`;
-                    upNextCd.className = "text-emerald-400 text-xs font-bold tracking-wider";
+                    upNextCd.innerHTML = `<span class="flex items-center gap-1 sm:gap-1.5"><span class="relative flex h-1.5 sm:h-2 w-1.5 sm:w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 sm:h-2 w-1.5 sm:w-2 bg-emerald-500"></span></span>正在進行中！</span>`;
+                    upNextCd.className = "text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wider";
                 } else if (now < start) {
                     const diff = start - now;
                     if (diff < 24 * 60 * 60 * 1000) {
                         upNextCd.innerText = `倒數 ${window.formatDiffDash(diff)}`;
-                        upNextCd.className = "text-amber-400 dark:text-amber-500 text-xs font-bold tracking-wider";
+                        upNextCd.className = "text-amber-400 dark:text-amber-500 text-[10px] sm:text-xs font-bold tracking-wider";
                     } else {
                         const days = Math.ceil(diff / (24*60*60*1000));
                         upNextCd.innerText = `還有 ${days} 天`;
-                        upNextCd.className = "text-zinc-400 dark:text-zinc-500 text-xs font-bold tracking-wider";
+                        upNextCd.className = "text-zinc-400 dark:text-zinc-500 text-[10px] sm:text-xs font-bold tracking-wider";
                     }
                 }
             }
@@ -1944,44 +1993,44 @@
                 
                 if (now > end) {
                     card.classList.add('bg-zinc-50/70', 'shadow-none', 'dark:bg-darkcard', 'dark:shadow-none');
-                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-zinc-300 dark:bg-zinc-700 transition-colors duration-500";
-                    title.className = "card-title text-lg md:text-xl font-black text-zinc-400 dark:text-zinc-600 leading-tight truncate mb-2";
+                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-zinc-300 dark:bg-zinc-700 transition-colors duration-500";
+                    title.className = "card-title text-base sm:text-lg md:text-xl font-black text-zinc-400 dark:text-zinc-600 leading-tight truncate mb-1.5 sm:mb-2";
                     if(timeText) timeText.classList.add('text-zinc-400', 'dark:text-zinc-600');
                     if(timeText) timeText.classList.remove('text-zinc-900', 'dark:text-white');
                     
-                    badge.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>已結束`;
-                    badge.className = "card-timer-badge flex items-center gap-1 text-[11px] font-bold text-zinc-400 dark:text-zinc-600";
+                    badge.innerHTML = `<i data-lucide="check-circle-2" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>已結束`;
+                    badge.className = "card-timer-badge flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-zinc-400 dark:text-zinc-600";
 
                 } else if (now >= start && now <= end) {
                     card.classList.add('bg-emerald-50/20', 'shadow-md', 'dark:bg-emerald-900/10');
-                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-400 shadow-sm transition-colors duration-500";
-                    title.className = "card-title text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight truncate mb-2";
+                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-emerald-400 shadow-sm transition-colors duration-500";
+                    title.className = "card-title text-base sm:text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight truncate mb-1.5 sm:mb-2";
                     if(timeText) timeText.classList.add('text-zinc-900', 'dark:text-white');
                     if(timeText) timeText.classList.remove('text-zinc-400', 'dark:text-zinc-600');
 
                     const diff = end - now;
                     badge.innerHTML = `
-                        <span class="relative flex h-2 w-2 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> 
+                        <span class="relative flex h-1.5 sm:h-2 w-1.5 sm:w-2 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 sm:h-2 w-1.5 sm:w-2 bg-emerald-500"></span></span> 
                         進行中 · 剩餘 ${window.formatDiffDash(diff)}
                     `;
-                    badge.className = "card-timer-badge flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold tabular-nums";
+                    badge.className = "card-timer-badge flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] sm:text-[11px] font-bold tabular-nums";
 
                 } else {
                     const diff = start - now;
                     card.classList.add('bg-white', 'shadow-sm', 'dark:bg-darkcard');
-                    title.className = "card-title text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight truncate mb-2";
+                    title.className = "card-title text-base sm:text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-tight truncate mb-1.5 sm:mb-2";
                     if(timeText) timeText.classList.add('text-zinc-900', 'dark:text-white');
                     if(timeText) timeText.classList.remove('text-zinc-400', 'dark:text-zinc-600');
 
                     if (diff < 24 * 60 * 60 * 1000) {
-                        indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-amber-400 transition-colors duration-500";
-                        badge.innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5"></i>倒數 ${window.formatDiffDash(diff)}`;
-                        badge.className = "card-timer-badge flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[11px] font-bold tabular-nums";
+                        indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-amber-400 transition-colors duration-500";
+                        badge.innerHTML = `<i data-lucide="clock" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>倒數 ${window.formatDiffDash(diff)}`;
+                        badge.className = "card-timer-badge flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[10px] sm:text-[11px] font-bold tabular-nums";
                     } else {
-                        indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1.5 bg-zinc-800 dark:bg-zinc-200 transition-colors duration-500";
+                        indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-zinc-800 dark:bg-zinc-200 transition-colors duration-500";
                         const days = Math.ceil(diff / (24*60*60*1000));
-                        badge.innerHTML = `<i data-lucide="calendar" class="w-3.5 h-3.5"></i>${days} 天後`;
-                        badge.className = "card-timer-badge flex items-center gap-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400";
+                        badge.innerHTML = `<i data-lucide="calendar" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>${days} 天後`;
+                        badge.className = "card-timer-badge flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400";
                     }
                 }
             });
@@ -2039,7 +2088,7 @@
 
         window._proceedEdit = function(e) {
             editingId = e.id;
-            document.getElementById('form-modal-title').innerText = window.editingSeriesMode === 'following' ? "編輯 (含後續行程)" : "編輯排程";
+            document.getElementById('form-modal-title').innerText = window.editingSeriesMode === 'following' ? "編輯 (含後續)" : "編輯排程";
             document.getElementById('form-submit-btn').innerText = "儲存修改";
             document.getElementById('f-title').value = e.title || '';
             document.getElementById('f-tag').value = e.tag || '';
@@ -2148,12 +2197,12 @@
             let html = '';
             archivedEvents.forEach(e => {
                 html += `
-                    <div class="bg-white dark:bg-zinc-900 p-4 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800 flex justify-between items-center opacity-70">
+                    <div class="bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800 flex justify-between items-center opacity-70 min-h-[64px] sm:min-h-[72px]">
                         <div>
-                            <p class="font-bold text-zinc-900 dark:text-white line-through">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
-                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-500">${e.date} ${formatAMPM(e.time)}</p>
+                            <p class="font-bold text-sm sm:text-base text-zinc-900 dark:text-white line-through">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
+                            <p class="text-[10px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-500 mt-0.5">${e.date} ${formatAMPM(e.time)}</p>
                         </div>
-                        <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg">
+                        <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-2 sm:p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg sm:rounded-xl min-h-[36px] sm:min-h-[44px]">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>`;
