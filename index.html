@@ -81,26 +81,26 @@
             <h1 class="text-lg sm:text-xl font-black tracking-tight text-zinc-900 dark:text-white shrink-0">
                 CHIM<span class="font-medium text-zinc-500 dark:text-zinc-400">.APP</span>
             </h1>
-            <div class="flex items-center gap-1 sm:gap-2 bg-white dark:bg-darkcard px-2 sm:px-3 py-1.5 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-800 min-h-[44px] transition-colors shrink-0">
-                <button type="button" onclick="window.openPianoUpdateModal()" class="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/20 transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center gap-1.5" title="更改琴班">
-                    <i data-lucide="music" class="w-4 h-4 fill-purple-500/20 dark:fill-purple-400/20"></i>
-                    <span class="hidden xs:inline text-[11px] font-bold pr-1">更改琴班</span>
+            <div class="flex items-center gap-0.5 sm:gap-2 bg-white dark:bg-darkcard px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-800 min-h-[44px] transition-colors shrink-0 overflow-x-auto hide-scrollbar">
+                <button type="button" onclick="window.openPianoUpdateModal()" class="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/20 transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center gap-1.5 shrink-0" title="更改琴班">
+                    <i data-lucide="music" class="w-4 h-4 sm:w-4 sm:h-4 fill-purple-500/20 dark:fill-purple-400/20"></i>
+                    <span class="hidden sm:inline text-[11px] font-bold pr-1">更改琴班</span>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1 shrink-0"></div>
 
-                <button type="button" onclick="window.openSearchModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center" title="全域搜尋">
+                <button type="button" onclick="window.openSearchModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center shrink-0" title="全域搜尋">
                     <i data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
-                <button type="button" onclick="window.openDashboard()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center" title="全螢幕動態看板">
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1 shrink-0"></div>
+                <button type="button" onclick="window.openDashboard()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center shrink-0" title="全螢幕動態看板">
                     <i data-lucide="monitor-play" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
-                <button type="button" onclick="window.openSettingsModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center" title="個性化設定">
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1 shrink-0"></div>
+                <button type="button" onclick="window.openSettingsModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors ease-golden duration-300 p-2 rounded-full flex items-center justify-center shrink-0" title="個性化設定">
                     <i data-lucide="palette" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
-                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1"></div>
-                <div id="auth-container" class="flex items-center gap-1 min-h-[44px]"></div>
+                <div class="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1 shrink-0"></div>
+                <div id="auth-container" class="flex items-center gap-0.5 sm:gap-1 min-h-[44px] shrink-0"></div>
             </div>
         </div>
     </header>
@@ -939,13 +939,19 @@
             const fab = document.getElementById('fab-container');
             if (isAdmin) {
                 container.innerHTML = `
-                    <button type="button" onclick="window.openAdminModal()" class="text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors mr-0.5 sm:mr-1 min-h-[36px] no-min-h">管理中心</button>
-                    <button type="button" onclick="window.handleLogout()" class="text-[11px] sm:text-xs font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-1.5 sm:px-2 ml-0.5 sm:ml-1 min-h-[36px] no-min-h">登出</button>
+                    <button type="button" onclick="window.openAdminModal()" class="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 p-2 sm:px-3 sm:py-1.5 rounded-full sm:rounded-lg transition-colors flex items-center justify-center gap-1.5 shrink-0" title="管理中心">
+                        <i data-lucide="shield-check" class="w-4 h-4 sm:w-4 sm:h-4"></i>
+                        <span class="hidden sm:inline text-[11px] sm:text-xs font-bold">管理中心</span>
+                    </button>
+                    <div class="hidden sm:block w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1 shrink-0"></div>
+                    <button type="button" onclick="window.handleLogout()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-2 rounded-full transition-colors flex items-center justify-center shrink-0" title="登出">
+                        <i data-lucide="log-out" class="w-4 h-4 sm:w-4 sm:h-4"></i>
+                    </button>
                 `;
                 fab.classList.remove('hidden'); fab.classList.add('flex');
             } else {
                 container.innerHTML = `
-                    <button type="button" onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 rounded-full ml-0.5 sm:ml-1 flex items-center justify-center" title="管理員登入">
+                    <button type="button" onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 rounded-full flex items-center justify-center shrink-0" title="管理員登入">
                         <i data-lucide="lock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                     </button>
                 `;
