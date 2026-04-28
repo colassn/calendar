@@ -759,7 +759,8 @@
         window.toggleRepeatCount = function() {
             const repeatType = document.getElementById('f-repeat').value;
             const container = document.getElementById('repeat-count-container');
-            if (repeatType === 'none') {
+            // 若選擇單次或自動計算至月底，隱藏次數輸入框
+            if (repeatType === 'none' || repeatType === 'weekly_month') {
                 container.classList.add('hidden');
                 container.classList.remove('flex');
             } else {
@@ -777,9 +778,27 @@
             const isTBD = overlay && !overlay.classList.contains('hidden');
             const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
             
+            const baseDateStr = document.getElementById('f-date').value;
+            const [year, month, day] = baseDateStr.split('-').map(Number);
+            
             const repeatType = document.getElementById('f-repeat').value;
             const repeatCountStr = document.getElementById('f-repeat-count').value;
-            const repeatCount = (repeatType === 'none' || editingId) ? 1 : parseInt(repeatCountStr, 10);
+            
+            let repeatCount = 1;
+            if (!editingId && repeatType !== 'none') {
+                if (repeatType === 'weekly_month') {
+                    // 智能推算：從今天計算到本月底，總共還有幾週
+                    let currentD = new Date(year, month - 1, day);
+                    const endOfMonth = new Date(year, month, 0); // 取得當月最後一天
+                    repeatCount = 0;
+                    while (currentD <= endOfMonth) {
+                        repeatCount++;
+                        currentD.setDate(currentD.getDate() + 7);
+                    }
+                } else {
+                    repeatCount = parseInt(repeatCountStr, 10);
+                }
+            }
 
             if (!editingId) {
                 localStorage.setItem('chim_app_last_time', timeVal);
@@ -787,8 +806,6 @@
                 localStorage.setItem('chim_app_last_tbd', isTBD);
             }
 
-            const baseDateStr = document.getElementById('f-date').value;
-            const [year, month, day] = baseDateStr.split('-').map(Number);
             const tagVal = document.getElementById('f-tag').value;
             const titleVal = document.getElementById('f-title').value;
             const locationVal = document.getElementById('f-location').value;
@@ -811,7 +828,7 @@
                     const newEvents = [];
                     for (let i = 0; i < repeatCount; i++) {
                         let targetDate = new Date(year, month - 1, day);
-                        if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
+                        if (repeatType === 'weekly' || repeatType === 'weekly_month') targetDate.setDate(targetDate.getDate() + 7 * i);
                         else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
 
                         newEvents.push({
@@ -1357,7 +1374,8 @@
         window.togglePuRepeatCount = function() {
             const repeatType = document.getElementById('pu-repeat').value;
             const container = document.getElementById('pu-repeat-count-container');
-            if (repeatType === 'none') {
+            // 若選擇單次或自動計算至月底，隱藏次數輸入框
+            if (repeatType === 'none' || repeatType === 'weekly_month') {
                 container.classList.add('hidden');
                 container.classList.remove('flex');
             } else {
@@ -1371,17 +1389,33 @@
             const timeVal = document.getElementById('pu-time').value;
             const endtimeVal = document.getElementById('pu-endtime').value;
             
+            const [year, month, day] = dateVal.split('-').map(Number);
+
             const repeatType = document.getElementById('pu-repeat').value;
             const repeatCountStr = document.getElementById('pu-repeat-count').value;
-            const repeatCount = (repeatType === 'none') ? 1 : parseInt(repeatCountStr, 10);
+            
+            let repeatCount = 1;
+            if (repeatType !== 'none') {
+                if (repeatType === 'weekly_month') {
+                    // 智能推算本月剩餘堂數
+                    let currentD = new Date(year, month - 1, day);
+                    const endOfMonth = new Date(year, month, 0);
+                    repeatCount = 0;
+                    while (currentD <= endOfMonth) {
+                        repeatCount++;
+                        currentD.setDate(currentD.getDate() + 7);
+                    }
+                } else {
+                    repeatCount = parseInt(repeatCountStr, 10);
+                }
+            }
 
-            const [year, month, day] = dateVal.split('-').map(Number);
             const newEvents = [];
             const datesToCheck = [];
 
             for (let i = 0; i < repeatCount; i++) {
                 let targetDate = new Date(year, month - 1, day);
-                if (repeatType === 'weekly') targetDate.setDate(targetDate.getDate() + 7 * i);
+                if (repeatType === 'weekly' || repeatType === 'weekly_month') targetDate.setDate(targetDate.getDate() + 7 * i);
                 else if (repeatType === 'monthly') targetDate.setMonth(targetDate.getMonth() + i);
 
                 const dStr = formatDate(targetDate);
@@ -1432,8 +1466,9 @@
                 titleEl.innerText = "選擇重複頻率";
                 const options = [
                     { val: 'none', label: '單次排程' },
-                    { val: 'weekly', label: '每週重複' },
-                    { val: 'monthly', label: '每月重複' }
+                    { val: 'weekly_month', label: '每週重複 (自動計算至月底)' },
+                    { val: 'weekly', label: '每週重複 (自訂次數)' },
+                    { val: 'monthly', label: '每月重複 (自訂次數)' }
                 ];
                 options.forEach(opt => {
                     html += `<button type="button" onclick="window.handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors min-h-[56px]">${opt.label}</button>`;
