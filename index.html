@@ -2,7 +2,6 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <!-- 升級：加入 viewport-fit=cover 完美適配 iPhone 瀏海與全螢幕 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CHIM.SCHEDULE | 專屬日程</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -29,7 +28,7 @@
                         'golden': 'cubic-bezier(0.16, 1, 0.3, 1)', 
                     },
                     screens: {
-                        'xs': '375px', // 針對小尺寸手機的最佳化斷點
+                        'xs': '375px',
                     }
                 }
             }
@@ -41,7 +40,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
         
-        /* 確保 iOS 底部橫條不會蓋住內容 */
         .pb-safe { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
         
         @keyframes slideUpFade {
@@ -68,14 +66,17 @@
         button, input, select { min-height: 44px; }
         .no-min-h { min-height: auto; }
         
-        /* 拖曳時的視覺回饋 */
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px dashed #a1a1aa; z-index: 50; }
         .drag-over { border: 2px dashed #fbbf24 !important; background-color: rgba(251, 191, 36, 0.1) !important; transform: scale(1.1); z-index: 10; }
+        
+        /* 避免 iOS Safari 輸入框縮放與破版問題 */
+        input, textarea { font-size: 16px !important; }
+        @media (min-width: 640px) { input, textarea { font-size: 14px !important; } }
     </style>
 </head>
-<body class="antialiased selection:bg-zinc-200 dark:selection:bg-zinc-700 min-h-screen flex flex-col font-sans bg-appbg dark:bg-darkbg text-zinc-900 dark:text-zinc-100" id="app-body">
+<body class="antialiased selection:bg-zinc-200 dark:selection:bg-zinc-700 min-h-[100dvh] flex flex-col font-sans bg-appbg dark:bg-darkbg text-zinc-900 dark:text-zinc-100 relative" id="app-body">
 
-    <!-- Header (響應式：手機版 padding 較小) -->
+    <!-- Header -->
     <header class="sticky top-0 z-40 bg-appbg/80 dark:bg-darkbg/80 backdrop-blur-xl border-b border-zinc-200/50 dark:border-zinc-800/50 w-full transition-colors duration-300 ease-golden shadow-sm" id="app-header">
         <div class="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 max-w-2xl mx-auto w-full pt-[max(0.75rem,env(safe-area-inset-top))]">
             <h1 class="text-lg sm:text-xl font-black tracking-tight text-zinc-900 dark:text-white shrink-0">
@@ -105,7 +106,7 @@
         </div>
     </header>
 
-    <!-- Main Content (響應式：縮減手機端多餘的 gap 與 padding) -->
+    <!-- Main Content -->
     <main class="max-w-2xl mx-auto px-4 sm:px-5 py-6 sm:py-8 pb-32 w-full flex-1 flex flex-col gap-8 sm:gap-10">
         <section id="agenda-section" class="w-full">
             <div class="flex justify-between items-center mb-4 px-1 sm:px-2">
@@ -119,7 +120,6 @@
             </div>
             <div id="filter-bar" class="flex gap-2 px-1 sm:px-2 mb-5 sm:mb-6 overflow-x-auto hide-scrollbar pr-4"></div>
             
-            <!-- 焦點預告 -->
             <div id="up-next-container" class="hidden mb-8 sm:mb-10 px-1 sm:px-2">
                 <h3 class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                     <i data-lucide="zap" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-500/20"></i> 焦點預告
@@ -142,7 +142,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- 響應式 Calendar Grid -->
                 <div id="calendar-grid" class="grid grid-cols-7 gap-y-3 sm:gap-y-4 gap-x-1 sm:gap-x-2 text-center text-[13px] sm:text-sm font-medium"></div>
                 <div class="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-zinc-50 dark:border-zinc-800/50 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
                     <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>1項</div>
@@ -161,11 +160,12 @@
         </button>
     </div>
 
-    <!-- MAIN Modals Overlay (手機版底部抽屜，iPad 版置中) -->
+    <!-- MAIN Modals Overlay -->
     <div id="modal-overlay" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
 
         <!-- 搜尋 Modal -->
-        <div id="search-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[85vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <!-- 注意：全面更換 vh 為 dvh，並加上 overscroll-contain 與明確的 overflow-hidden 確保邊框不破 -->
+        <div id="search-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 relative flex items-center">
                 <i data-lucide="search" class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400 dark:text-zinc-500 absolute left-6 sm:left-8"></i>
                 <input type="text" id="search-input" oninput="window.performSearch()" class="w-full pl-10 sm:pl-12 pr-12 py-3 text-lg sm:text-xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-bold" placeholder="搜尋行程、地點...">
@@ -173,13 +173,13 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="search-results" class="p-4 sm:p-6 overflow-y-auto hide-scrollbar bg-zinc-50/50 dark:bg-darkbg/50 grow w-full space-y-3 min-h-[300px]">
+            <div id="search-results" class="p-4 sm:p-6 overflow-y-auto overscroll-contain hide-scrollbar bg-zinc-50/50 dark:bg-darkbg/50 grow w-full space-y-3 min-h-[300px]">
                 <div class="text-center text-zinc-400 dark:text-zinc-600 text-sm font-bold py-10">請輸入關鍵字開始搜尋</div>
             </div>
         </div>
 
         <!-- 鋼琴班智能更改 Modal -->
-        <div id="piano-update-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="piano-update-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="bg-purple-50 dark:bg-purple-500/10 p-5 sm:p-6 pb-4 sm:pb-5 text-center relative shrink-0 border-b border-purple-100 dark:border-purple-500/20">
                 <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white dark:bg-darkcard text-zinc-400 hover:text-zinc-800 dark:hover:text-white p-2 sm:p-2.5 rounded-full shadow-sm transition-colors ease-golden min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
@@ -191,11 +191,10 @@
                 <p class="text-zinc-500 dark:text-zinc-400 font-bold text-[11px] sm:text-xs">直接貼上老師的 WhatsApp 對話自動解析！</p>
             </div>
             <div class="bg-zinc-50/70 dark:bg-darkbg/50 px-5 sm:px-6 py-3 sm:py-4 shrink-0 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-3 overflow-x-auto hide-scrollbar min-h-[64px] sm:min-h-[76px]" id="pu-existing-list"></div>
-            <div class="p-5 sm:p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full space-y-5 sm:space-y-6">
-                <form id="piano-update-form" onsubmit="window.handlePianoSubmit(event)" class="space-y-5 sm:space-y-6">
+            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain hide-scrollbar bg-white dark:bg-darkcard grow w-full space-y-5 sm:space-y-6">
+                <form id="piano-update-form" onsubmit="window.handlePianoSubmit(event)" class="space-y-5 sm:space-y-6 w-full">
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mb-2 uppercase tracking-widest pl-1">智能解析 (貼上訊息)</label>
-                        <!-- 防縮放：text-base sm:text-sm -->
                         <textarea id="pu-text" rows="2" oninput="window.handlePianoPaste(event)" class="w-full px-4 py-3 sm:py-4 text-base sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl resize-none font-medium placeholder:text-zinc-300 dark:placeholder:text-zinc-600 transition-shadow min-h-[80px] sm:min-h-[88px]" placeholder="例如：27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
                     </div>
                     <div>
@@ -203,39 +202,39 @@
                         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl sm:rounded-[1.5rem] p-1.5 shadow-sm relative">
                             <div class="flex items-center px-3 sm:px-4 py-2 sm:py-3 border-b border-zinc-100 dark:border-zinc-800 min-h-[48px] sm:min-h-[56px] relative">
                                 <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 mr-2 sm:mr-3 shrink-0 pointer-events-none"></i>
-                                <input id="pu-date" onchange="window.checkPianoConflict()" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold text-base tracking-wide no-min-h relative z-10">
+                                <input id="pu-date" onchange="window.checkPianoConflict()" required type="date" class="w-full min-w-0 bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold text-base tracking-wide no-min-h relative z-10">
                             </div>
-                            <div class="flex items-center justify-between p-1.5 sm:p-2 gap-2 relative">
-                                <div class="flex-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
+                            <div class="flex items-center justify-between p-1.5 sm:p-2 gap-2 relative w-full">
+                                <div class="flex-1 min-w-0 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
                                     <p class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">開始</p>
-                                    <input id="pu-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
+                                    <input id="pu-time" required type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 </div>
                                 <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
-                                <div class="flex-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
+                                <div class="flex-1 min-w-0 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center border border-zinc-100 dark:border-zinc-800 relative">
                                     <p class="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">結束</p>
-                                    <input id="pu-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
+                                    <input id="pu-endtime" type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-3 sm:mt-4">
-                        <div class="bg-purple-50/40 dark:bg-purple-500/10 p-1 sm:p-1.5 rounded-xl sm:rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 flex items-center relative overflow-hidden">
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-3 sm:mt-4 w-full">
+                        <div class="bg-purple-50/40 dark:bg-purple-500/10 p-1 sm:p-1.5 rounded-xl sm:rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 flex items-center relative overflow-hidden min-w-0">
                             <input type="hidden" id="pu-repeat" value="none">
-                            <button type="button" onclick="window.openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full flex justify-between items-center pl-3 sm:pl-4 pr-2 sm:pr-3 py-2.5 sm:py-3 text-[13px] sm:text-sm bg-transparent text-purple-900 dark:text-purple-300 font-bold transition-colors min-h-[44px]">
-                                單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400"></i>
+                            <button type="button" onclick="window.openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full min-w-0 flex justify-between items-center pl-3 sm:pl-4 pr-2 sm:pr-3 py-2.5 sm:py-3 text-[13px] sm:text-sm bg-transparent text-purple-900 dark:text-purple-300 font-bold transition-colors min-h-[44px]">
+                                <span class="truncate">單次排程</span> <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400 shrink-0"></i>
                             </button>
                         </div>
-                        <div id="pu-repeat-count-container" class="hidden bg-purple-50/40 dark:bg-purple-500/10 p-1 sm:p-1.5 rounded-xl sm:rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 items-center relative overflow-hidden">
+                        <div id="pu-repeat-count-container" class="hidden bg-purple-50/40 dark:bg-purple-500/10 p-1 sm:p-1.5 rounded-xl sm:rounded-[1.25rem] border border-purple-100 dark:border-purple-500/20 items-center relative overflow-hidden min-w-0">
                             <div class="bg-white dark:bg-darkcard p-2 sm:p-3 rounded-lg sm:rounded-xl ml-0.5 shadow-sm text-purple-500 text-[10px] font-bold text-center w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center leading-none shrink-0 border border-purple-50 dark:border-zinc-800">次數</div>
-                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-2 sm:pl-3 pr-1 sm:pr-2 py-2.5 sm:py-3 text-base sm:text-sm bg-transparent focus:outline-none text-purple-900 dark:text-purple-300 font-bold no-min-h" placeholder="重複次數">
+                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full min-w-0 pl-2 sm:pl-3 pr-1 sm:pr-2 py-2.5 sm:py-3 text-base sm:text-sm bg-transparent focus:outline-none text-purple-900 dark:text-purple-300 font-bold no-min-h" placeholder="重複">
                         </div>
                     </div>
                     <div id="pu-conflict-warning" class="hidden bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-4 sm:p-5 rounded-xl sm:rounded-[1.5rem] flex flex-col gap-3">
                         <div class="flex items-start gap-2.5 sm:gap-3">
                             <i data-lucide="alert-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0 mt-0.5"></i>
-                            <div>
+                            <div class="min-w-0">
                                 <p class="text-sm font-bold text-amber-800 dark:text-amber-400 mb-1">發現該日已有鋼琴班</p>
-                                <p class="text-[11px] sm:text-xs font-medium text-amber-600 dark:text-amber-500/80 leading-relaxed">原本設定時間為 <span id="pu-conflict-time" class="font-black border-b border-amber-300"></span>。確認發佈將會覆蓋舊時間。</p>
+                                <p class="text-[11px] sm:text-xs font-medium text-amber-600 dark:text-amber-500/80 leading-relaxed break-words">原本為 <span id="pu-conflict-time" class="font-black border-b border-amber-300"></span>。確認將覆蓋舊時間。</p>
                             </div>
                         </div>
                     </div>
@@ -247,43 +246,43 @@
         </div>
 
         <!-- Add / Edit Modal -->
-        <div id="add-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="add-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 id="form-modal-title" class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">新增排程</h3>
                 <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-5 sm:p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full">
-                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-5 sm:space-y-6">
+            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain hide-scrollbar bg-white dark:bg-darkcard grow w-full">
+                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-5 sm:space-y-6 w-full">
                     <div class="space-y-2 sm:space-y-3">
-                        <input id="f-title" required type="text" class="w-full px-2 py-1.5 sm:py-2 text-xl sm:text-2xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-black transition-all" placeholder="準備做些什麼？">
-                        <div class="flex items-center gap-2 px-1 sm:px-2 overflow-x-auto hide-scrollbar pb-1">
+                        <input id="f-title" required type="text" class="w-full px-2 py-1.5 sm:py-2 text-xl sm:text-2xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-black transition-all min-w-0" placeholder="準備做些什麼？">
+                        <div class="flex items-center gap-2 px-1 sm:px-2 overflow-x-auto hide-scrollbar pb-1 w-full">
                             <i data-lucide="tag" class="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0"></i>
                             <input type="hidden" id="f-tag" value="">
-                            <div id="dynamic-tags-container" class="flex flex-nowrap gap-2 flex-1"></div>
+                            <div id="dynamic-tags-container" class="flex flex-nowrap gap-2 flex-1 min-w-0"></div>
                         </div>
                     </div>
-                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-[1.5rem] p-1.5 sm:p-2 border border-zinc-100 dark:border-zinc-800 shadow-sm relative">
-                        <div class="flex items-center px-3 sm:px-4 py-2 sm:py-3 border-b border-zinc-100/80 dark:border-zinc-800 min-h-[48px] sm:min-h-[52px] relative">
+                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-[1.5rem] p-1.5 sm:p-2 border border-zinc-100 dark:border-zinc-800 shadow-sm relative w-full">
+                        <div class="flex items-center px-3 sm:px-4 py-2 sm:py-3 border-b border-zinc-100/80 dark:border-zinc-800 min-h-[48px] sm:min-h-[52px] relative w-full">
                             <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500 mr-2 sm:mr-3 shrink-0 pointer-events-none"></i>
-                            <input id="f-date" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold text-base no-min-h tracking-wide relative z-10">
+                            <input id="f-date" required type="date" class="w-full min-w-0 bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold text-base no-min-h tracking-wide relative z-10">
                         </div>
-                        <div class="flex items-center justify-between p-1.5 sm:p-2 gap-1.5 sm:gap-2 relative">
-                            <div class="flex-1 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
+                        <div class="flex items-center justify-between p-1.5 sm:p-2 gap-1.5 sm:gap-2 relative w-full">
+                            <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">開始</p>
-                                <input id="f-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-7 sm:h-8 relative z-10">
+                                <input id="f-time" required type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-7 sm:h-8 relative z-10">
                             </div>
                             <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
-                            <div class="flex-1 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
+                            <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">結束</p>
-                                <input id="f-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-7 sm:h-8 relative z-10">
+                                <input id="f-endtime" type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg no-min-h h-7 sm:h-8 relative z-10">
                                 <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-white/95 dark:bg-darkcard/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300 z-20" onclick="window.toggleTBD()">
                                     <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">暫未確定</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center justify-start gap-1.5 sm:gap-2 p-1.5 sm:p-2 pt-1 overflow-x-auto hide-scrollbar">
+                        <div class="flex items-center justify-start gap-1.5 sm:gap-2 p-1.5 sm:p-2 pt-1 overflow-x-auto hide-scrollbar w-full">
                             <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 pl-1 pr-0.5 sm:pr-1 shrink-0">快捷:</span>
                             <button type="button" onclick="window.setQuickDuration(30)" class="shrink-0 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h">+30分</button>
                             <button type="button" onclick="window.setQuickDuration(60)" class="shrink-0 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h">+1小時</button>
@@ -291,21 +290,21 @@
                             <button type="button" onclick="window.toggleTBD()" class="shrink-0 ml-auto px-2.5 sm:px-3 py-1.5 bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-white rounded-md sm:rounded-lg text-[11px] sm:text-xs font-bold transition-colors shadow-sm min-h-[32px] sm:min-h-[36px] no-min-h"><i data-lucide="help-circle" class="w-3 sm:w-3.5 h-3 sm:h-3.5 inline-block mr-1"></i>TBD</button>
                         </div>
                     </div>
-                    <div class="space-y-2 sm:space-y-3 pt-1 sm:pt-2">
+                    <div class="space-y-2 sm:space-y-3 pt-1 sm:pt-2 w-full">
                         <div class="bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden min-h-[48px] sm:min-h-[52px]">
                             <div class="bg-white dark:bg-darkcard p-2 sm:p-2.5 rounded-lg sm:rounded-xl ml-1 shadow-sm shrink-0 border border-zinc-50 dark:border-zinc-800/50"><i data-lucide="map-pin" class="text-zinc-500 dark:text-zinc-400 w-4 h-4"></i></div>
-                            <input id="f-location" type="text" class="w-full pl-3 sm:pl-4 pr-2 py-2.5 sm:py-3 text-base sm:text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-bold no-min-h" placeholder="活動地點 (選填)">
+                            <input id="f-location" type="text" class="w-full min-w-0 pl-3 sm:pl-4 pr-2 py-2.5 sm:py-3 text-base sm:text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-bold no-min-h" placeholder="活動地點 (選填)">
                         </div>
-                        <div id="repeat-section" class="grid grid-cols-2 gap-2 sm:gap-3">
-                            <div class="bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden">
+                        <div id="repeat-section" class="grid grid-cols-2 gap-2 sm:gap-3 w-full">
+                            <div class="bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center relative overflow-hidden min-w-0">
                                 <input type="hidden" id="f-repeat" value="none">
-                                <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-3 sm:pl-4 pr-2 sm:pr-3 py-2.5 text-[13px] sm:text-sm bg-transparent text-zinc-900 dark:text-white font-bold transition-colors min-h-[44px]">
-                                    單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500"></i>
+                                <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full min-w-0 flex justify-between items-center pl-3 sm:pl-4 pr-2 sm:pr-3 py-2.5 text-[13px] sm:text-sm bg-transparent text-zinc-900 dark:text-white font-bold transition-colors min-h-[44px]">
+                                    <span class="truncate">單次排程</span> <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0"></i>
                                 </button>
                             </div>
-                            <div id="repeat-count-container" class="hidden bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 items-center relative overflow-hidden">
+                            <div id="repeat-count-container" class="hidden bg-zinc-50 dark:bg-zinc-900 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 items-center relative overflow-hidden min-w-0">
                                 <div class="bg-white dark:bg-darkcard p-2 sm:p-2.5 rounded-lg sm:rounded-xl ml-1 shadow-sm text-zinc-500 dark:text-zinc-400 text-[10px] sm:text-[11px] font-bold text-center w-8 sm:w-10 h-8 sm:h-10 flex items-center justify-center leading-none shrink-0 border border-zinc-50 dark:border-zinc-800/50">次數</div>
-                                <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-2 sm:pl-3 pr-1 sm:pr-2 py-2.5 text-base sm:text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold no-min-h" placeholder="重複次數">
+                                <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full min-w-0 pl-2 sm:pl-3 pr-1 sm:pr-2 py-2.5 text-base sm:text-sm bg-transparent focus:outline-none text-zinc-900 dark:text-white font-bold no-min-h" placeholder="重複">
                             </div>
                         </div>
                     </div>
@@ -316,7 +315,7 @@
             </div>
         </div>
 
-        <!-- Series Action Modal (Smart Recurring Edit/Delete) -->
+        <!-- Series Action Modal -->
         <div id="series-action-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex flex-col p-6 sm:p-8 pt-8 sm:pt-10">
                 <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5 mx-auto">
@@ -344,7 +343,7 @@
         </div>
 
         <!-- Admin Modal -->
-        <div id="admin-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="admin-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="shield-alert" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500"></i> 管理中心
@@ -356,41 +355,41 @@
                     </button>
                 </div>
             </div>
-            <div class="p-5 sm:p-6 overflow-y-auto space-y-6 sm:space-y-8 bg-white dark:bg-darkcard grow hide-scrollbar w-full">
+            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain space-y-6 sm:space-y-8 bg-white dark:bg-darkcard grow hide-scrollbar w-full">
                 <!-- 標籤管理區塊 -->
-                <div>
+                <div class="w-full">
                     <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-2 sm:mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 自定義標籤管理</h4>
-                    <div class="flex gap-2 mb-3 sm:mb-4">
-                        <input id="new-tag-input" type="text" class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none text-base sm:text-sm font-bold min-h-[44px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600" placeholder="新標籤 (例如: 補習)">
-                        <button type="button" onclick="window.addCustomTag()" class="px-4 sm:px-5 py-2.5 sm:py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-white transition-colors shadow-sm min-h-[44px]">新增</button>
+                    <div class="flex gap-2 mb-3 sm:mb-4 w-full">
+                        <input id="new-tag-input" type="text" class="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none text-base sm:text-sm font-bold min-h-[44px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600" placeholder="新標籤 (例如: 補習)">
+                        <button type="button" onclick="window.addCustomTag()" class="px-4 sm:px-5 py-2.5 sm:py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-white transition-colors shadow-sm min-h-[44px] shrink-0">新增</button>
                     </div>
-                    <div id="admin-tags-list" class="flex flex-wrap gap-2 sm:gap-2.5"></div>
+                    <div id="admin-tags-list" class="flex flex-wrap gap-2 sm:gap-2.5 w-full"></div>
                 </div>
                 <div class="h-px bg-zinc-100 dark:bg-zinc-800 w-full"></div>
                 <!-- 預設範本管理區塊 -->
-                <div>
+                <div class="w-full">
                     <div class="flex justify-between items-center mb-3 sm:mb-4">
                         <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 快捷發佈範本</h4>
-                        <button type="button" onclick="window.openPresetModal()" class="text-[11px] sm:text-xs font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors flex items-center gap-1 sm:gap-1.5 min-h-[32px] sm:min-h-[36px] no-min-h"><i data-lucide="plus" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i> 新增範本</button>
+                        <button type="button" onclick="window.openPresetModal()" class="text-[11px] sm:text-xs font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors flex items-center gap-1 sm:gap-1.5 min-h-[32px] sm:min-h-[36px] no-min-h shrink-0"><i data-lucide="plus" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i> 新增範本</button>
                     </div>
-                    <div class="space-y-2.5 sm:space-y-3" id="admin-preset-list"></div>
+                    <div class="space-y-2.5 sm:space-y-3 w-full" id="admin-preset-list"></div>
                 </div>
                 <div class="h-px bg-zinc-100 dark:bg-zinc-800 w-full"></div>
                 <!-- 系統維護區塊 -->
-                <div>
+                <div class="w-full">
                     <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-2 sm:mb-3 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 系統維護</h4>
                     <div class="bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-100 dark:border-zinc-800 text-center mb-4 sm:mb-5">
                         <button type="button" onclick="window.clearEndedEvents()" class="w-full py-3.5 sm:py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm font-bold flex justify-center items-center gap-2 shadow-sm min-h-[52px] sm:min-h-[56px]">
                             <i data-lucide="archive" class="w-4 h-4 sm:w-5 sm:h-5"></i> 一鍵封存過期行程
                         </button>
                     </div>
-                    <div class="space-y-2.5 sm:space-y-3" id="admin-event-list"></div>
+                    <div class="space-y-2.5 sm:space-y-3 w-full" id="admin-event-list"></div>
                 </div>
             </div>
         </div>
 
         <!-- Archive Modal (歷史庫) -->
-        <div id="archive-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="archive-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="archive" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500"></i> 歷史庫
@@ -399,13 +398,13 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-5 sm:p-6 overflow-y-auto space-y-3 sm:space-y-4 bg-zinc-50/50 dark:bg-darkbg/50 grow hide-scrollbar w-full" id="archive-list">
+            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain space-y-3 sm:space-y-4 bg-zinc-50/50 dark:bg-darkbg/50 grow hide-scrollbar w-full" id="archive-list">
                 <p class="text-center text-zinc-400 dark:text-zinc-500 text-sm font-bold py-10">載入中...</p>
             </div>
         </div>
 
         <!-- Settings Modal -->
-        <div id="settings-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0 max-h-[85vh]">
+        <div id="settings-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0 max-h-[85dvh]">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="settings-2" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> App 設定
@@ -414,18 +413,18 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-5 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto max-h-[70vh] hide-scrollbar">
+            <div class="p-5 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto overscroll-contain hide-scrollbar w-full">
                 <div>
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">通知與提醒</label>
                     <div class="bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                         <div class="flex items-center gap-2.5 sm:gap-3">
-                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center"><i data-lucide="bell" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500"></i></div>
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center shrink-0"><i data-lucide="bell" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500"></i></div>
                             <div>
                                 <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">行程前桌面推播</p>
                                 <p class="text-[9px] sm:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">提早 15 分鐘通知</p>
                             </div>
                         </div>
-                        <label class="inline-flex items-center cursor-pointer min-h-[44px]">
+                        <label class="inline-flex items-center cursor-pointer min-h-[44px] shrink-0 ml-2">
                             <input type="checkbox" id="push-toggle" onchange="window.togglePush()" class="sr-only peer">
                             <div class="relative w-10 sm:w-11 h-5 sm:h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
                         </label>
@@ -434,14 +433,14 @@
                 <div>
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">深色模式</label>
                     <div class="flex gap-2 sm:gap-3 bg-zinc-50 dark:bg-zinc-900 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onclick="window.setTheme('light')" id="theme-light-btn" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">日曆白</button>
-                        <button type="button" onclick="window.setTheme('dark')" id="theme-dark-btn" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">星空黑</button>
-                        <button type="button" onclick="window.setTheme('system')" id="theme-sys-btn" class="flex-1 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">跟隨系統</button>
+                        <button type="button" onclick="window.setTheme('light')" id="theme-light-btn" class="flex-1 min-w-0 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">日曆白</button>
+                        <button type="button" onclick="window.setTheme('dark')" id="theme-dark-btn" class="flex-1 min-w-0 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">星空黑</button>
+                        <button type="button" onclick="window.setTheme('system')" id="theme-sys-btn" class="flex-1 min-w-0 py-2 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white min-h-[36px]">跟隨系統</button>
                     </div>
                 </div>
                 <div>
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">字體風格</label>
-                    <div class="space-y-2 bg-zinc-50 dark:bg-zinc-900 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                    <div class="space-y-2 bg-zinc-50 dark:bg-zinc-900 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 w-full">
                         <button type="button" onclick="window.applyFont('sans')" class="w-full flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm transition-all font-sans min-h-[48px] sm:min-h-[56px]">
                             <span class="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200">現代黑體 (預設)</span>
                             <i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 hidden font-check-icon" id="check-sans"></i>
@@ -458,14 +457,14 @@
                 </div>
                 <div id="bgcolor-setting-section">
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">微背景色 (Light 專用)</label>
-                    <div class="flex gap-3 sm:gap-4 justify-center bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onclick="window.applyBgColor('#F2F2F7', 'bg-appbg/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#F2F2F7] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px]" id="bg-btn-#F2F2F7" title="iOS 原生灰">
+                    <div class="flex gap-3 sm:gap-4 justify-center bg-zinc-50 dark:bg-zinc-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 w-full">
+                        <button type="button" onclick="window.applyBgColor('#F2F2F7', 'bg-appbg/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#F2F2F7] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px] shrink-0" id="bg-btn-#F2F2F7" title="iOS 原生灰">
                             <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
-                        <button type="button" onclick="window.applyBgColor('#FDF8F5', 'bg-[#FDF8F5]/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#FDF8F5] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px]" id="bg-btn-#FDF8F5" title="奶茶米色">
+                        <button type="button" onclick="window.applyBgColor('#FDF8F5', 'bg-[#FDF8F5]/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#FDF8F5] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px] shrink-0" id="bg-btn-#FDF8F5" title="奶茶米色">
                             <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
-                        <button type="button" onclick="window.applyBgColor('#F0F4F8', 'bg-[#F0F4F8]/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#F0F4F8] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px]" id="bg-btn-#F0F4F8" title="科技藍灰">
+                        <button type="button" onclick="window.applyBgColor('#F0F4F8', 'bg-[#F0F4F8]/80')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-zinc-200 bg-[#F0F4F8] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[40px] sm:min-h-[48px] shrink-0" id="bg-btn-#F0F4F8" title="科技藍灰">
                             <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
                     </div>
@@ -474,17 +473,17 @@
         </div>
 
         <!-- Detail Modal -->
-        <div id="detail-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
-            <div class="p-8 md:p-12 relative flex flex-col items-center text-center overflow-y-auto hide-scrollbar w-full grow">
+        <div id="detail-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="p-8 md:p-12 relative flex flex-col items-center text-center overflow-y-auto overscroll-contain hide-scrollbar w-full grow">
                 <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
                 <div class="w-full mt-4 sm:mt-6">
                     <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-3 sm:mb-5" id="detail-date">日期</p>
-                    <h3 class="text-2xl sm:text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug mb-4 sm:mb-6" id="detail-title">標題</h3>
-                    <div class="flex flex-col items-center gap-3 sm:gap-4 mb-8 sm:mb-10">
+                    <h3 class="text-2xl sm:text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug mb-4 sm:mb-6 break-words" id="detail-title">標題</h3>
+                    <div class="flex flex-col items-center gap-3 sm:gap-4 mb-8 sm:mb-10 w-full">
                         <p class="text-base sm:text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide tabular-nums flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl"><i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> <span id="detail-time">時間</span></p>
-                        <p id="detail-location-container" class="text-base sm:text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hidden"><i data-lucide="map-pin" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> <span id="detail-location">地點</span></p>
+                        <p id="detail-location-container" class="w-full text-base sm:text-lg font-bold text-zinc-600 dark:text-zinc-300 tracking-wide flex items-center justify-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hidden"><i data-lucide="map-pin" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500 shrink-0"></i> <span id="detail-location" class="truncate">地點</span></p>
                     </div>
                 </div>
                 <div class="w-full mt-auto shrink-0 pt-4">
@@ -494,7 +493,7 @@
         </div>
         
         <!-- Preset Modal -->
-        <div id="preset-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85vh] sm:max-h-[90vh] z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="preset-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="file-plus-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500"></i> 新增快捷範本
@@ -503,13 +502,13 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-5 sm:p-6 overflow-y-auto hide-scrollbar bg-white dark:bg-darkcard grow w-full">
+            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain hide-scrollbar bg-white dark:bg-darkcard grow w-full">
                 <p class="text-[11px] sm:text-sm text-zinc-500 dark:text-zinc-400 font-bold mb-4 sm:mb-6 leading-relaxed">設定後，任何人即可在「快捷發佈」快速選擇並一鍵帶入時間。</p>
-                <form id="preset-form" onsubmit="window.handleAddPreset(event)" class="space-y-4 sm:space-y-5">
+                <form id="preset-form" onsubmit="window.handleAddPreset(event)" class="space-y-4 sm:space-y-5 w-full">
                     <div>
-                        <div class="flex gap-2">
-                            <input id="p-tag" type="text" class="w-1/3 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="標籤(可省)">
-                            <input id="p-title" required type="text" class="w-2/3 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="活動標題">
+                        <div class="flex gap-2 w-full">
+                            <input id="p-tag" type="text" class="w-1/3 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="標籤(可省)">
+                            <input id="p-title" required type="text" class="w-2/3 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="活動標題">
                         </div>
                     </div>
                     <div>
@@ -519,20 +518,20 @@
                             星期五 <i data-lucide="chevron-down" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i>
                         </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                        <div>
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4 w-full">
+                        <div class="min-w-0">
                             <label class="block text-[10px] sm:text-xs font-bold text-zinc-500 mb-1.5 sm:mb-2 ml-1">預設開始時間</label>
-                            <input id="p-time" required type="time" value="16:00" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[44px] sm:min-h-[48px]">
+                            <input id="p-time" required type="time" value="16:00" class="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[44px] sm:min-h-[48px]">
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="block text-[10px] sm:text-xs font-bold text-zinc-500 mb-1.5 sm:mb-2 ml-1">預設結束時間</label>
-                            <input id="p-endtime" type="time" value="17:00" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[44px] sm:min-h-[48px]">
+                            <input id="p-endtime" type="time" value="17:00" class="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base font-bold text-zinc-900 dark:text-white min-h-[44px] sm:min-h-[48px]">
                         </div>
                     </div>
-                    <div>
-                        <input id="p-location" type="text" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="預設地點 (選填)">
+                    <div class="w-full">
+                        <input id="p-location" type="text" class="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl focus:outline-none text-base sm:text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 min-h-[44px] sm:min-h-[48px]" placeholder="預設地點 (選填)">
                     </div>
-                    <div class="pt-2 sm:pt-4">
+                    <div class="pt-2 sm:pt-4 w-full">
                         <button type="submit" class="w-full py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 active:scale-[0.98] min-h-[52px] sm:min-h-[56px]">儲存範本</button>
                     </div>
                 </form>
@@ -543,14 +542,14 @@
 
     <!-- 自定義下拉選單專用 Modal -->
     <div id="select-modal-overlay" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
-        <div id="select-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80vh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="select-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 id="select-modal-title" class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight">請選擇</h3>
                 <button type="button" onclick="window.closeSelectModal()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="select-modal-options" class="p-5 sm:p-6 overflow-y-auto space-y-2.5 sm:space-y-3 bg-white dark:bg-darkcard"></div>
+            <div id="select-modal-options" class="p-5 sm:p-6 overflow-y-auto overscroll-contain space-y-2.5 sm:space-y-3 bg-white dark:bg-darkcard w-full"></div>
         </div>
     </div>
 
@@ -715,6 +714,9 @@
 
         // --- View & Modal Methods ---
         window.showOverlayAndModal = function(modalId) {
+            // 背景鎖定防抖動 (Body Scroll Lock)
+            document.body.style.overflow = 'hidden';
+            
             const overlay = document.getElementById('modal-overlay');
             const modal = document.getElementById(modalId);
             if (overlay) overlay.classList.remove('hidden');
@@ -736,6 +738,7 @@
         }
         
         window.showAlert = function(msg) {
+            document.body.style.overflow = 'hidden';
             document.getElementById('alert-msg').innerText = msg;
             const alertModal = document.getElementById('alert-modal');
             const overlay = document.getElementById('modal-overlay');
@@ -759,7 +762,10 @@
                 if (!otherModalsOpen) {
                     const overlay = document.getElementById('modal-overlay');
                     if (overlay) overlay.classList.add('opacity-0');
-                    setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 400);
+                    setTimeout(() => { 
+                        if (overlay) overlay.classList.add('hidden'); 
+                        document.body.style.overflow = ''; // 解除鎖定
+                    }, 400);
                 }
             }, 300);
         }
@@ -776,6 +782,7 @@
             });
             setTimeout(() => {
                 if (overlay) overlay.classList.add('hidden');
+                document.body.style.overflow = ''; // 解除鎖定
                 modals.forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.classList.add('hidden');
@@ -921,9 +928,9 @@
                 const isPast = new Date(`${e.date}T${e.time}`) < new Date();
                 const badge = isPast ? '<span class="text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-300 px-2 py-0.5 rounded ml-2 font-bold">已過去</span>' : '';
                 html += `
-                    <div onclick="window.closeModals(); setTimeout(()=>window.openEventDetail('${e.id}'), 400)" class="bg-white dark:bg-zinc-900 p-4 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                        <div class="flex justify-between items-start mb-1">
-                            <p class="font-bold text-zinc-900 dark:text-white">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
+                    <div onclick="window.closeModals(); setTimeout(()=>window.openEventDetail('${e.id}'), 400)" class="bg-white dark:bg-zinc-900 p-4 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors w-full">
+                        <div class="flex justify-between items-start mb-1 w-full">
+                            <p class="font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
                             ${badge}
                         </div>
                         <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">${e.date} ${formatAMPM(e.time)}</p>
@@ -939,19 +946,13 @@
             const fab = document.getElementById('fab-container');
             if (isAdmin) {
                 container.innerHTML = `
-                    <button type="button" onclick="window.openAdminModal()" class="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 p-2 sm:px-3 sm:py-1.5 rounded-full sm:rounded-lg transition-colors flex items-center justify-center gap-1.5 shrink-0" title="管理中心">
-                        <i data-lucide="shield-check" class="w-4 h-4 sm:w-4 sm:h-4"></i>
-                        <span class="hidden sm:inline text-[11px] sm:text-xs font-bold">管理中心</span>
-                    </button>
-                    <div class="hidden sm:block w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-0.5 sm:mx-1 shrink-0"></div>
-                    <button type="button" onclick="window.handleLogout()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white p-2 rounded-full transition-colors flex items-center justify-center shrink-0" title="登出">
-                        <i data-lucide="log-out" class="w-4 h-4 sm:w-4 sm:h-4"></i>
-                    </button>
+                    <button type="button" onclick="window.openAdminModal()" class="text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors mr-0.5 sm:mr-1 min-h-[36px] no-min-h">管理中心</button>
+                    <button type="button" onclick="window.handleLogout()" class="text-[11px] sm:text-xs font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-1.5 sm:px-2 ml-0.5 sm:ml-1 min-h-[36px] no-min-h">登出</button>
                 `;
                 fab.classList.remove('hidden'); fab.classList.add('flex');
             } else {
                 container.innerHTML = `
-                    <button type="button" onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 rounded-full flex items-center justify-center shrink-0" title="管理員登入">
+                    <button type="button" onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 rounded-full ml-0.5 sm:ml-1 flex items-center justify-center" title="管理員登入">
                         <i data-lucide="lock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                     </button>
                 `;
@@ -1324,13 +1325,13 @@
                     { val: 'monthly', label: '每月重複 (自訂次數)' }
                 ];
                 options.forEach(opt => {
-                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl font-bold text-zinc-900 dark:text-white transition-colors min-h-[52px] sm:min-h-[56px]">${opt.label}</button>`;
+                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl font-bold text-zinc-900 dark:text-white transition-colors min-h-[52px] sm:min-h-[56px] w-full min-w-0"><span class="truncate block w-full">${opt.label}</span></button>`;
                 });
             } else if (type === 'p-dow') {
                 titleEl.innerText = "選擇預設星期幾";
                 const options = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
                 options.forEach((label, idx) => {
-                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl font-bold text-zinc-900 dark:text-white transition-colors min-h-[52px] sm:min-h-[56px]">${label}</button>`;
+                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-4 sm:px-5 py-3 sm:py-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl font-bold text-zinc-900 dark:text-white transition-colors min-h-[52px] sm:min-h-[56px] w-full min-w-0"><span class="truncate block w-full">${label}</span></button>`;
                 });
             }
 
@@ -1342,10 +1343,10 @@
             document.getElementById(type).value = value;
             
             if(type === 'pu-repeat') {
-                document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>`;
+                document.getElementById(`${type}-btn`).innerHTML = `<span class="truncate block w-full text-left">${label}</span> <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400 shrink-0"></i>`;
                 window.togglePuRepeatCount();
             } else {
-                document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500"></i>`;
+                document.getElementById(`${type}-btn`).innerHTML = `<span class="truncate block w-full text-left">${label}</span> <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0"></i>`;
                 if (type === 'f-repeat') window.toggleRepeatCount();
             }
             
@@ -1395,7 +1396,7 @@
             document.getElementById('repeat-section').classList.remove('hidden');
             document.getElementById('f-repeat').value = 'none';
             const repeatBtn = document.getElementById('f-repeat-btn');
-            if(repeatBtn) repeatBtn.innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500"></i>`;
+            if(repeatBtn) repeatBtn.innerHTML = `<span class="truncate block w-full text-left">單次排程</span> <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0"></i>`;
             window.toggleRepeatCount();
             
             window.renderTags(); 
@@ -1451,10 +1452,10 @@
             } else {
                 presets.forEach(p => {
                     html += `
-                        <div class="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 min-h-[56px] sm:min-h-[64px]">
+                        <div class="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 min-h-[56px] sm:min-h-[64px] w-full">
                             <div class="flex-1 min-w-0 pr-3">
-                                <p class="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
-                                <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-1">逢${days[p.dayOfWeek]} · ${p.time}</p>
+                                <p class="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 truncate w-full">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
+                                <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-1 truncate w-full">逢${days[p.dayOfWeek]} · ${p.time}</p>
                             </div>
                             <button type="button" onclick="window.deletePreset('${p.id}')" class="p-2 sm:p-3 text-red-400 hover:text-white hover:bg-red-400 rounded-lg sm:rounded-xl transition-colors shrink-0 min-h-[36px] sm:min-h-[44px]">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
@@ -1494,18 +1495,18 @@
                     
                     const isEnded = now > endObj.getTime();
                     const statusBadge = isEnded 
-                        ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-md text-[9px] sm:text-[11px] font-bold">已結束</span>`
-                        : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[9px] sm:text-[11px] font-bold">未結束</span>`;
+                        ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-md text-[9px] sm:text-[11px] font-bold shrink-0">已結束</span>`
+                        : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[9px] sm:text-[11px] font-bold shrink-0">未結束</span>`;
 
                     html += `
-                        <div class="flex items-center justify-between bg-white dark:bg-darkcard p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow min-h-[72px] sm:min-h-[80px]">
+                        <div class="flex items-center justify-between bg-white dark:bg-darkcard p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow min-h-[72px] sm:min-h-[80px] w-full">
                             <div class="flex-1 min-w-0 pr-3 sm:pr-4">
-                                <div class="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                                    <p class="text-sm sm:text-base md:text-lg font-bold text-zinc-900 dark:text-white truncate">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
+                                <div class="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 w-full">
+                                    <p class="text-sm sm:text-base md:text-lg font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
                                 </div>
-                                <div class="flex items-center gap-2 sm:gap-2.5">
+                                <div class="flex items-center gap-2 sm:gap-2.5 w-full">
                                     ${statusBadge}
-                                    <p class="text-[10px] sm:text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium">${e.date} ${e.time}</p>
+                                    <p class="text-[10px] sm:text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium truncate min-w-0">${e.date} ${e.time}</p>
                                 </div>
                             </div>
                             <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-2.5 sm:p-3 text-red-500 hover:text-white bg-red-50 dark:bg-red-500/10 hover:bg-red-500 dark:hover:bg-red-500 rounded-lg sm:rounded-xl transition-colors shrink-0 shadow-sm min-h-[40px] sm:min-h-[44px]">
