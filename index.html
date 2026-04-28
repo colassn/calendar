@@ -20,118 +20,132 @@
                     },
                     colors: {
                         appbg: '#F2F2F7', 
+                    },
+                    transitionTimingFunction: {
+                        'golden': 'cubic-bezier(0.4, 0, 0.2, 1)',
                     }
                 }
             }
         }
     </script>
     <style>
-        body { transition: font-family 0.3s ease, background-color 0.3s ease; -webkit-tap-highlight-color: transparent; }
+        /* 核心過渡動畫與基本重置 */
+        body { 
+            transition: font-family 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        /* Modal 動畫 (Golden Ratio Scale & Cubic Bezier) */
         .modal-enter { opacity: 0; transform: translateY(20px) scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
         
-        /* 隱藏原生時間選擇器的圖標，讓版面更乾淨 */
+        /* 隱藏原生時間選擇器的圖標，讓版面更乾淨，並確保 44px 觸控區 */
         input[type="time"]::-webkit-calendar-picker-indicator { display: none; background: transparent; }
-        input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+        input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; min-height: 44px; min-width: 44px; }
+        
+        /* 確保所有輸入框與按鈕的最低觸控高度為 44px (iOS/Android 規範) */
+        button, input, select { min-height: 44px; }
+        .no-min-h { min-height: auto; } /* 特殊小按鈕的例外處理 */
     </style>
 </head>
 <body class="antialiased selection:bg-zinc-200 min-h-screen flex flex-col font-sans bg-appbg" id="app-body">
 
     <!-- Header -->
-    <header class="sticky top-0 z-30 bg-appbg/70 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors" id="app-header">
+    <header class="sticky top-0 z-30 bg-appbg/70 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors duration-300 ease-golden" id="app-header">
         <div class="flex justify-between items-center px-6 py-4 max-w-2xl mx-auto w-full">
             <h1 class="text-xl font-black tracking-tight text-zinc-900">
                 CHIM<span class="font-medium text-zinc-500">.APP</span>
             </h1>
-            <div class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-full shadow-sm border border-zinc-100">
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-zinc-100 min-h-[44px]">
                 <!-- 鋼琴班更改按鈕 -->
-                <button onclick="window.openPianoUpdateModal()" class="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors p-1.5 rounded-full flex items-center gap-1" title="鋼琴班補堂/更改">
-                    <i data-lucide="music" class="w-4 h-4 fill-indigo-500/20"></i>
-                    <span class="text-[10px] font-bold pr-1">鋼琴班更改</span>
+                <button onclick="window.openPianoUpdateModal()" class="text-purple-600 hover:text-purple-700 hover:bg-purple-50 transition-colors ease-golden duration-300 p-2 rounded-full flex items-center gap-1.5" title="鋼琴班補堂/更改">
+                    <i data-lucide="music" class="w-4 h-4 fill-purple-500/20"></i>
+                    <span class="text-[11px] font-bold pr-1">更改琴班</span>
                 </button>
-                <div class="w-px h-4 bg-zinc-200 mx-1"></div>
+                <div class="w-px h-5 bg-zinc-200 mx-1"></div>
 
-                <button onclick="window.openDashboard()" class="text-zinc-400 hover:text-zinc-900 transition-colors p-1.5 rounded-full" title="全螢幕動態看板">
-                    <i data-lucide="monitor-play" class="w-4 h-4"></i>
+                <button onclick="window.openDashboard()" class="text-zinc-400 hover:text-zinc-900 transition-colors ease-golden duration-300 p-2 rounded-full" title="全螢幕動態看板">
+                    <i data-lucide="monitor-play" class="w-5 h-5"></i>
                 </button>
-                <div class="w-px h-4 bg-zinc-200 mx-1"></div>
-                <button onclick="window.openSettingsModal()" class="text-zinc-400 hover:text-zinc-900 transition-colors p-1.5 rounded-full" title="個性化設定">
-                    <i data-lucide="palette" class="w-4 h-4"></i>
+                <div class="w-px h-5 bg-zinc-200 mx-1"></div>
+                <button onclick="window.openSettingsModal()" class="text-zinc-400 hover:text-zinc-900 transition-colors ease-golden duration-300 p-2 rounded-full" title="個性化設定">
+                    <i data-lucide="palette" class="w-5 h-5"></i>
                 </button>
-                <div class="w-px h-4 bg-zinc-200 mx-1"></div>
-                <div id="auth-container" class="flex items-center gap-1.5">
+                <div class="w-px h-5 bg-zinc-200 mx-1"></div>
+                <div id="auth-container" class="flex items-center gap-1.5 min-h-[44px]">
                     <!-- Auth buttons injected here -->
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-2xl mx-auto px-5 py-6 pb-32 w-full flex-1 flex flex-col gap-8">
+    <!-- Main Content (Golden Ratio 寬度比例設計 max-w-2xl 約等於黃金比例基準) -->
+    <main class="max-w-2xl mx-auto px-5 py-8 pb-32 w-full flex-1 flex flex-col gap-10">
         <section id="agenda-section" class="w-full">
             <div class="flex justify-between items-center mb-4 px-2">
                 <div class="flex items-center gap-3">
                     <h2 id="agenda-title" class="text-2xl font-bold tracking-tight text-zinc-900">即將到來</h2>
-                    <button onclick="window.goToToday()" class="px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-colors shadow-sm">今日</button>
+                    <button onclick="window.goToToday()" class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-colors ease-golden duration-300 shadow-sm min-h-[44px]">今日</button>
                 </div>
-                <button id="show-all-btn" class="hidden px-3 py-1 bg-zinc-200/50 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-colors" onclick="window.clearDateSelection()">
+                <button id="show-all-btn" class="hidden px-4 py-2 bg-zinc-200/50 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-colors ease-golden duration-300 min-h-[44px]" onclick="window.clearDateSelection()">
                     顯示全部
                 </button>
             </div>
+            <div id="filter-bar" class="flex gap-2 px-2 mb-6 overflow-x-auto hide-scrollbar"></div>
             <div id="agenda-list" class="space-y-6"></div>
         </section>
 
         <section id="calendar-section" class="w-full">
-            <div class="bg-white rounded-[2rem] p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-zinc-100/80">
-                <div class="flex justify-between items-center mb-5">
+            <div class="bg-white rounded-[2rem] p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-zinc-100/80 transition-all ease-golden duration-300">
+                <div class="flex justify-between items-center mb-6">
                     <h2 id="calendar-month-title" class="text-xl font-bold tracking-tight text-zinc-900"></h2>
                     <div class="flex items-center gap-2">
-                        <button onclick="window.goToToday()" class="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-all shadow-sm">今日</button>
-                        <div class="flex gap-1 bg-zinc-50 rounded-full p-1">
-                            <button onclick="window.changeMonth(-1)" class="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                            <button onclick="window.changeMonth(1)" class="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                        <button onclick="window.goToToday()" class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full text-xs font-bold transition-all ease-golden duration-300 shadow-sm min-h-[44px]">今日</button>
+                        <div class="flex gap-1 bg-zinc-50 rounded-full p-1 min-h-[44px] items-center">
+                            <button onclick="window.changeMonth(-1)" class="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all ease-golden duration-300 min-h-[36px] w-10 flex items-center justify-center no-min-h"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                            <button onclick="window.changeMonth(1)" class="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-full transition-all ease-golden duration-300 min-h-[36px] w-10 flex items-center justify-center no-min-h"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
                         </div>
                     </div>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-sm"></div>
-                <div class="mt-5 pt-4 border-t border-zinc-50 flex items-center justify-center gap-4 text-[11px] font-bold text-zinc-400">
-                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-400"></div>1項</div>
-                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-amber-400"></div>2項</div>
-                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rose-400"></div>3項+</div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-y-4 gap-x-2 text-center text-sm font-medium"></div>
+                <div class="mt-6 pt-5 border-t border-zinc-50 flex items-center justify-center gap-6 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                    <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>1項</div>
+                    <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>2項</div>
+                    <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>3項+</div>
                 </div>
             </div>
         </section>
     </main>
 
     <!-- FAB -->
-    <div id="fab-container" class="hidden fixed bottom-8 left-0 right-0 pointer-events-none z-40 justify-center">
-        <button onclick="window.openAddModal()" class="pointer-events-auto flex items-center gap-2 px-6 py-3.5 bg-zinc-900/90 backdrop-blur-md text-white rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:bg-zinc-800 hover:scale-105 transition-all duration-300">
+    <div id="fab-container" class="hidden fixed bottom-10 left-0 right-0 pointer-events-none z-40 justify-center">
+        <button onclick="window.openAddModal()" class="pointer-events-auto flex items-center gap-2 px-8 py-4 bg-zinc-900/90 backdrop-blur-md text-white rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:bg-zinc-800 hover:scale-105 transition-all ease-golden duration-300 min-h-[56px]">
             <i data-lucide="plus" class="w-5 h-5"></i>
             <span class="font-bold text-sm tracking-wide">新增排程</span>
         </button>
     </div>
 
     <!-- MAIN Modals Overlay -->
-    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-400">
+    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
 
         <!-- 鋼琴班智能更改 Modal -->
-        <div id="piano-update-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
-            <div class="bg-indigo-50 p-6 pb-5 text-center relative shrink-0 border-b border-indigo-100">
-                <button onclick="window.closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
+        <div id="piano-update-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh]">
+            <div class="bg-purple-50 p-6 pb-5 text-center relative shrink-0 border-b border-purple-100">
+                <button onclick="window.closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2.5 rounded-full shadow-sm transition-colors ease-golden min-h-[44px] w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                    <i data-lucide="music" class="w-6 h-6 text-indigo-500 fill-indigo-500"></i>
+                <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <i data-lucide="music" class="w-6 h-6 text-purple-500 fill-purple-500"></i>
                 </div>
-                <h3 class="text-xl font-black text-zinc-900 tracking-tight mb-1">鋼琴班排程</h3>
-                <p class="text-zinc-500 font-bold text-xs">貼上對話自動填寫，或直接手動設定</p>
+                <h3 class="text-xl font-black text-zinc-900 tracking-tight mb-1">更改琴班</h3>
+                <p class="text-zinc-500 font-bold text-xs">直接貼上老師的 WhatsApp 對話自動解析！</p>
             </div>
             
-            <!-- 目前已排定的鋼琴班 -->
-            <div class="bg-zinc-50/70 px-6 py-3 shrink-0 border-b border-zinc-100 flex items-center gap-2 overflow-x-auto hide-scrollbar" id="pu-existing-list">
+            <div class="bg-zinc-50/70 px-6 py-4 shrink-0 border-b border-zinc-100 flex items-center gap-3 overflow-x-auto hide-scrollbar min-h-[76px]" id="pu-existing-list">
                 <!-- 動態載入 -->
             </div>
 
@@ -139,239 +153,145 @@
                 <form id="piano-update-form" onsubmit="window.handlePianoSubmit(event)" class="space-y-6">
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-widest pl-1">智能解析 (貼上訊息)</label>
-                        <textarea id="pu-text" rows="2" oninput="window.handlePianoPaste(event)" class="w-full px-4 py-3 text-sm bg-white border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-2xl resize-none font-medium placeholder:text-zinc-300 shadow-inner transition-shadow" placeholder="例如：27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
+                        <textarea id="pu-text" rows="2" oninput="window.handlePianoPaste(event)" class="w-full px-4 py-4 text-sm bg-white border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-zinc-900 rounded-2xl resize-none font-medium placeholder:text-zinc-300 shadow-inner transition-shadow min-h-[88px]" placeholder="例如：27/02 五 6:15-7:15 (堂後+15分鐘)"></textarea>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-widest pl-1">時間設定</label>
-                        <div class="bg-white border border-zinc-200 rounded-[1.5rem] p-1 shadow-sm">
-                            <div class="flex items-center px-3 py-2 border-b border-zinc-100">
-                                <i data-lucide="calendar" class="w-4 h-4 text-indigo-500 mr-3 shrink-0"></i>
-                                <input id="pu-date" onchange="window.checkPianoConflict()" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-bold text-sm tracking-wide">
+                        <div class="bg-white border border-zinc-200 rounded-[1.5rem] p-1.5 shadow-sm">
+                            <div class="flex items-center px-4 py-3 border-b border-zinc-100 min-h-[56px]">
+                                <i data-lucide="calendar" class="w-5 h-5 text-indigo-500 mr-3 shrink-0"></i>
+                                <input id="pu-date" onchange="window.checkPianoConflict()" required type="date" class="w-full bg-transparent focus:outline-none text-zinc-900 font-bold text-base tracking-wide no-min-h">
                             </div>
                             <div class="flex items-center justify-between p-2 gap-2">
-                                <div class="flex-1 bg-zinc-50 rounded-xl px-3 py-2.5 text-center border border-zinc-100">
-                                    <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1">開始</p>
-                                    <input id="pu-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 font-black text-xl">
+                                <div class="flex-1 bg-zinc-50 rounded-xl px-3 py-3 text-center border border-zinc-100">
+                                    <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">開始</p>
+                                    <input id="pu-time" required type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 font-black text-xl no-min-h h-8">
                                 </div>
-                                <i data-lucide="arrow-right" class="w-4 h-4 text-zinc-300 shrink-0"></i>
-                                <div class="flex-1 bg-zinc-50 rounded-xl px-3 py-2.5 text-center border border-zinc-100">
-                                    <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1">結束</p>
-                                    <input id="pu-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 font-black text-xl">
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-zinc-300 shrink-0"></i>
+                                <div class="flex-1 bg-zinc-50 rounded-xl px-3 py-3 text-center border border-zinc-100">
+                                    <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">結束</p>
+                                    <input id="pu-endtime" type="time" class="w-full bg-transparent text-center focus:outline-none text-zinc-900 font-black text-xl no-min-h h-8">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div class="bg-indigo-50/40 p-1 rounded-[1.25rem] border border-indigo-100 flex items-center relative overflow-hidden">
+                        <div class="bg-indigo-50/40 p-1.5 rounded-[1.25rem] border border-indigo-100 flex items-center relative overflow-hidden">
                             <input type="hidden" id="pu-repeat" value="none">
-                            <button type="button" onclick="window.openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-2.5 text-sm bg-transparent text-indigo-900 font-bold transition-colors">
+                            <button type="button" onclick="window.openSelectModal('pu-repeat')" id="pu-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-3 text-sm bg-transparent text-indigo-900 font-bold transition-colors min-h-[44px]">
                                 單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-indigo-400"></i>
                             </button>
                         </div>
-                        <div id="pu-repeat-count-container" class="hidden bg-indigo-50/40 p-1 rounded-[1.25rem] border border-indigo-100 items-center relative overflow-hidden">
-                            <div class="bg-white p-2.5 rounded-xl ml-0.5 shadow-sm text-indigo-500 text-[10px] font-bold text-center w-8 h-8 flex items-center justify-center leading-none shrink-0">次數</div>
-                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-2.5 text-sm bg-transparent focus:outline-none text-indigo-900 font-bold" placeholder="重複次數">
+                        <div id="pu-repeat-count-container" class="hidden bg-indigo-50/40 p-1.5 rounded-[1.25rem] border border-indigo-100 items-center relative overflow-hidden">
+                            <div class="bg-white p-3 rounded-xl ml-0.5 shadow-sm text-indigo-500 text-[10px] font-bold text-center w-10 h-10 flex items-center justify-center leading-none shrink-0">次數</div>
+                            <input id="pu-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-3 text-sm bg-transparent focus:outline-none text-indigo-900 font-bold no-min-h" placeholder="重複次數">
                         </div>
                     </div>
 
-                    <div id="pu-conflict-warning" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-[1.5rem] flex flex-col gap-3">
-                        <div class="flex items-start gap-2.5">
-                            <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500 shrink-0"></i>
+                    <div id="pu-conflict-warning" class="hidden bg-amber-50 border border-amber-200 p-5 rounded-[1.5rem] flex flex-col gap-3">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500 shrink-0 mt-0.5"></i>
                             <div>
                                 <p class="text-sm font-bold text-amber-800 mb-1">發現該日已有鋼琴班</p>
-                                <p class="text-[11px] font-medium text-amber-600 leading-relaxed">原本設定時間為 <span id="pu-conflict-time" class="font-black border-b border-amber-300"></span>。確認發佈將會覆蓋舊時間。</p>
+                                <p class="text-xs font-medium text-amber-600 leading-relaxed">原本設定時間為 <span id="pu-conflict-time" class="font-black border-b border-amber-300"></span>。確認發佈將會覆蓋舊時間。</p>
                             </div>
                         </div>
                     </div>
 
-                    <div id="pu-submit-section" class="pt-2">
-                        <button type="submit" id="pu-submit-btn" class="w-full py-4 text-sm font-black text-white bg-indigo-500 rounded-[1.5rem] hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 active:scale-[0.98] tracking-wide">確認並發佈</button>
+                    <div id="pu-submit-section" class="pt-4">
+                        <button type="submit" id="pu-submit-btn" class="w-full py-4 text-base font-black text-white bg-purple-500 rounded-[1.5rem] hover:bg-purple-600 transition-colors ease-golden shadow-lg shadow-purple-500/30 active:scale-[0.98] tracking-wide min-h-[56px]">確認並發佈</button>
                     </div>
 
-                </form>
-            </div>
-        </div>
-
-        <!-- 快捷發佈 Modal -->
-        <div id="quick-add-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
-            <div class="bg-amber-50 p-8 pb-6 text-center border-b border-amber-100 relative shrink-0">
-                <button onclick="window.closeModals()" class="absolute top-6 right-6 bg-white text-zinc-400 hover:text-zinc-800 p-2 rounded-full shadow-sm transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                    <i data-lucide="zap" class="w-8 h-8 text-amber-500 fill-amber-500"></i>
-                </div>
-                <h3 class="text-2xl font-black text-zinc-900 tracking-tight mb-2">快捷發佈</h3>
-                <p class="text-zinc-500 font-bold text-sm">快速帶入常用的活動設定</p>
-            </div>
-            <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow w-full">
-                <form id="quick-add-form" onsubmit="window.handleQuickAddSubmit(event)" class="space-y-6">
-                    <div>
-                        <label class="block text-base font-bold text-zinc-700 mb-2 pl-1">📌 選擇預設活動：</label>
-                        <input type="hidden" id="qa-preset" required>
-                        <button type="button" onclick="window.openSelectModal('qa-preset')" id="qa-preset-btn" class="w-full flex justify-between items-center px-4 py-4 text-lg bg-zinc-50 border border-zinc-200 rounded-2xl text-zinc-400 font-bold transition-colors hover:bg-zinc-100">
-                            -- 請選擇 -- <i data-lucide="chevron-down" class="w-5 h-5 text-zinc-400"></i>
-                        </button>
-                    </div>
-
-                    <div id="qa-details" class="hidden space-y-6">
-                        <div>
-                            <label class="block text-base font-bold text-zinc-700 mb-2 pl-1">📅 日期：</label>
-                            <input id="qa-date" required type="date" class="w-full px-4 py-4 text-lg bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-zinc-900 font-bold">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-base font-bold text-zinc-700 mb-2 pl-1">⏰ 開始：</label>
-                                <input id="qa-time" required type="time" class="w-full px-4 py-4 text-lg bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-zinc-900 font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-base font-bold text-zinc-700 mb-2 pl-1">⏳ 結束：</label>
-                                <input id="qa-endtime" type="time" class="w-full px-4 py-4 text-lg bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-zinc-900 font-bold">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pt-2">
-                        <button type="submit" class="w-full py-5 text-lg font-black text-white bg-amber-500 rounded-2xl hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/30 active:scale-[0.98]">確認發佈</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 預設範本設定 Modal -->
-        <div id="preset-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh] z-[105]">
-            <div class="flex justify-between items-center p-6 pb-2 border-b border-zinc-50 shrink-0">
-                <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
-                    <i data-lucide="file-plus-2" class="w-5 h-5 text-blue-500"></i> 新增快捷範本
-                </h3>
-                <button onclick="window.closePresetModal()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2 rounded-full transition-colors">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow w-full">
-                <p class="text-xs text-zinc-500 font-bold mb-4">設定後，任何人即可在「快捷發佈」快速選擇並一鍵帶入時間。</p>
-                <form id="preset-form" onsubmit="window.handleAddPreset(event)" class="space-y-4">
-                    <div>
-                        <div class="flex gap-2">
-                            <input id="p-tag" type="text" class="w-1/3 px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400" placeholder="標籤(可省)">
-                            <input id="p-title" required type="text" class="w-2/3 px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400" placeholder="活動標題">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-zinc-500 mb-1.5 ml-1">預設星期幾？</label>
-                        <input type="hidden" id="p-dow" value="5">
-                        <button type="button" onclick="window.openSelectModal('p-dow')" id="p-dow-btn" class="w-full flex justify-between items-center px-4 py-3 text-sm bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 font-bold transition-colors hover:bg-zinc-100">
-                            星期五 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-500 mb-1.5 ml-1">預設開始時間</label>
-                            <input id="p-time" required type="time" value="16:00" class="w-full px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-500 mb-1.5 ml-1">預設結束時間</label>
-                            <input id="p-endtime" type="time" value="17:00" class="w-full px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold">
-                        </div>
-                    </div>
-                    <div>
-                        <input id="p-location" type="text" class="w-full px-3 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400" placeholder="預設地點 (選填)">
-                    </div>
-                    <div class="pt-2">
-                        <button type="submit" class="w-full py-3.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 active:scale-[0.98]">儲存範本</button>
-                    </div>
                 </form>
             </div>
         </div>
 
         <!-- Add / Edit Modal -->
-        <div id="add-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
-            <div class="flex justify-between items-center p-6 pb-2 border-b border-zinc-50 shrink-0">
+        <div id="add-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh]">
+            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-50 shrink-0">
                 <h3 id="form-modal-title" class="text-lg font-bold text-zinc-900 tracking-tight">新增排程</h3>
-                <button onclick="window.closeModals()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2 rounded-full transition-colors">
+                <button onclick="window.closeModals()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
             <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow w-full">
-                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-4">
+                <form id="add-form" onsubmit="window.handleAddOrEditEvent(event)" class="space-y-5">
                     
                     <div>
                         <div class="bg-zinc-50 p-2 rounded-2xl border border-zinc-100 flex gap-2">
-                            <input id="f-tag" type="text" class="w-1/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold border-r border-zinc-200" placeholder="標籤(選)">
-                            <input id="f-title" required type="text" class="w-2/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold" placeholder="準備做些什麼？">
+                            <input id="f-tag" type="text" class="w-1/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold border-r border-zinc-200 no-min-h" placeholder="標籤(選)">
+                            <input id="f-title" required type="text" class="w-2/3 px-3 py-3 text-base bg-transparent focus:outline-none text-zinc-900 placeholder:text-zinc-400 font-bold no-min-h" placeholder="準備做些什麼？">
                         </div>
-                        <div id="dynamic-tags-container" class="flex flex-wrap gap-1.5 mt-2 px-1"></div>
+                        <div id="dynamic-tags-container" class="flex flex-wrap gap-2 mt-3 px-1"></div>
                     </div>
 
-                    <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
-                        <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm"><i data-lucide="calendar" class="text-zinc-500 w-4 h-4"></i></div>
-                        <input id="f-date" required type="date" class="w-full pl-3 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 font-bold">
+                    <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px]">
+                        <div class="bg-white p-3 rounded-xl ml-1 shadow-sm shrink-0"><i data-lucide="calendar" class="text-zinc-500 w-5 h-5"></i></div>
+                        <input id="f-date" required type="date" class="w-full pl-4 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
-                            <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm text-zinc-500 text-[10px] font-bold text-center w-9 h-9 flex items-center justify-center leading-none">開始</div>
-                            <input id="f-time" required type="time" class="w-full pl-2 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 font-bold">
+                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px]">
+                            <div class="bg-white p-3 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-11 h-11 flex items-center justify-center leading-none shrink-0">開始</div>
+                            <input id="f-time" required type="time" class="w-full pl-3 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h">
                         </div>
-                        <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
-                            <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm text-zinc-500 text-[10px] font-bold text-center w-9 h-9 flex items-center justify-center leading-none">完結</div>
-                            <input id="f-endtime" type="time" class="w-full pl-2 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 font-bold">
-                            <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-zinc-50/90 backdrop-blur-md flex items-center justify-center cursor-pointer hidden" onclick="window.toggleTBD()">
-                                <span class="text-sm font-bold text-zinc-500 tracking-wider">暫未確定</span>
+                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px]">
+                            <div class="bg-white p-3 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-11 h-11 flex items-center justify-center leading-none shrink-0">完結</div>
+                            <input id="f-endtime" type="time" class="w-full pl-3 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h">
+                            <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-zinc-50/90 backdrop-blur-md flex items-center justify-center cursor-pointer hidden transition-opacity duration-300" onclick="window.toggleTBD()">
+                                <span class="text-sm font-bold text-zinc-600 tracking-wider">暫未確定</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end mt-2">
-                        <button type="button" onclick="window.toggleTBD()" class="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-                            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> 設為「暫未確定」結束
+                    <div class="flex items-center justify-end mt-1">
+                        <button type="button" onclick="window.toggleTBD()" class="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-sm min-h-[44px]">
+                            <i data-lucide="help-circle" class="w-4 h-4"></i> 設為「暫未確定」結束
                         </button>
                     </div>
                     
-                    <div id="repeat-section" class="grid grid-cols-2 gap-3 mt-4">
-                        <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
+                    <div id="repeat-section" class="grid grid-cols-2 gap-3 mt-5">
+                        <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
                             <input type="hidden" id="f-repeat" value="none">
-                            <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-3 pr-2 py-2 text-sm bg-transparent text-zinc-900 font-bold transition-colors">
+                            <button type="button" onclick="window.openSelectModal('f-repeat')" id="f-repeat-btn" class="w-full flex justify-between items-center pl-4 pr-3 py-3 text-sm bg-transparent text-zinc-900 font-bold transition-colors min-h-[44px]">
                                 單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
                             </button>
                         </div>
-                        <div id="repeat-count-container" class="hidden bg-zinc-50 p-1 rounded-2xl border border-zinc-100 items-center relative overflow-hidden">
-                            <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm text-zinc-500 text-[10px] font-bold text-center w-9 h-9 flex items-center justify-center leading-none shrink-0">次數</div>
-                            <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 font-bold" placeholder="重複次數">
+                        <div id="repeat-count-container" class="hidden bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 items-center relative overflow-hidden">
+                            <div class="bg-white p-3 rounded-xl ml-1 shadow-sm text-zinc-500 text-[11px] font-bold text-center w-11 h-11 flex items-center justify-center leading-none shrink-0">次數</div>
+                            <input id="f-repeat-count" type="number" min="2" max="52" value="4" class="w-full pl-3 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h" placeholder="重複次數">
                         </div>
                     </div>
 
-                    <div class="bg-zinc-50 p-1 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden">
-                        <div class="bg-white p-2.5 rounded-xl ml-1 shadow-sm"><i data-lucide="map-pin" class="text-zinc-500 w-4 h-4"></i></div>
-                        <input id="f-location" type="text" class="w-full pl-3 pr-2 py-3 text-sm bg-transparent focus:outline-none text-zinc-900 font-bold" placeholder="輸入地點 (選填)">
+                    <div class="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center relative overflow-hidden min-h-[56px] mt-4">
+                        <div class="bg-white p-3 rounded-xl ml-1 shadow-sm shrink-0"><i data-lucide="map-pin" class="text-zinc-500 w-5 h-5"></i></div>
+                        <input id="f-location" type="text" class="w-full pl-4 pr-2 py-3 text-base bg-transparent focus:outline-none text-zinc-900 font-bold no-min-h" placeholder="輸入地點 (選填)">
                     </div>
-                    <div class="pt-4 shrink-0">
-                        <button type="submit" id="form-submit-btn" class="w-full py-4 text-sm font-bold text-white bg-zinc-900 rounded-2xl hover:bg-zinc-800 transition-colors shadow-lg shadow-zinc-900/20 active:scale-[0.98]">確認建立</button>
+                    <div class="pt-6 shrink-0">
+                        <button type="submit" id="form-submit-btn" class="w-full py-4 text-base font-bold text-white bg-zinc-900 rounded-2xl hover:bg-zinc-800 transition-colors ease-golden shadow-lg shadow-zinc-900/20 active:scale-[0.98] min-h-[56px]">確認建立</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Alert Modal -->
-        <div id="alert-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-xs overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 z-[110]">
-            <div class="flex flex-col items-center text-center p-8">
-                <div class="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
-                    <i data-lucide="info" class="text-zinc-900 w-6 h-6"></i>
+        <!-- Alert Modal (Golden Ratio Width applied implicitly) -->
+        <div id="alert-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 z-[110]">
+            <div class="flex flex-col items-center text-center p-10 pt-12">
+                <div class="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-5">
+                    <i data-lucide="info" class="text-amber-500 w-7 h-7"></i>
                 </div>
-                <p id="alert-msg" class="text-zinc-800 text-sm mb-8 font-bold leading-relaxed">訊息內容</p>
-                <button onclick="window.closeAlertModal()" class="w-full py-3.5 bg-zinc-100 text-zinc-900 rounded-2xl hover:bg-zinc-200 transition-colors text-sm font-bold">我知道了</button>
+                <p id="alert-msg" class="text-zinc-800 text-base mb-8 font-bold leading-relaxed tracking-wide">訊息內容</p>
+                <button onclick="window.closeAlertModal()" class="w-full py-4 bg-zinc-100 text-zinc-900 rounded-2xl hover:bg-zinc-200 transition-colors text-sm font-bold min-h-[56px]">我知道了</button>
             </div>
         </div>
 
         <!-- Admin Modal -->
-        <div id="admin-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[85vh]">
+        <div id="admin-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[85vh]">
             <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
                     <i data-lucide="shield-alert" class="w-5 h-5 text-emerald-500"></i> 管理中心
                 </h3>
-                <button onclick="window.closeModals()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2 rounded-full transition-colors">
+                <button onclick="window.closeModals()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -379,33 +299,33 @@
             <div class="p-6 overflow-y-auto space-y-8 bg-white grow hide-scrollbar w-full">
                 <!-- 標籤管理區塊 -->
                 <div>
-                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5"></i> 自定義標籤管理</h4>
-                    <div class="flex gap-2 mb-3">
-                        <input id="new-tag-input" type="text" class="flex-1 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold" placeholder="新標籤 (例如: 補習)">
-                        <button onclick="window.addCustomTag()" class="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-bold hover:bg-zinc-800 transition-colors shadow-sm">新增</button>
+                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-4 h-4"></i> 自定義標籤管理</h4>
+                    <div class="flex gap-2 mb-4">
+                        <input id="new-tag-input" type="text" class="flex-1 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold min-h-[44px]" placeholder="新標籤 (例如: 補習)">
+                        <button onclick="window.addCustomTag()" class="px-5 py-3 bg-zinc-900 text-white rounded-xl text-sm font-bold hover:bg-zinc-800 transition-colors shadow-sm min-h-[44px]">新增</button>
                     </div>
-                    <div id="admin-tags-list" class="flex flex-wrap gap-2"></div>
+                    <div id="admin-tags-list" class="flex flex-wrap gap-2.5"></div>
                 </div>
 
                 <div class="h-px bg-zinc-100 w-full"></div>
 
                 <!-- 預設範本管理區塊 -->
                 <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5"></i> 快捷發佈範本</h4>
-                        <button onclick="window.openPresetModal()" class="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded-md hover:bg-blue-100 transition-colors flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> 新增範本</button>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 flex items-center gap-1.5"><i data-lucide="zap" class="w-4 h-4"></i> 快捷發佈範本</h4>
+                        <button onclick="window.openPresetModal()" class="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1.5 min-h-[36px] no-min-h"><i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增範本</button>
                     </div>
-                    <div class="space-y-2" id="admin-preset-list"></div>
+                    <div class="space-y-3" id="admin-preset-list"></div>
                 </div>
 
                 <div class="h-px bg-zinc-100 w-full"></div>
 
                 <!-- 系統維護區塊 -->
                 <div>
-                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-3.5 h-3.5"></i> 系統維護</h4>
-                    <div class="bg-zinc-50 p-4 rounded-[1.5rem] border border-zinc-100 text-center mb-4">
-                        <button onclick="window.clearEndedEvents()" class="w-full py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors text-sm font-bold flex justify-center items-center gap-2 shadow-sm">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i> 一鍵清除所有已結束排程
+                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 mb-3 flex items-center gap-1.5"><i data-lucide="calendar-check" class="w-4 h-4"></i> 系統維護</h4>
+                    <div class="bg-zinc-50 p-5 rounded-[1.5rem] border border-zinc-100 text-center mb-5">
+                        <button onclick="window.clearEndedEvents()" class="w-full py-4 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors text-sm font-bold flex justify-center items-center gap-2 shadow-sm min-h-[56px]">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i> 一鍵清除所有已結束排程
                         </button>
                     </div>
                     <div class="space-y-3" id="admin-event-list"></div>
@@ -414,84 +334,133 @@
         </div>
 
         <!-- Settings Modal -->
-        <div id="settings-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-8 scale-95 transition-all duration-400">
-            <div class="flex justify-between items-center p-6 pb-2">
+        <div id="settings-modal" class="hidden bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300">
+            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-50 shrink-0">
                 <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
                     <i data-lucide="settings-2" class="w-5 h-5 text-zinc-400"></i> App 設定
                 </h3>
-                <button onclick="window.closeModals()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2 rounded-full transition-colors">
+                <button onclick="window.closeModals()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-6 space-y-6">
+            <div class="p-6 space-y-8">
                 <div>
                     <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3 ml-1">字體風格</label>
-                    <div class="space-y-2 bg-zinc-50 p-2 rounded-2xl border border-zinc-100">
-                        <button onclick="window.applyFont('sans')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white hover:shadow-sm transition-all font-sans">
+                    <div class="space-y-2.5 bg-zinc-50 p-3 rounded-2xl border border-zinc-100">
+                        <button onclick="window.applyFont('sans')" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white hover:shadow-sm transition-all font-sans min-h-[56px]">
                             <span class="text-sm font-bold text-zinc-800">現代黑體 (App 預設)</span>
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-zinc-900 hidden font-check-icon" id="check-sans"></i>
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 hidden font-check-icon" id="check-sans"></i>
                         </button>
-                        <button onclick="window.applyFont('serif')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white hover:shadow-sm transition-all font-serif">
+                        <button onclick="window.applyFont('serif')" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white hover:shadow-sm transition-all font-serif min-h-[56px]">
                             <span class="text-sm font-bold text-zinc-800">優雅明體 (傳統)</span>
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-zinc-900 hidden font-check-icon" id="check-serif"></i>
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 hidden font-check-icon" id="check-serif"></i>
                         </button>
-                        <button onclick="window.applyFont('wenkai')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white hover:shadow-sm transition-all font-wenkai">
+                        <button onclick="window.applyFont('wenkai')" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white hover:shadow-sm transition-all font-wenkai min-h-[56px]">
                             <span class="text-sm font-bold text-zinc-800">霞鶩文楷 (書卷)</span>
-                            <i data-lucide="check-circle-2" class="w-5 h-5 text-zinc-900 hidden font-check-icon" id="check-wenkai"></i>
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 hidden font-check-icon" id="check-wenkai"></i>
                         </button>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3 ml-1">App 佈景主題</label>
-                    <div class="flex gap-3 justify-center bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
-                        <button onclick="window.applyBgColor('#F2F2F7', 'bg-appbg/70')" class="w-10 h-10 rounded-full border border-zinc-200 bg-[#F2F2F7] hover:scale-110 transition-all flex items-center justify-center bg-check-btn" id="bg-btn-#F2F2F7" title="iOS 原生灰">
-                            <div class="w-3 h-3 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
+                    <div class="flex gap-4 justify-center bg-zinc-50 p-5 rounded-2xl border border-zinc-100">
+                        <button onclick="window.applyBgColor('#F2F2F7', 'bg-appbg/70')" class="w-12 h-12 rounded-full border border-zinc-200 bg-[#F2F2F7] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[48px]" id="bg-btn-#F2F2F7" title="iOS 原生灰">
+                            <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
-                        <button onclick="window.applyBgColor('#FDF8F5', 'bg-[#FDF8F5]/70')" class="w-10 h-10 rounded-full border border-zinc-200 bg-[#FDF8F5] hover:scale-110 transition-all flex items-center justify-center bg-check-btn" id="bg-btn-#FDF8F5" title="奶茶米色">
-                            <div class="w-3 h-3 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
+                        <button onclick="window.applyBgColor('#FDF8F5', 'bg-[#FDF8F5]/70')" class="w-12 h-12 rounded-full border border-zinc-200 bg-[#FDF8F5] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[48px]" id="bg-btn-#FDF8F5" title="奶茶米色">
+                            <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
-                        <button onclick="window.applyBgColor('#F0F4F8', 'bg-[#F0F4F8]/70')" class="w-10 h-10 rounded-full border border-zinc-200 bg-[#F0F4F8] hover:scale-110 transition-all flex items-center justify-center bg-check-btn" id="bg-btn-#F0F4F8" title="科技藍灰">
-                            <div class="w-3 h-3 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
+                        <button onclick="window.applyBgColor('#F0F4F8', 'bg-[#F0F4F8]/70')" class="w-12 h-12 rounded-full border border-zinc-200 bg-[#F0F4F8] hover:scale-110 transition-transform ease-golden flex items-center justify-center bg-check-btn min-h-[48px]" id="bg-btn-#F0F4F8" title="科技藍灰">
+                            <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 hidden bg-check-icon"></div>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Detail Modal -->
-        <div id="detail-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all duration-400 max-h-[90vh]">
-            <div class="p-8 md:p-10 relative flex flex-col items-center text-center overflow-y-auto hide-scrollbar w-full">
-                <button onclick="window.closeModals()" class="absolute top-6 right-6 text-zinc-300 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-full transition-colors">
+        <!-- Detail Modal (Golden Ratio Aspect focus) -->
+        <div id="detail-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh]">
+            <div class="p-10 md:p-12 relative flex flex-col items-center text-center overflow-y-auto hide-scrollbar w-full">
+                <button onclick="window.closeModals()" class="absolute top-6 right-6 text-zinc-400 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 
-                <div class="w-full mt-4">
-                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-4" id="detail-date">日期</p>
-                    <h3 class="text-3xl font-black text-zinc-900 tracking-tight leading-snug mb-4" id="detail-title">標題</h3>
+                <div class="w-full mt-6">
+                    <p class="text-xs font-bold text-zinc-400 uppercase tracking-[0.2em] mb-5" id="detail-date">日期</p>
+                    <h3 class="text-3xl md:text-4xl font-black text-zinc-900 tracking-tight leading-snug mb-6" id="detail-title">標題</h3>
                     
-                    <div class="flex flex-col items-center gap-3 mb-8">
-                        <p class="text-base font-bold text-zinc-500 tracking-wide tabular-nums flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4"></i> <span id="detail-time">時間</span></p>
-                        <p id="detail-location-container" class="text-base font-bold text-zinc-500 tracking-wide flex items-center gap-1.5 hidden"><i data-lucide="map-pin" class="w-4 h-4"></i> <span id="detail-location">地點</span></p>
+                    <div class="flex flex-col items-center gap-4 mb-10">
+                        <p class="text-lg font-bold text-zinc-600 tracking-wide tabular-nums flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded-xl"><i data-lucide="clock" class="w-5 h-5 text-zinc-400"></i> <span id="detail-time">時間</span></p>
+                        <p id="detail-location-container" class="text-lg font-bold text-zinc-600 tracking-wide flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded-xl hidden"><i data-lucide="map-pin" class="w-5 h-5 text-zinc-400"></i> <span id="detail-location">地點</span></p>
                     </div>
                 </div>
 
-                <div class="w-full mt-4 shrink-0">
-                    <button onclick="window.closeModals()" class="w-full py-3.5 bg-zinc-50 text-zinc-900 rounded-2xl hover:bg-zinc-100 transition-colors text-sm font-bold">關閉</button>
+                <div class="w-full mt-2 shrink-0">
+                    <button onclick="window.closeModals()" class="w-full py-4 bg-zinc-900 text-white rounded-2xl hover:bg-zinc-800 transition-colors text-base font-bold shadow-md min-h-[56px] active:scale-[0.98]">關閉</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- 自定義下拉選單專用 Modal (Select Modal) -->
-    <div id="select-modal-overlay" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div id="select-modal" class="hidden bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all duration-300 flex flex-col max-h-[80vh]">
-            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
-                <h3 id="select-modal-title" class="text-lg font-bold text-zinc-900 tracking-tight">請選擇</h3>
-                <button onclick="window.closeSelectModal()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2 rounded-full transition-colors">
+        
+        <!-- Preset Modal (For Admin to Add Presets) -->
+        <div id="preset-modal" class="hidden flex flex-col bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-8 scale-95 transition-all ease-golden duration-300 max-h-[90vh] z-[105]">
+            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-50 shrink-0">
+                <h3 class="text-lg font-bold text-zinc-900 tracking-tight flex items-center gap-2">
+                    <i data-lucide="file-plus-2" class="w-5 h-5 text-blue-500"></i> 新增快捷範本
+                </h3>
+                <button onclick="window.closePresetModal()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="select-modal-options" class="p-6 overflow-y-auto space-y-2 bg-white">
+            <div class="p-6 overflow-y-auto hide-scrollbar bg-white grow w-full">
+                <p class="text-sm text-zinc-500 font-bold mb-6 leading-relaxed">設定後，任何人即可在「快捷發佈」快速選擇並一鍵帶入時間。</p>
+                <form id="preset-form" onsubmit="window.handleAddPreset(event)" class="space-y-5">
+                    <div>
+                        <div class="flex gap-2">
+                            <input id="p-tag" type="text" class="w-1/3 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400 min-h-[48px]" placeholder="標籤(可省)">
+                            <input id="p-title" required type="text" class="w-2/3 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400 min-h-[48px]" placeholder="活動標題">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-500 mb-2 ml-1">預設星期幾？</label>
+                        <input type="hidden" id="p-dow" value="5">
+                        <button type="button" onclick="window.openSelectModal('p-dow')" id="p-dow-btn" class="w-full flex justify-between items-center px-4 py-4 text-base bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 font-bold transition-colors hover:bg-zinc-100 min-h-[56px]">
+                            星期五 <i data-lucide="chevron-down" class="w-5 h-5 text-zinc-400"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-500 mb-2 ml-1">預設開始時間</label>
+                            <input id="p-time" required type="time" value="16:00" class="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-base font-bold min-h-[48px]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-500 mb-2 ml-1">預設結束時間</label>
+                            <input id="p-endtime" type="time" value="17:00" class="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-base font-bold min-h-[48px]">
+                        </div>
+                    </div>
+                    <div>
+                        <input id="p-location" type="text" class="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none text-sm font-bold placeholder:text-zinc-400 min-h-[48px]" placeholder="預設地點 (選填)">
+                    </div>
+                    <div class="pt-4">
+                        <button type="submit" class="w-full py-4 text-base font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 active:scale-[0.98] min-h-[56px]">儲存範本</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- 自定義下拉選單專用 Modal (Select Modal) -->
+    <div id="select-modal-overlay" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
+        <div id="select-modal" class="hidden bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center p-6 pb-4 border-b border-zinc-100 shrink-0">
+                <h3 id="select-modal-title" class="text-lg font-bold text-zinc-900 tracking-tight">請選擇</h3>
+                <button onclick="window.closeSelectModal()" class="bg-zinc-100 text-zinc-500 hover:bg-zinc-200 p-2.5 rounded-full transition-colors min-h-[44px] w-[44px] flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="select-modal-options" class="p-6 overflow-y-auto space-y-3 bg-white">
                 <!-- 按鈕選項動態載入 -->
             </div>
         </div>
@@ -500,49 +469,50 @@
     <!-- Dashboard Overlay (全螢幕看板) -->
     <div id="dashboard-overlay" class="fixed inset-0 z-[100] bg-zinc-950 text-white hidden opacity-0 transition-opacity duration-500 font-sans">
         <div class="absolute top-8 left-8 md:top-12 md:left-12 flex flex-col items-start z-10 pointer-events-none">
-            <div class="text-zinc-400 font-bold tracking-[0.2em] text-xs md:text-sm uppercase mb-1" id="dash-current-date">--</div>
-            <div class="text-zinc-500 font-bold tracking-widest text-base md:text-xl tabular-nums" id="dash-current-time">--:--:--</div>
+            <div class="text-zinc-400 font-bold tracking-[0.2em] text-xs md:text-sm uppercase mb-2" id="dash-current-date">--</div>
+            <div class="text-zinc-500 font-bold tracking-widest text-lg md:text-2xl tabular-nums" id="dash-current-time">--:--:--</div>
         </div>
 
-        <div class="absolute top-8 right-8 md:top-12 md:right-12 flex gap-3 z-20">
-            <button onclick="window.toggleOrientation()" class="text-zinc-400 hover:text-white transition-colors p-3 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg" title="強制旋轉螢幕">
+        <div class="absolute top-8 right-8 md:top-12 md:right-12 flex gap-4 z-20">
+            <button onclick="window.toggleOrientation()" class="text-zinc-400 hover:text-white transition-colors p-3 md:p-4 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg min-h-[44px]" title="強制旋轉螢幕">
                 <i data-lucide="smartphone-charging" class="w-5 h-5 md:w-6 md:h-6"></i>
             </button>
-            <button onclick="window.closeDashboard()" class="text-zinc-400 hover:text-white transition-colors p-3 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg" title="離開看板">
+            <button onclick="window.closeDashboard()" class="text-zinc-400 hover:text-white transition-colors p-3 md:p-4 bg-zinc-900 hover:bg-zinc-800 rounded-full shadow-lg min-h-[44px]" title="離開看板">
                 <i data-lucide="shrink" class="w-5 h-5 md:w-6 md:h-6"></i>
             </button>
         </div>
 
         <div class="w-full h-full flex flex-col items-center justify-center text-center px-6 z-10 pointer-events-none">
-            <p id="dash-status-label" class="text-zinc-400 font-bold mb-4 md:mb-6 tracking-[0.3em] uppercase text-xs border border-zinc-800 px-4 py-1.5 rounded-full">加載中</p>
-            <h2 id="dash-main-title" class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 md:mb-10 leading-tight max-w-4xl px-4">--</h2>
+            <p id="dash-status-label" class="text-zinc-400 font-bold mb-6 md:mb-8 tracking-[0.3em] uppercase text-sm md:text-base border border-zinc-800 px-5 py-2 rounded-full">加載中</p>
+            <h2 id="dash-main-title" class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-8 md:mb-12 leading-tight max-w-5xl px-4">--</h2>
             
-            <div id="dash-countdown" class="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-widest tabular-nums leading-none text-zinc-100 drop-shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+            <div id="dash-countdown" class="text-7xl md:text-8xl lg:text-[12rem] font-black tracking-widest tabular-nums leading-none text-zinc-100 drop-shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-colors duration-500">
                 --:--:--
             </div>
             
-            <p id="dash-main-time" class="text-zinc-500 font-bold mt-6 md:mt-10 text-lg md:text-xl tracking-wide tabular-nums">--</p>
+            <p id="dash-main-time" class="text-zinc-500 font-bold mt-8 md:mt-12 text-xl md:text-2xl tracking-wide tabular-nums">--</p>
         </div>
 
-        <div class="absolute bottom-8 right-8 md:bottom-12 md:right-12 flex flex-col items-end text-right z-10 pointer-events-none max-w-[200px] md:max-w-xs">
-            <p class="text-zinc-600 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-1.5 flex items-center gap-1.5">
-                <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> 隨後安排
+        <div class="absolute bottom-8 right-8 md:bottom-12 md:right-12 flex flex-col items-end text-right z-10 pointer-events-none max-w-[250px] md:max-w-sm">
+            <p class="text-zinc-600 text-[11px] md:text-sm font-bold uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> 隨後安排
             </p>
-            <p id="dash-next-title" class="text-zinc-300 font-bold text-sm md:text-base truncate w-full">無後續活動</p>
-            <p id="dash-next-time" class="text-zinc-500 font-bold text-xs md:text-sm mt-0.5 w-full tabular-nums">--</p>
+            <p id="dash-next-title" class="text-zinc-300 font-bold text-base md:text-lg truncate w-full">無後續活動</p>
+            <p id="dash-next-time" class="text-zinc-500 font-bold text-sm md:text-base mt-1 w-full tabular-nums">--</p>
         </div>
     </div>
 
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let currentFont = localStorage.getItem('chim_app_font') || 'sans'; 
         let currentBgColor = localStorage.getItem('chim_app_bg') || '#F2F2F7';
         let currentHeaderColor = localStorage.getItem('chim_app_header') || 'bg-appbg/70';
 
+        // 恢復你原本的專屬 Firebase 資料庫連線！
         const firebaseConfig = {
             apiKey: "AIzaSyBW95yx0j_bvxWjuZSB6On3bADoBu3wxnA",
             authDomain: "calendar-61298.firebaseapp.com",
@@ -552,6 +522,7 @@
             appId: "1:507955747395:web:7422bf9b7e8672eff052f6",
             measurementId: "G-4DXLBPGSP6"
         };
+        const appId = 'calendar-61298';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -568,37 +539,50 @@
         let presets = []; 
         let customTags = ['鋼琴班', '補習', '生活', '重要']; 
         
+        let activeFilter = null;
+        const tagStyles = {
+            '鋼琴班': { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200', icon: 'music' },
+            '補習': { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'book-open' },
+            '重要': { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200', icon: 'alert-circle' },
+            'default': { bg: 'bg-zinc-100', text: 'text-zinc-700', border: 'border-zinc-200', icon: 'tag' }
+        };
+
         let unsubscribeSnapshot = null;
         let unsubscribeTags = null;
         let unsubscribePresets = null;
         let dashboardInterval = null;
         let mainTimerInterval = null; 
 
-        const svgCheck = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
-        const svgClock = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-        const svgCal = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
+        const svgCheck = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+        const svgClock = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        const svgCal = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
 
         const initAuth = async () => {
-            try { await signInAnonymously(auth); } 
-            catch (err) { console.error("Anonymous auth failed:", err); }
+            try {
+                // 移除預覽平台的測試 Token 邏輯，恢復原有的純匿名登入
+                await signInAnonymously(auth);
+            } catch (err) { console.error("Auth initialization failed:", err); }
         };
         initAuth();
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 isAdmin = (user.email === 'chimhinhin@gmail.com');
-                setupFirestoreListener();
+                setupFirestoreListener(user);
             } else {
                 isAdmin = false;
-                initAuth(); 
+                initAuth(); // 確保無登入時補上匿名登入
             }
             window.updateAllViews();
         });
 
-        function setupFirestoreListener() {
+        function setupFirestoreListener(user) {
+            if (!user) return; // 嚴格檢查 Auth State
+
             if (unsubscribeSnapshot) unsubscribeSnapshot();
-            const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
-            unsubscribeSnapshot = onSnapshot(dbPath, (snapshot) => {
+            // 採用規範路徑 RULE 1
+            const eventsPath = collection(db, 'artifacts', appId, 'public', 'data', 'events');
+            unsubscribeSnapshot = onSnapshot(eventsPath, (snapshot) => {
                 events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 window.updateAllViews();
                 
@@ -609,10 +593,10 @@
                 }
 
                 if (dashboardInterval) window.forceDashboardUpdate(); 
-            }, (error) => { console.error("Firestore error: ", error); });
+            }, (error) => { console.error("Firestore error (Events): ", error); });
 
             if (unsubscribeTags) unsubscribeTags();
-            const tagsDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'settings', 'tags');
+            const tagsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'tags');
             unsubscribeTags = onSnapshot(tagsDoc, (docSnap) => {
                 if (docSnap.exists() && docSnap.data().list) {
                     customTags = docSnap.data().list;
@@ -622,17 +606,17 @@
                 if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) {
                     window.renderAdminTagsList();
                 }
-            }, (error) => { console.error("Firestore tags error: ", error); });
+            }, (error) => { console.error("Firestore error (Tags): ", error); });
 
             if (unsubscribePresets) unsubscribePresets();
-            const presetPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets');
+            const presetPath = collection(db, 'artifacts', appId, 'public', 'data', 'presets');
             unsubscribePresets = onSnapshot(presetPath, (snapshot) => {
                 presets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 const adminModal = document.getElementById('admin-modal');
                 if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) {
                     window.renderAdminPresetList();
                 }
-            }, (error) => { console.error("Firestore presets error: ", error); });
+            }, (error) => { console.error("Firestore error (Presets): ", error); });
         }
 
         function formatDate(date) {
@@ -643,14 +627,19 @@
         }
         function getTomorrowDate() { const tmr = new Date(); tmr.setDate(tmr.getDate() + 1); return formatDate(tmr); }
         function isToday(dateStr) { return formatDate(new Date()) === dateStr; }
+        
         function formatAMPM(timeStr) {
-            if (!timeStr) return '';
-            const [hourStr, minuteStr] = timeStr.split(':');
-            let hour = parseInt(hourStr, 10);
-            const ampm = hour >= 12 ? '下午' : '上午';
-            hour = hour % 12; hour = hour ? hour : 12; 
-            return `${ampm} ${hour}:${minuteStr}`;
+            if (!timeStr || String(timeStr).trim() === '') return '';
+            try {
+                const [hourStr, minuteStr] = timeStr.split(':');
+                if(!hourStr || !minuteStr) return timeStr;
+                let hour = parseInt(hourStr, 10);
+                const ampm = hour >= 12 ? '下午' : '上午';
+                hour = hour % 12; hour = hour ? hour : 12; 
+                return `${ampm} ${hour}:${minuteStr}`;
+            } catch(e) { return timeStr; }
         }
+        
         function getNextDayOfWeek(dow) {
             const d = new Date();
             const currentDay = d.getDay();
@@ -675,7 +664,7 @@
         window.applyBgColor = function(colorHex, headerClass) {
             document.body.style.backgroundColor = colorHex;
             const header = document.getElementById('app-header');
-            header.className = `sticky top-0 z-30 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors ${headerClass}`;
+            header.className = `sticky top-0 z-30 backdrop-blur-xl border-b border-zinc-200/50 w-full transition-colors duration-300 ease-golden ${headerClass}`;
             
             currentBgColor = colorHex;
             currentHeaderColor = headerClass;
@@ -700,15 +689,15 @@
             
             if (isAdmin) {
                 container.innerHTML = `
-                    <button onclick="window.openAdminModal()" class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md transition-colors mr-1">管理中心</button>
-                    <button onclick="window.handleLogout()" class="text-[10px] font-bold text-zinc-400 hover:text-zinc-900 px-1.5 ml-1">登出</button>
+                    <button onclick="window.openAdminModal()" class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors mr-1">管理中心</button>
+                    <button onclick="window.handleLogout()" class="text-[11px] font-bold text-zinc-400 hover:text-zinc-900 px-2 ml-1">登出</button>
                 `;
                 fab.classList.remove('hidden');
                 fab.classList.add('flex');
             } else {
                 container.innerHTML = `
-                    <button onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 transition-colors p-1.5 rounded-full ml-1" title="管理員登入">
-                        <i data-lucide="lock" class="w-4 h-4"></i>
+                    <button onclick="window.handleLoginClick()" class="text-zinc-400 hover:text-zinc-900 transition-colors p-2 rounded-full ml-1" title="管理員登入">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
                     </button>
                 `;
                 fab.classList.add('hidden');
@@ -728,19 +717,26 @@
             } catch (error) {
                 if (error.code !== 'auth/popup-closed-by-user') { 
                     console.error("Login Error: ", error);
-                    window.showAlert("登入失敗 (" + error.code + ")"); 
+                    window.showAlert("登入提示: 環境若阻擋 Popup，建議在主網頁環境登入。 (" + error.code + ")"); 
                 }
             }
         }
         
         window.handleLogout = async function() { 
             await signOut(auth); 
+            // 登出後，重新以「訪客（匿名）」身份登入，確保還能讀取資料庫（看行程）
+            try {
+                await signInAnonymously(auth);
+            } catch(e) {
+                console.error("訪客登入失敗", e);
+            }
             window.updateAllViews();
         }
 
         // --- CRUD ---
         window.toggleTBD = function(forceState) {
             const overlay = document.getElementById('f-endtime-tbd-overlay');
+            if(!overlay) return;
             let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
             if (isTBD) overlay.classList.remove('hidden');
             else overlay.classList.add('hidden');
@@ -763,7 +759,8 @@
             if (!isAdmin) return;
             
             const timeVal = document.getElementById('f-time').value;
-            const isTBD = !document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden');
+            const overlay = document.getElementById('f-endtime-tbd-overlay');
+            const isTBD = overlay && !overlay.classList.contains('hidden');
             const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
             
             const repeatType = document.getElementById('f-repeat').value;
@@ -783,10 +780,10 @@
             const locationVal = document.getElementById('f-location').value;
 
             try {
-                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
+                const dbPath = collection(db, 'artifacts', appId, 'public', 'data', 'events');
                 
                 if (editingId) {
-                    const eventDoc = doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events', editingId);
+                    const eventDoc = doc(db, 'artifacts', appId, 'public', 'data', 'events', editingId);
                     await updateDoc(eventDoc, {
                         tag: tagVal,
                         title: titleVal,
@@ -829,8 +826,9 @@
 
         window.deleteEvent = async function(id) {
             if (!isAdmin) return;
-            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), id)); } 
-            catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
+            try { 
+                await deleteDoc(doc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), id)); 
+            } catch (error) { window.showAlert("刪除失敗，請檢查權限。"); }
         }
 
         window.renderTags = function() {
@@ -838,7 +836,7 @@
             if(!container) return;
             let html = '';
             customTags.forEach(tag => {
-                html += `<button type="button" onclick="document.getElementById('f-tag').value='${tag}'" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-2 py-1.5 rounded-md font-bold transition-colors">${tag}</button>`;
+                html += `<button type="button" onclick="document.getElementById('f-tag').value='${tag}'" class="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-600 px-3 py-2 rounded-lg font-bold transition-colors min-h-[36px]">${tag}</button>`;
             });
             container.innerHTML = html;
         }
@@ -849,10 +847,10 @@
             let html = '';
             customTags.forEach(tag => {
                 html += `
-                <div class="flex items-center bg-white border border-zinc-200 rounded-lg pl-3 pr-1 py-1 shadow-sm">
-                    <span class="text-xs font-bold text-zinc-700 mr-2">${tag}</span>
-                    <button onclick="window.deleteCustomTag('${tag}')" class="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors">
-                        <i data-lucide="x" class="w-3 h-3"></i>
+                <div class="flex items-center bg-white border border-zinc-200 rounded-xl pl-4 pr-1.5 py-1.5 shadow-sm min-h-[44px]">
+                    <span class="text-sm font-bold text-zinc-700 mr-3">${tag}</span>
+                    <button onclick="window.deleteCustomTag('${tag}')" class="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>`;
             });
@@ -869,7 +867,7 @@
             
             const newTags = [...customTags, val];
             try {
-                await setDoc(doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'settings', 'tags'), { list: newTags });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'tags'), { list: newTags });
                 input.value = '';
             } catch (err) { window.showAlert("新增標籤失敗"); }
         }
@@ -878,8 +876,27 @@
             if (!isAdmin) return;
             const newTags = customTags.filter(t => t !== tagToRemove);
             try {
-                await setDoc(doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'settings', 'tags'), { list: newTags });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'tags'), { list: newTags });
             } catch (err) { window.showAlert("刪除標籤失敗"); }
+        }
+
+        window.setFilter = function(tag) {
+            activeFilter = activeFilter === tag ? null : tag;
+            window.updateAllViews();
+        }
+
+        window.renderFilters = function() {
+            const container = document.getElementById('filter-bar');
+            if (!container) return;
+            
+            let html = `<button onclick="window.setFilter(null)" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeFilter === null ? 'bg-zinc-800 text-white shadow-md' : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'}">全部</button>`;
+            
+            customTags.forEach(tag => {
+                const style = tagStyles[tag] || tagStyles['default'];
+                const isActive = activeFilter === tag;
+                html += `<button onclick="window.setFilter('${tag}')" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${isActive ? style.bg + ' ' + style.text + ' border-transparent shadow-sm ring-2 ring-offset-1 ring-' + style.text.split('-')[1] + '-400' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}"><i data-lucide="${style.icon}" class="w-3.5 h-3.5"></i>${tag}</button>`;
+            });
+            container.innerHTML = html;
         }
 
         window.renderCalendar = function() {
@@ -904,17 +921,17 @@
                 const dateStr = formatDate(new Date(year, month, i));
                 const count = events.filter(e => e.date === dateStr).length;
                 
-                let colorClass = 'text-zinc-700 font-bold hover:bg-zinc-100';
-                if (count === 1) colorClass = 'bg-emerald-100 text-emerald-800 font-bold';
-                if (count === 2) colorClass = 'bg-amber-100 text-amber-800 font-bold';
-                if (count >= 3) colorClass = 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20';
+                let colorClass = 'text-zinc-700 hover:bg-zinc-100';
+                if (count === 1) colorClass = 'bg-emerald-100 text-emerald-800';
+                if (count === 2) colorClass = 'bg-amber-100 text-amber-800';
+                if (count >= 3) colorClass = 'bg-rose-500 text-white shadow-md shadow-rose-500/20';
 
                 const isSelected = selectedDateStr === dateStr;
-                const selectedClass = isSelected ? 'ring-2 ring-offset-2 ring-zinc-900 scale-110 shadow-md' : '';
-                const todayClass = (isToday(dateStr) && !isSelected && count === 0) ? 'border border-zinc-200' : '';
+                const selectedClass = isSelected ? 'ring-2 ring-offset-2 ring-zinc-900 scale-110 shadow-md z-10' : '';
+                const todayClass = (isToday(dateStr) && !isSelected && count === 0) ? 'border-2 border-zinc-200' : '';
 
                 html += `
-                    <button onclick="window.selectDate('${dateStr}')" class="w-9 h-9 mx-auto rounded-full flex items-center justify-center transition-all duration-300 ${colorClass} ${selectedClass} ${todayClass}">
+                    <button onclick="window.selectDate('${dateStr}')" class="w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-all duration-300 ease-golden no-min-h text-sm font-bold ${colorClass} ${selectedClass} ${todayClass}">
                         ${i}
                     </button>
                 `;
@@ -927,7 +944,12 @@
             const showAllBtn = document.getElementById('show-all-btn');
             const titleEl = document.getElementById('agenda-title');
             
-            const sortedEvents = [...events].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+            let filteredEvents = events;
+            if (activeFilter) {
+                filteredEvents = events.filter(e => e.tag === activeFilter);
+            }
+            const sortedEvents = [...filteredEvents].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+            
             let html = '';
 
             if (selectedDateStr) {
@@ -952,6 +974,7 @@
             }
 
             listContainer.innerHTML = html;
+            window.renderFilters(); // Ensure filters are rendered
             if (window.lucide) window.lucide.createIcons(); 
             
             window.updateAgendaTimers();
@@ -964,13 +987,13 @@
             const dateObj = new Date(dateStr);
             const displayLabel = customLabel || dateObj.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
             
-            let html = `<div class="mb-8">`;
+            let html = `<div class="mb-10">`;
             
             html += `
-                <div class="flex justify-between items-center mb-3 px-2">
-                    <h3 class="text-sm font-bold text-zinc-500">${displayLabel} <span class="font-medium text-zinc-400 ml-1">${dateStr}</span></h3>
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <h3 class="text-sm font-bold text-zinc-500">${displayLabel} <span class="font-medium text-zinc-400 ml-1.5">${dateStr}</span></h3>
                     ${isAdmin ? `
-                    <button onclick="window.openAddModal('${dateStr}')" class="flex items-center justify-center w-7 h-7 bg-white text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-full shadow-sm border border-zinc-100 transition-all active:scale-95" title="在此日新增排程">
+                    <button onclick="window.openAddModal('${dateStr}')" class="flex items-center justify-center w-8 h-8 bg-white text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-full shadow-sm border border-zinc-100 transition-all active:scale-95 no-min-h" title="在此日新增排程">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                     </button>
                     ` : ''}
@@ -979,16 +1002,16 @@
             
             if (dayEvents.length === 0) {
                 html += `
-                    <div class="bg-white/40 rounded-[2rem] p-8 text-center shadow-sm flex flex-col items-center justify-center border-0">
-                        <p class="text-zinc-400 text-sm font-bold tracking-widest uppercase ${isAdmin ? 'mb-4' : ''}">這天可以好好放鬆 ☕️</p>
+                    <div class="bg-white/50 rounded-[2rem] py-10 px-8 text-center shadow-sm flex flex-col items-center justify-center border border-zinc-100/50">
+                        <p class="text-zinc-400 text-sm font-bold tracking-widest uppercase ${isAdmin ? 'mb-5' : ''}">這天可以好好放鬆 ☕️</p>
                         ${isAdmin ? `
-                        <button onclick="window.openAddModal('${dateStr}')" class="px-5 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-bold hover:bg-zinc-800 transition-colors shadow-md flex items-center gap-1.5 active:scale-95">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增排程
+                        <button onclick="window.openAddModal('${dateStr}')" class="px-6 py-3 bg-zinc-900 text-white rounded-xl text-sm font-bold hover:bg-zinc-800 transition-colors shadow-md flex items-center gap-2 active:scale-95 min-h-[44px]">
+                            <i data-lucide="plus" class="w-4 h-4"></i> 新增排程
                         </button>
                         ` : ''}
                     </div>`;
             } else {
-                html += `<div class="space-y-4">`;
+                html += `<div class="space-y-5">`;
                 dayEvents.forEach(e => {
                     const displayTime = formatAMPM(e.time);
                     let displayEndTime = '';
@@ -1010,35 +1033,37 @@
                     else if (!e.endTime || String(e.endTime).trim() === '') endText = ' - 未設定時間';
                     else endText = displayEndTime;
 
-                    const displayTag = e.tag ? `<span class="text-zinc-500 mr-1">【${e.tag}】</span>` : '';
+                    const tStyle = tagStyles[e.tag] || tagStyles['default'];
+                    const displayTag = e.tag ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${tStyle.bg} ${tStyle.text} text-xs font-bold align-middle border border-white shadow-sm mb-3"><i data-lucide="${tStyle.icon}" class="w-3.5 h-3.5"></i>${e.tag}</span>` : '';
 
                     html += `
-                        <div onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" class="agenda-card bg-white p-6 md:p-8 rounded-[2rem] shadow-md relative overflow-hidden group cursor-pointer hover:shadow-lg flex flex-col items-center text-center border-0">
-                            <div class="card-indicator absolute top-0 left-0 right-0 h-1.5 bg-zinc-900 transition-colors duration-500"></div>
+                        <div onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" class="agenda-card bg-white p-8 md:p-10 rounded-[2rem] shadow-md relative overflow-hidden group cursor-pointer hover:shadow-lg flex flex-col items-center text-center border-0 min-h-[140px]">
+                            <div class="card-indicator absolute top-0 left-0 right-0 h-2 bg-zinc-900 transition-colors duration-500 ease-golden"></div>
                             
-                            <div class="w-full mt-1">
-                                <h4 class="card-title text-xl md:text-2xl font-black text-zinc-900 leading-snug tracking-wide mb-3">${displayTag}${e.title}</h4>
+                            <div class="w-full mt-2">
+                                ${e.tag ? `<div class="flex justify-center">${displayTag}</div>` : ''}
+                                <h4 class="card-title text-2xl md:text-3xl font-black text-zinc-900 leading-snug tracking-wide mb-4">${e.title}</h4>
                                 
-                                <div class="flex flex-col items-center gap-2.5 mb-3">
-                                    <span class="flex items-center justify-center gap-1.5 text-zinc-500 text-xs md:text-sm font-bold opacity-80 tabular-nums">
+                                <div class="flex flex-col items-center gap-3 mb-2">
+                                    <span class="flex items-center justify-center gap-2 text-zinc-500 text-sm md:text-base font-bold opacity-80 tabular-nums">
                                         <i data-lucide="clock" class="w-4 h-4"></i> ${displayTime}${endText}
                                     </span>
                                     ${e.location && String(e.location).trim() !== '' ? `
-                                    <span class="flex items-center justify-center gap-1.5 text-zinc-500 text-xs md:text-sm font-bold opacity-80">
+                                    <span class="flex items-center justify-center gap-2 text-zinc-500 text-sm md:text-base font-bold opacity-80">
                                         <i data-lucide="map-pin" class="w-4 h-4"></i> ${e.location}
                                     </span>
                                     ` : ''}
-                                    <div class="card-timer-badge mt-1"></div>
+                                    <div class="card-timer-badge mt-2"></div>
                                 </div>
                             </div>
                             
                             ${isAdmin ? `
-                            <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                                <button onclick="event.stopPropagation(); window.openEditModal('${e.id}')" class="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-full transition-colors shadow-sm" title="編輯">
-                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                            <div class="absolute top-5 right-5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                                <button onclick="event.stopPropagation(); window.openEditModal('${e.id}')" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-full transition-colors shadow-sm no-min-h" title="編輯">
+                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-colors shadow-sm" title="刪除">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <button onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-colors shadow-sm no-min-h" title="刪除">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
                             ` : ''}
@@ -1060,47 +1085,47 @@
                 const badge = card.querySelector('.card-timer-badge');
                 const title = card.querySelector('.card-title');
 
-                card.className = "agenda-card p-6 md:p-8 rounded-[2rem] relative overflow-hidden group cursor-pointer flex flex-col items-center text-center transition-all duration-500 border-0";
+                card.className = "agenda-card p-8 md:p-10 rounded-[2rem] relative overflow-hidden group cursor-pointer flex flex-col items-center text-center transition-all duration-500 border-0 min-h-[140px]";
                 
                 if (now > end) {
                     card.classList.add('bg-zinc-50/70', 'shadow-none');
-                    indicator.className = "card-indicator absolute top-0 left-0 right-0 h-1.5 bg-zinc-300 transition-colors duration-500";
-                    title.className = "card-title text-xl md:text-2xl font-black text-zinc-400 leading-snug tracking-wide mb-3";
+                    indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-zinc-300 transition-colors duration-500";
+                    title.className = "card-title text-2xl md:text-3xl font-black text-zinc-400 leading-snug tracking-wide mb-4";
                     
-                    badge.className = "card-timer-badge flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-zinc-500 bg-zinc-200/50 mt-1";
+                    badge.className = "card-timer-badge flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-zinc-500 bg-zinc-200/50 mt-2";
                     badge.innerHTML = `${svgCheck} 已結束`;
 
                 } else if (now >= start && now <= end) {
                     card.classList.add('bg-emerald-50/40', 'shadow-lg');
-                    indicator.className = "card-indicator absolute top-0 left-0 right-0 h-1.5 bg-emerald-500 shadow-sm transition-colors duration-500";
-                    title.className = "card-title text-xl md:text-2xl font-black text-zinc-900 leading-snug tracking-wide mb-3";
+                    indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-emerald-500 shadow-sm transition-colors duration-500";
+                    title.className = "card-title text-2xl md:text-3xl font-black text-zinc-900 leading-snug tracking-wide mb-4";
 
                     const diff = end - now;
-                    badge.className = "card-timer-badge flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-100 shadow-sm tabular-nums mt-1";
+                    badge.className = "card-timer-badge flex items-center px-4 py-2 rounded-full text-xs font-bold text-emerald-700 bg-emerald-100 shadow-sm tabular-nums mt-2";
                     badge.innerHTML = `
-                        <span class="relative flex h-2 w-2 mr-1">
+                        <span class="relative flex h-2.5 w-2.5 mr-2">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                         </span> 
                         進行中 · 剩餘 ${window.formatDiffDash(diff)}
                     `;
 
                 } else {
                     const diff = start - now;
-                    title.className = "card-title text-xl md:text-2xl font-black text-zinc-900 leading-snug tracking-wide mb-3";
+                    title.className = "card-title text-2xl md:text-3xl font-black text-zinc-900 leading-snug tracking-wide mb-4";
 
                     if (diff < 24 * 60 * 60 * 1000) {
                         card.classList.add('bg-blue-50/20', 'shadow-md');
-                        indicator.className = "card-indicator absolute top-0 left-0 right-0 h-1.5 bg-blue-500 transition-colors duration-500";
+                        indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-blue-500 transition-colors duration-500";
                         
-                        badge.className = "card-timer-badge flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-blue-600 bg-blue-50 tabular-nums mt-1";
+                        badge.className = "card-timer-badge flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-blue-600 bg-blue-50 tabular-nums mt-2";
                         badge.innerHTML = `${svgClock} 倒數 ${window.formatDiffDash(diff)}`;
                     } else {
                         card.classList.add('bg-white', 'shadow-md');
-                        indicator.className = "card-indicator absolute top-0 left-0 right-0 h-1.5 bg-zinc-800 transition-colors duration-500";
+                        indicator.className = "card-indicator absolute top-0 left-0 right-0 h-2 bg-zinc-800 transition-colors duration-500";
                         
                         const days = Math.ceil(diff / (24*60*60*1000));
-                        badge.className = "card-timer-badge flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-zinc-500 bg-zinc-100 mt-1";
+                        badge.className = "card-timer-badge flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-zinc-500 bg-zinc-100 mt-2";
                         badge.innerHTML = `${svgCal} ${days} 天後`;
                     }
                 }
@@ -1111,6 +1136,7 @@
         window.updateAllViews = function() {
             window.renderAuth(); 
             window.renderCalendar(); 
+            window.renderFilters();
             window.renderAgenda();
             const adminModal = document.getElementById('admin-modal');
             if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) {
@@ -1181,7 +1207,7 @@
                 .sort((a,b) => new Date(`${a.date}T${a.time}:00`) - new Date(`${b.date}T${b.time}:00`));
 
             if(pianoEvents.length === 0) {
-                listContainer.innerHTML = '<span class="text-[11px] text-zinc-400 font-bold ml-1">未來暫無已排定之鋼琴班</span>';
+                listContainer.innerHTML = '<span class="text-xs text-zinc-400 font-bold ml-1 py-2">未來暫無已排定之鋼琴班</span>';
                 return;
             }
 
@@ -1190,9 +1216,9 @@
                 const d = new Date(e.date);
                 const dateStr = d.toLocaleDateString('zh-TW', { month:'numeric', day:'numeric' });
                 html += `
-                <button type="button" onclick="window.loadPianoEvent('${e.id}')" class="shrink-0 bg-indigo-50/50 hover:bg-indigo-100 border border-indigo-100 px-3 py-2 rounded-xl flex flex-col items-start transition-colors text-left min-w-[70px]">
-                    <span class="text-[10px] font-bold text-indigo-400 mb-0.5">${dateStr}</span>
-                    <span class="text-sm font-black text-indigo-700">${formatAMPM(e.time)}</span>
+                <button type="button" onclick="window.loadPianoEvent('${e.id}')" class="shrink-0 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2.5 rounded-xl flex flex-col items-start transition-colors text-left min-w-[80px] min-h-[56px]">
+                    <span class="text-[11px] font-bold text-purple-500 mb-0.5">${dateStr}</span>
+                    <span class="text-base font-black text-purple-700">${formatAMPM(e.time)}</span>
                 </button>`;
             });
             listContainer.innerHTML = html;
@@ -1251,15 +1277,15 @@
                 document.getElementById('pu-conflict-time').innerText = formatAMPM(conflict.time);
                 warningEl.classList.remove('hidden');
                 submitBtn.innerText = "確認覆蓋更改";
-                submitBtn.classList.replace('bg-indigo-500', 'bg-rose-500');
-                submitBtn.classList.replace('hover:bg-indigo-600', 'hover:bg-rose-600');
-                submitBtn.classList.replace('shadow-indigo-500/30', 'shadow-rose-500/30');
+                submitBtn.classList.replace('bg-purple-500', 'bg-rose-500');
+                submitBtn.classList.replace('hover:bg-purple-600', 'hover:bg-rose-600');
+                submitBtn.classList.replace('shadow-purple-500/30', 'shadow-rose-500/30');
             } else {
                 warningEl.classList.add('hidden');
                 submitBtn.innerText = "確認並發佈";
-                submitBtn.classList.replace('bg-rose-500', 'bg-indigo-500');
-                submitBtn.classList.replace('hover:bg-rose-600', 'hover:bg-indigo-600');
-                submitBtn.classList.replace('shadow-rose-500/30', 'shadow-indigo-500/30');
+                submitBtn.classList.replace('bg-rose-500', 'bg-purple-500');
+                submitBtn.classList.replace('hover:bg-rose-600', 'hover:bg-purple-600');
+                submitBtn.classList.replace('shadow-rose-500/30', 'shadow-purple-500/30');
             }
         }
 
@@ -1308,11 +1334,12 @@
             }
 
             try {
+                // Bug fix: exclude dates out of mapped conflicts gracefully
                 const conflicts = events.filter(ev => ev.tag === '鋼琴班' && datesToCheck.includes(ev.date));
-                const deletePromises = conflicts.map(c => deleteDoc(doc(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), c.id));
+                const deletePromises = conflicts.map(c => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events'), c.id));
                 await Promise.all(deletePromises);
 
-                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
+                const dbPath = collection(db, 'artifacts', appId, 'public', 'data', 'events');
                 await Promise.all(newEvents.map(eventData => addDoc(dbPath, eventData)));
 
                 window.closeModals();
@@ -1344,24 +1371,14 @@
                     { val: 'monthly', label: '每月重複' }
                 ];
                 options.forEach(opt => {
-                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors">${opt.label}</button>`;
+                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${opt.val}', '${opt.label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors min-h-[56px]">${opt.label}</button>`;
                 });
             } else if (type === 'p-dow') {
                 titleEl.innerText = "選擇預設星期幾";
                 const options = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
                 options.forEach((label, idx) => {
-                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors">${label}</button>`;
+                    html += `<button type="button" onclick="window.handleSelectOption('${type}', '${idx}', '${label}')" class="w-full text-center px-5 py-4 bg-zinc-50 hover:bg-zinc-100 rounded-xl font-bold text-zinc-900 transition-colors min-h-[56px]">${label}</button>`;
                 });
-            } else if (type === 'qa-preset') {
-                titleEl.innerText = "選擇預設活動";
-                if (presets.length === 0) {
-                    html = '<p class="text-center text-zinc-400 py-6 font-bold">管理員尚未設定任何快捷範本</p>';
-                } else {
-                    presets.forEach(p => {
-                        const label = p.tag ? `【${p.tag}】${p.title}` : p.title;
-                        html += `<button type="button" onclick="window.handleSelectOption('${type}', '${p.id}', '${label}')" class="w-full text-center px-5 py-4 bg-amber-50 hover:bg-amber-100 rounded-xl font-bold text-amber-700 transition-colors">${label}</button>`;
-                    });
-                }
             }
 
             optionsEl.innerHTML = html;
@@ -1386,7 +1403,6 @@
             } else {
                 document.getElementById(`${type}-btn`).innerHTML = `${label} <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
                 if (type === 'f-repeat') window.toggleRepeatCount();
-                if (type === 'qa-preset') window.handleQuickAddPresetChange();
             }
             
             window.closeSelectModal();
@@ -1402,48 +1418,6 @@
                 overlay.classList.add('hidden');
                 modal.classList.add('hidden');
             }, 300);
-        }
-
-        window.openQuickAddModal = function() {
-            document.getElementById('qa-details').classList.add('hidden');
-            document.getElementById('qa-preset').value = '';
-            document.getElementById('qa-preset-btn').innerHTML = `-- 請選擇 -- <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
-            window.showOverlayAndModal('quick-add-modal');
-            if (window.lucide) window.lucide.createIcons();
-        }
-
-        window.handleQuickAddPresetChange = function() {
-            const presetId = document.getElementById('qa-preset').value;
-            const detailSection = document.getElementById('qa-details');
-            if (!presetId) { detailSection.classList.add('hidden'); return; }
-            const p = presets.find(x => x.id === presetId);
-            if(p) {
-                document.getElementById('qa-date').value = getNextDayOfWeek(p.dayOfWeek);
-                document.getElementById('qa-time').value = p.time || '';
-                document.getElementById('qa-endtime').value = p.endTime || '';
-                detailSection.classList.remove('hidden');
-            }
-        }
-
-        window.handleQuickAddSubmit = async function(e) {
-            e.preventDefault();
-            const presetId = document.getElementById('qa-preset').value;
-            const p = presets.find(x => x.id === presetId);
-            if(!p) return;
-            const newEvent = {
-                tag: p.tag || '', title: p.title, location: p.location || '',
-                date: document.getElementById('qa-date').value,
-                time: document.getElementById('qa-time').value,
-                endTime: document.getElementById('qa-endtime').value,
-                createdAt: new Date().toISOString()
-            };
-            try {
-                const dbPath = collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events');
-                await addDoc(dbPath, newEvent);
-                window.closeModals(); e.target.reset();
-                document.getElementById('qa-details').classList.add('hidden');
-                window.showAlert("⚡ 活動發佈成功！");
-            } catch (error) { window.showAlert("發佈失敗，請聯絡管理員確認權限設定。"); }
         }
 
         window.openPresetModal = function() {
@@ -1469,7 +1443,7 @@
                 createdAt: new Date().toISOString()
             };
             try {
-                await addDoc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets'), newPreset);
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'presets'), newPreset);
                 e.target.reset();
                 window.closePresetModal();
                 window.showAlert("預設範本儲存成功！");
@@ -1478,7 +1452,7 @@
         
         window.deletePreset = async function(id) {
             if (!isAdmin) return;
-            try { await deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'presets'), id)); } 
+            try { await deleteDoc(doc(collection(db, 'artifacts', appId, 'public', 'data', 'presets'), id)); } 
             catch (error) { window.showAlert("刪除失敗。"); }
         }
 
@@ -1488,17 +1462,17 @@
             const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
             let html = '';
             if(presets.length === 0) {
-                html = '<p class="text-center text-zinc-400 text-xs font-bold py-3">尚未建立任何範本</p>';
+                html = '<p class="text-center text-zinc-400 text-sm font-bold py-4">尚未建立任何範本</p>';
             } else {
                 presets.forEach(p => {
                     html += `
-                        <div class="flex items-center justify-between bg-zinc-50 p-3 rounded-[1rem] border border-zinc-100">
-                            <div class="flex-1 min-w-0 pr-2">
-                                <p class="text-sm font-bold text-zinc-800 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
-                                <p class="text-[10px] text-zinc-500 font-medium mt-0.5">逢${days[p.dayOfWeek]} · ${p.time}</p>
+                        <div class="flex items-center justify-between bg-zinc-50 p-4 rounded-2xl border border-zinc-100 min-h-[64px]">
+                            <div class="flex-1 min-w-0 pr-3">
+                                <p class="text-base font-bold text-zinc-800 truncate">${p.tag ? '【'+p.tag+'】' : ''}${p.title}</p>
+                                <p class="text-[11px] text-zinc-500 font-medium mt-1">逢${days[p.dayOfWeek]} · ${p.time}</p>
                             </div>
-                            <button onclick="window.deletePreset('${p.id}')" class="p-2 text-red-400 hover:text-white hover:bg-red-400 rounded-lg transition-colors shrink-0">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            <button onclick="window.deletePreset('${p.id}')" class="p-3 text-red-400 hover:text-white hover:bg-red-400 rounded-xl transition-colors shrink-0 min-h-[44px]">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
                     `;
@@ -1521,7 +1495,7 @@
 
             let html = '';
             if(sortedEvents.length === 0) {
-                html = '<p class="text-center text-zinc-400 text-sm font-bold py-4">目前沒有任何排程</p>';
+                html = '<p class="text-center text-zinc-400 text-sm font-bold py-6">目前沒有任何排程</p>';
             } else {
                 sortedEvents.forEach(e => {
                     const startObj = new Date(`${e.date}T${e.time}:00`);
@@ -1535,22 +1509,22 @@
                     
                     const isEnded = now > endObj.getTime();
                     const statusBadge = isEnded 
-                        ? `<span class="px-2 py-0.5 bg-zinc-200 text-zinc-500 rounded-md text-[10px]">已結束</span>`
-                        : `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md text-[10px]">未結束</span>`;
+                        ? `<span class="px-2.5 py-1 bg-zinc-200 text-zinc-500 rounded-md text-[11px] font-bold">已結束</span>`
+                        : `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-md text-[11px] font-bold">未結束</span>`;
 
                     html += `
-                        <div class="flex items-center justify-between bg-white p-4 rounded-[1.5rem] border border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between bg-white p-4 md:p-5 rounded-[1.5rem] border border-zinc-200 shadow-sm hover:shadow-md transition-shadow min-h-[80px]">
                             <div class="flex-1 min-w-0 pr-4">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <p class="text-base font-bold text-zinc-900 truncate">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <p class="text-base md:text-lg font-bold text-zinc-900 truncate">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2.5">
                                     ${statusBadge}
-                                    <p class="text-xs text-zinc-500 font-medium">${e.date} ${e.time}</p>
+                                    <p class="text-xs md:text-sm text-zinc-500 font-medium">${e.date} ${e.time}</p>
                                 </div>
                             </div>
-                            <button onclick="window.deleteEvent('${e.id}')" class="p-2.5 text-red-500 hover:text-white bg-red-50 hover:bg-red-500 rounded-xl transition-colors shrink-0 shadow-sm">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <button onclick="window.deleteEvent('${e.id}')" class="p-3 text-red-500 hover:text-white bg-red-50 hover:bg-red-500 rounded-xl transition-colors shrink-0 shadow-sm min-h-[44px]">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
                         </div>
                     `;
@@ -1575,7 +1549,7 @@
             });
             if (eventsToDelete.length === 0) { window.showAlert("目前沒有已結束的排程。"); return; }
             try {
-                const deletePromises = eventsToDelete.map(e => deleteDoc(doc(collection(db, 'artifacts', 'calendar-61298', 'public', 'data', 'events'), e.id)));
+                const deletePromises = eventsToDelete.map(e => deleteDoc(doc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), e.id)));
                 await Promise.all(deletePromises);
                 window.showAlert(`成功清除了 ${eventsToDelete.length} 筆已結束的排程。`);
             } catch (error) { window.showAlert("清除錯誤。"); }
@@ -1703,7 +1677,7 @@
             alertModal.classList.add('translate-y-8', 'scale-95');
             setTimeout(() => {
                 alertModal.classList.add('hidden');
-                const otherModalsOpen = ['piano-update-modal', 'quick-add-modal', 'preset-modal', 'add-modal', 'settings-modal', 'detail-modal', 'admin-modal'].some(id => {
+                const otherModalsOpen = ['piano-update-modal', 'preset-modal', 'add-modal', 'settings-modal', 'detail-modal', 'admin-modal'].some(id => {
                     const el = document.getElementById(id);
                     return el && !el.classList.contains('hidden');
                 });
@@ -1712,12 +1686,12 @@
                     overlay.classList.add('opacity-0');
                     setTimeout(() => overlay.classList.add('hidden'), 400);
                 }
-            }, 400);
+            }, 300);
         }
 
         window.closeModals = function() {
             const overlay = document.getElementById('modal-overlay');
-            const modals = ['piano-update-modal', 'quick-add-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal'];
+            const modals = ['piano-update-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal'];
             overlay.classList.add('opacity-0');
             modals.forEach(id => {
                 const el = document.getElementById(id);
@@ -1729,7 +1703,7 @@
                     const el = document.getElementById(id);
                     if(el) el.classList.add('hidden');
                 });
-            }, 400); 
+            }, 300); 
         }
 
         // ==========================================
@@ -1801,7 +1775,7 @@
 
             if (upcomingEvents.length === 0) {
                 labelEl.innerText = "目前狀態";
-                labelEl.className = "text-zinc-500 font-bold mb-4 md:mb-6 tracking-[0.3em] uppercase text-xs md:text-sm border border-zinc-800 px-4 py-1.5 rounded-full";
+                labelEl.className = "text-zinc-500 font-bold mb-6 md:mb-8 tracking-[0.3em] uppercase text-sm md:text-base border border-zinc-800 px-5 py-2 rounded-full";
                 titleEl.innerText = "今日暫無更多安排";
                 cdEl.innerText = "--:--:--";
                 cdEl.classList.add('opacity-20');
@@ -1823,14 +1797,14 @@
 
             if (targetEvent.startObj <= now && targetEvent.endObj > now) {
                 labelEl.innerText = "正在進行 (IN PROGRESS)";
-                labelEl.className = "text-emerald-400 font-bold mb-4 md:mb-6 tracking-[0.2em] uppercase text-xs md:text-sm border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(52,211,153,0.2)]";
+                labelEl.className = "text-emerald-400 font-bold mb-6 md:mb-8 tracking-[0.2em] uppercase text-sm md:text-base border border-emerald-500/30 bg-emerald-500/10 px-5 py-2 rounded-full shadow-[0_0_15px_rgba(52,211,153,0.2)]";
                 
                 const diff = targetEvent.endObj - now;
                 cdEl.innerText = window.formatDiffDash(diff);
                 cdEl.classList.replace('text-zinc-100', 'text-emerald-400');
             } else {
                 labelEl.innerText = "即將開始 (UPCOMING)";
-                labelEl.className = "text-amber-400 font-bold mb-4 md:mb-6 tracking-[0.2em] uppercase text-xs md:text-sm border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.2)]";
+                labelEl.className = "text-amber-400 font-bold mb-6 md:mb-8 tracking-[0.2em] uppercase text-sm md:text-base border border-amber-500/30 bg-amber-500/10 px-5 py-2 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.2)]";
                 
                 const diff = targetEvent.startObj - now;
                 cdEl.innerText = window.formatDiffDash(diff);
