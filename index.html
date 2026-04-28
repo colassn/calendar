@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" id="meta-theme-color" content="#F2F2F7">
     <title>CHIM.SCHEDULE | 專屬日程</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -414,6 +415,20 @@
                 </button>
             </div>
             <div class="p-5 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto overscroll-contain hide-scrollbar w-full">
+                <!-- PWA 安裝區塊 -->
+                <div id="pwa-setting-section" class="hidden">
+                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">應用程式</label>
+                    <div class="bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500"></i></div>
+                            <div>
+                                <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">安裝至主畫面</p>
+                                <p class="text-[9px] sm:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">享受原生 App 體驗與全螢幕</p>
+                            </div>
+                        </div>
+                        <button type="button" id="install-pwa-btn" onclick="window.installPWA()" class="px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-500 text-white rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold shadow-sm hover:bg-indigo-600 transition-colors shrink-0 min-h-[36px] no-min-h">安裝</button>
+                    </div>
+                </div>
                 <div>
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 sm:mb-3 ml-1">通知與提醒</label>
                     <div class="bg-zinc-50 dark:bg-zinc-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
@@ -795,6 +810,11 @@
         }
 
         // --- Settings & Theme ---
+        window.updateThemeColor = function(color) {
+            let metaThemeColor = document.getElementById('meta-theme-color');
+            if(metaThemeColor) metaThemeColor.content = color;
+        };
+
         window.applyFont = function(fontName) {
             const body = document.getElementById('app-body');
             body.classList.remove('font-sans', 'font-serif', 'font-wenkai');
@@ -825,6 +845,8 @@
                 activeBtn.classList.add('ring-2', 'ring-zinc-400', 'ring-offset-2');
                 activeBtn.querySelector('.bg-check-icon').classList.remove('hidden');
             }
+            
+            window.updateThemeColor(colorHex);
         }
 
         window.setTheme = function(themeMode) {
@@ -866,6 +888,7 @@
                 if(bgSection) bgSection.classList.add('hidden');
                 const header = document.getElementById('app-header');
                 if(header) header.className = `sticky top-0 z-40 bg-darkbg/80 backdrop-blur-xl border-b border-zinc-800/50 w-full transition-colors duration-300 ease-golden shadow-sm`;
+                window.updateThemeColor('#121214');
             } else {
                 if(bgSection) bgSection.classList.remove('hidden');
                 window.applyBgColor(currentBgColor, currentHeaderColor);
@@ -2218,7 +2241,85 @@
             if (window.lucide) window.lucide.createIcons();
         }
 
+        // --- PWA Setup (Single File Implementation) ---
+        const setupPWA = () => {
+            // 動態產生高畫質 App 圖示
+            const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#18181b" rx="112"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="140" font-family="sans-serif" font-weight="900" fill="#ffffff">CHIM</text></svg>`;
+            const iconB64 = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+            
+            const manifest = {
+                name: "CHIM.SCHEDULE",
+                short_name: "CHIM.APP",
+                description: "專屬日程管理",
+                start_url: window.location.href.split('?')[0] || ".",
+                display: "standalone",
+                background_color: "#121214",
+                theme_color: "#F2F2F7",
+                icons: [
+                    { src: iconB64, sizes: "192x192", type: "image/svg+xml" },
+                    { src: iconB64, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            
+            let manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = manifestUrl;
+            document.head.appendChild(manifestLink);
+
+            let appleIcon = document.createElement('link');
+            appleIcon.rel = 'apple-touch-icon';
+            appleIcon.href = iconB64;
+            document.head.appendChild(appleIcon);
+
+            // 動態註冊 Service Worker
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    self.addEventListener('install', e => self.skipWaiting());
+                    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                    self.addEventListener('fetch', e => {
+                        if (e.request.method !== 'GET') return;
+                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                    });
+                `;
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW (PWA) 預覽環境中可能受限，發佈後將正常運行:', err));
+            }
+
+            // 處理安裝提示邏輯 (Android/Chrome)
+            window.deferredPrompt = null;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                window.deferredPrompt = e;
+                const pwaSection = document.getElementById('pwa-setting-section');
+                if (pwaSection) pwaSection.classList.remove('hidden');
+            });
+
+            window.installPWA = async () => {
+                if (window.deferredPrompt) {
+                    window.deferredPrompt.prompt();
+                    const { outcome } = await window.deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        const pwaSection = document.getElementById('pwa-setting-section');
+                        if (pwaSection) pwaSection.classList.add('hidden');
+                    }
+                    window.deferredPrompt = null;
+                } else if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+                    window.showAlert('iOS 用戶請點擊底部工具列的「分享」按鈕，然後選擇「加入主畫面」。');
+                }
+            };
+
+            // 如果已經在安裝模式下，自動隱藏安裝按鈕
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                const pwaSection = document.getElementById('pwa-setting-section');
+                if (pwaSection) pwaSection.classList.add('hidden');
+            }
+        };
+
         window.onload = () => {
+            setupPWA();
             const font = localStorage.getItem('chim_app_font') || 'sans';
             const bgColor = localStorage.getItem('chim_app_bg') || '#F2F2F7';
             const headColor = localStorage.getItem('chim_app_header') || 'bg-appbg/80';
