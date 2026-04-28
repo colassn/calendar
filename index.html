@@ -787,26 +787,42 @@
 
         window.closeModals = function() {
             const overlay = document.getElementById('modal-overlay');
-            const modals = ['piano-update-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal', 'archive-modal', 'search-modal', 'series-action-modal', 'select-modal'];
+            const selectOverlay = document.getElementById('select-modal-overlay');
+            const modals = ['piano-update-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal', 'archive-modal', 'search-modal', 'series-action-modal'];
+            const selectModal = document.getElementById('select-modal');
+            
             if (overlay) overlay.classList.add('opacity-0');
+            if (selectOverlay) selectOverlay.classList.add('opacity-0');
+            
             modals.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
                     el.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
                 }
             });
+            if (selectModal) selectModal.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
+            
             setTimeout(() => {
                 if (overlay) overlay.classList.add('hidden');
+                if (selectOverlay) selectOverlay.classList.add('hidden');
                 document.body.style.overflow = ''; // 解除鎖定
                 modals.forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.classList.add('hidden');
                 });
+                if (selectModal) selectModal.classList.add('hidden');
             }, 300); 
         }
 
         window.closeSelectModal = function() {
-            window.closeModals();
+            const selectOverlay = document.getElementById('select-modal-overlay');
+            const selectModal = document.getElementById('select-modal');
+            if (selectOverlay) selectOverlay.classList.add('opacity-0');
+            if (selectModal) selectModal.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
+            setTimeout(() => {
+                if (selectOverlay) selectOverlay.classList.add('hidden');
+                if (selectModal) selectModal.classList.add('hidden');
+            }, 300);
         }
 
         // --- Settings & Theme ---
@@ -1359,7 +1375,16 @@
             }
 
             optionsEl.innerHTML = html;
-            window.showOverlayAndModal('select-modal');
+            
+            // 獨立解開專屬的 Z-index 遮罩
+            const selectOverlay = document.getElementById('select-modal-overlay');
+            const selectModal = document.getElementById('select-modal');
+            if (selectOverlay) selectOverlay.classList.remove('hidden');
+            if (selectModal) selectModal.classList.remove('hidden');
+            setTimeout(() => {
+                if (selectOverlay) selectOverlay.classList.remove('opacity-0');
+                if (selectModal) selectModal.classList.remove('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
+            }, 10);
         }
 
         window.handleSelectOption = function(type, value, label) {
