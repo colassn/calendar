@@ -161,12 +161,11 @@
         </button>
     </div>
 
-    <!-- MAIN Modals Overlay -->
-    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
+    <!-- MAIN Modals Overlay (升級 Grid 版以支援 Z軸堆疊，不再破版！) -->
+    <div id="modal-overlay" class="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
 
         <!-- 搜尋 Modal -->
-        <!-- 注意：全面更換 vh 為 dvh，並加上 overscroll-contain 與明確的 overflow-hidden 確保邊框不破 -->
-        <div id="search-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="search-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 relative flex items-center">
                 <i data-lucide="search" class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400 dark:text-zinc-500 absolute left-6 sm:left-8"></i>
                 <input type="text" id="search-input" oninput="window.performSearch()" class="w-full pl-10 sm:pl-12 pr-12 py-3 text-lg sm:text-xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-bold" placeholder="搜尋行程、地點...">
@@ -180,7 +179,7 @@
         </div>
 
         <!-- 鋼琴班智能更改 Modal -->
-        <div id="piano-update-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="piano-update-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="bg-purple-50 dark:bg-purple-500/10 p-5 sm:p-6 pb-4 sm:pb-5 text-center relative shrink-0 border-b border-purple-100 dark:border-purple-500/20">
                 <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white dark:bg-darkcard text-zinc-400 hover:text-zinc-800 dark:hover:text-white p-2 sm:p-2.5 rounded-full shadow-sm transition-colors ease-golden min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
@@ -247,7 +246,7 @@
         </div>
 
         <!-- Add / Edit Modal -->
-        <div id="add-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="add-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 id="form-modal-title" class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">新增排程</h3>
                 <button type="button" onclick="window.closeModals()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
@@ -317,7 +316,7 @@
         </div>
 
         <!-- Series Action Modal -->
-        <div id="series-action-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="series-action-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex flex-col p-6 sm:p-8 pt-8 sm:pt-10">
                 <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5 mx-auto">
                     <i data-lucide="copy" class="text-blue-500 w-6 h-6 sm:w-7 sm:h-7"></i>
@@ -333,7 +332,7 @@
         </div>
 
         <!-- Alert Modal -->
-        <div id="alert-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[110] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="alert-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[110] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex flex-col items-center text-center p-8 sm:p-10 pt-10 sm:pt-12">
                 <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5">
                     <i data-lucide="info" class="text-amber-500 w-6 h-6 sm:w-7 sm:h-7"></i>
@@ -344,7 +343,7 @@
         </div>
 
         <!-- Admin Modal -->
-        <div id="admin-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="admin-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="shield-alert" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500"></i> 管理中心
@@ -390,7 +389,7 @@
         </div>
 
         <!-- Archive Modal (歷史庫) -->
-        <div id="archive-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="archive-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="archive" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500"></i> 歷史庫
@@ -405,7 +404,7 @@
         </div>
 
         <!-- Settings Modal -->
-        <div id="settings-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0 max-h-[85dvh]">
+        <div id="settings-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0 max-h-[85dvh]">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="settings-2" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-500"></i> App 設定
@@ -488,7 +487,7 @@
         </div>
 
         <!-- Detail Modal -->
-        <div id="detail-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="detail-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="p-8 md:p-12 relative flex flex-col items-center text-center overflow-y-auto overscroll-contain hide-scrollbar w-full grow">
                 <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
@@ -508,7 +507,7 @@
         </div>
         
         <!-- Preset Modal -->
-        <div id="preset-modal" class="hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+        <div id="preset-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <i data-lucide="file-plus-2" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500"></i> 新增快捷範本
@@ -556,8 +555,8 @@
     </div>
 
     <!-- 自定義下拉選單專用 Modal -->
-    <div id="select-modal-overlay" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
-        <div id="select-modal" class="hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+    <div id="select-modal-overlay" class="fixed inset-0 z-[120] grid place-items-end sm:place-items-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
+        <div id="select-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 flex flex-col max-h-[80dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 id="select-modal-title" class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight">請選擇</h3>
                 <button type="button" onclick="window.closeSelectModal()" class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
@@ -729,7 +728,6 @@
 
         // --- View & Modal Methods ---
         window.showOverlayAndModal = function(modalId) {
-            // 背景鎖定防抖動 (Body Scroll Lock)
             document.body.style.overflow = 'hidden';
             
             const overlay = document.getElementById('modal-overlay');
@@ -779,7 +777,7 @@
                     if (overlay) overlay.classList.add('opacity-0');
                     setTimeout(() => { 
                         if (overlay) overlay.classList.add('hidden'); 
-                        document.body.style.overflow = ''; // 解除鎖定
+                        document.body.style.overflow = '';
                     }, 400);
                 }
             }, 300);
@@ -788,8 +786,7 @@
         window.closeModals = function() {
             const overlay = document.getElementById('modal-overlay');
             const selectOverlay = document.getElementById('select-modal-overlay');
-            const modals = ['piano-update-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal', 'archive-modal', 'search-modal', 'series-action-modal'];
-            const selectModal = document.getElementById('select-modal');
+            const modals = ['piano-update-modal', 'preset-modal', 'add-modal', 'alert-modal', 'settings-modal', 'detail-modal', 'admin-modal', 'archive-modal', 'search-modal', 'series-action-modal', 'select-modal'];
             
             if (overlay) overlay.classList.add('opacity-0');
             if (selectOverlay) selectOverlay.classList.add('opacity-0');
@@ -800,17 +797,15 @@
                     el.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
                 }
             });
-            if (selectModal) selectModal.classList.add('translate-y-full', 'sm:translate-y-8', 'sm:scale-95');
             
             setTimeout(() => {
                 if (overlay) overlay.classList.add('hidden');
                 if (selectOverlay) selectOverlay.classList.add('hidden');
-                document.body.style.overflow = ''; // 解除鎖定
+                document.body.style.overflow = '';
                 modals.forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.classList.add('hidden');
                 });
-                if (selectModal) selectModal.classList.add('hidden');
             }, 300); 
         }
 
@@ -1087,6 +1082,30 @@
             }
         }
 
+        // --- Custom Tags Settings Methods ---
+        window.addCustomTag = async function() {
+            if (!isAdmin) return;
+            const input = document.getElementById('new-tag-input');
+            const val = input.value.trim();
+            if (!val) return;
+            if (customTags.includes(val)) { window.showAlert("標籤已存在！"); return; }
+            
+            const newTags = [...customTags, val];
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'tags'), { list: newTags });
+                input.value = '';
+            } catch (err) { window.showAlert("新增標籤失敗"); }
+        }
+
+        window.deleteCustomTag = async function(tagToRemove) {
+            if (!isAdmin) return;
+            const newTags = customTags.filter(t => t !== tagToRemove);
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'tags'), { list: newTags });
+            } catch (err) { window.showAlert("刪除標籤失敗"); }
+        }
+
+        // --- Add/Edit Modal Helpers ---
         window.setQuickDuration = function(minutes) {
             const startTimeStr = document.getElementById('f-time').value;
             if (!startTimeStr) {
@@ -1163,7 +1182,7 @@
             if (puRepeatEl) {
                 puRepeatEl.value = 'none';
                 const puRepeatBtn = document.getElementById('pu-repeat-btn');
-                if (puRepeatBtn) puRepeatBtn.innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400"></i>`;
+                if (puRepeatBtn) puRepeatBtn.innerHTML = `<span class="truncate block w-full text-left">單次排程</span> <i data-lucide="chevron-down" class="w-4 h-4 text-purple-400 shrink-0"></i>`;
                 if (typeof window.togglePuRepeatCount === 'function') window.togglePuRepeatCount();
             }
             
@@ -1376,7 +1395,6 @@
 
             optionsEl.innerHTML = html;
             
-            // 獨立解開專屬的 Z-index 遮罩
             const selectOverlay = document.getElementById('select-modal-overlay');
             const selectModal = document.getElementById('select-modal');
             if (selectOverlay) selectOverlay.classList.remove('hidden');
@@ -2212,7 +2230,7 @@
                 }
                 window.closeModals(); e.target.reset();
                 document.getElementById('f-repeat').value = 'none';
-                document.getElementById('f-repeat-btn').innerHTML = `單次排程 <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>`;
+                document.getElementById('f-repeat-btn').innerHTML = `<span class="truncate block w-full text-left">單次排程</span> <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0"></i>`;
                 window.toggleRepeatCount();
             } catch (err) { window.showAlert("儲存失敗"); }
         }
@@ -2266,9 +2284,8 @@
             if (window.lucide) window.lucide.createIcons();
         }
 
-        // --- PWA Setup (Single File Implementation) ---
+        // --- PWA Setup ---
         const setupPWA = () => {
-            // 動態產生高畫質 App 圖示
             const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#18181b" rx="112"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="140" font-family="sans-serif" font-weight="900" fill="#ffffff">CHIM</text></svg>`;
             const iconB64 = 'data:image/svg+xml;base64,' + btoa(iconSvg);
             
@@ -2298,7 +2315,6 @@
             appleIcon.href = iconB64;
             document.head.appendChild(appleIcon);
 
-            // 動態註冊 Service Worker
             if ('serviceWorker' in navigator) {
                 const swCode = `
                     self.addEventListener('install', e => self.skipWaiting());
@@ -2313,7 +2329,6 @@
                 navigator.serviceWorker.register(swUrl).catch(err => console.log('SW (PWA) 預覽環境中可能受限，發佈後將正常運行:', err));
             }
 
-            // 處理安裝提示邏輯 (Android/Chrome)
             window.deferredPrompt = null;
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -2336,7 +2351,6 @@
                 }
             };
 
-            // 如果已經在安裝模式下，自動隱藏安裝按鈕
             if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
                 const pwaSection = document.getElementById('pwa-setting-section');
                 if (pwaSection) pwaSection.classList.add('hidden');
