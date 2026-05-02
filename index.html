@@ -280,16 +280,19 @@
                         
                         <!-- Times -->
                         <div class="flex items-center justify-between p-1.5 sm:p-2 gap-1.5 sm:gap-2 relative w-full pt-1">
-                            <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
+                            <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">開始時間</p>
-                                <input id="f-time" required type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
+                                <input id="f-time" type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
+                                <div id="f-time-tbd-overlay" class="absolute inset-0 bg-white/95 dark:bg-darkcard/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300 z-20" onclick="window.toggleTBD()">
+                                    <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">未設定</span>
+                                </div>
                             </div>
                             <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
                             <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">結束時間</p>
                                 <input id="f-endtime" type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-white/95 dark:bg-darkcard/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300 z-20" onclick="window.toggleTBD()">
-                                    <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">暫未確定</span>
+                                    <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">未設定</span>
                                 </div>
                             </div>
                         </div>
@@ -747,14 +750,16 @@
         }
 
         window.getEventEndObj = function(e) {
-            const startObj = new Date(`${e.date}T${e.time}:00`);
+            const t = e.time || '00:00';
+            const startObj = new Date(`${e.date}T${t}:00`);
             let endObj;
             let eDate = e.endDate || e.date;
             if (e.endTime === 'TBD' || !e.endTime || String(e.endTime).trim() === '') {
                 if (eDate !== e.date) {
                     endObj = new Date(`${eDate}T23:59:59`);
                 } else {
-                    endObj = new Date(startObj.getTime() + 60*60*1000);
+                    if (!e.time) endObj = new Date(`${eDate}T23:59:59`);
+                    else endObj = new Date(startObj.getTime() + 60*60*1000);
                 }
             } else {
                 endObj = new Date(`${eDate}T${e.endTime}:00`);
@@ -999,7 +1004,7 @@
                 (e.title && e.title.toLowerCase().includes(query)) ||
                 (e.tag && e.tag.toLowerCase().includes(query)) ||
                 (e.location && e.location.toLowerCase().includes(query))
-            ).sort((a,b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`)); 
+            ).sort((a,b) => new Date(`${b.date}T${b.time || '00:00'}`) - new Date(`${a.date}T${a.time || '00:00'}`)); 
 
             if (results.length === 0) {
                 resultsContainer.innerHTML = '<div class="text-center text-zinc-400 dark:text-zinc-600 text-sm font-bold py-10">找不到相關行程</div>';
@@ -1016,7 +1021,7 @@
                             <p class="font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
                             ${badge}
                         </div>
-                        <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">${e.date} ${formatAMPM(e.time)}</p>
+                        <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">${e.date} ${e.time ? formatAMPM(e.time) : '未設定時間'}</p>
                     </div>
                 `;
             });
@@ -1197,11 +1202,14 @@
                 document.getElementById('detail-date').innerText = dateRangeStr;
                 
                 let endStr = '';
-                if (evData.endTime === 'TBD') endStr = ' - 暫未確定';
-                else if (evData.endTime && String(evData.endTime).trim() !== '') endStr = ' - ' + formatAMPM(evData.endTime);
-                else endStr = ' - 未設定時間'; 
+                if (evData.endTime === 'TBD' || !evData.endTime || String(evData.endTime).trim() === '') {
+                    endStr = evData.time ? ' - 暫未確定' : '';
+                } else {
+                    endStr = ' - ' + formatAMPM(evData.endTime);
+                }
                 
-                document.getElementById('detail-time').innerText = `${formatAMPM(evData.time)}${endStr}`;
+                const timeDisplay = evData.time ? `${formatAMPM(evData.time)}${endStr}` : '未確認具體時間';
+                document.getElementById('detail-time').innerText = timeDisplay;
                 document.getElementById('detail-title').innerText = evData.tag ? `【${evData.tag}】${evData.title}` : evData.title;
                 
                 const locContainer = document.getElementById('detail-location-container');
@@ -1479,11 +1487,23 @@
 
         // --- Add Schedule & Admin Modals ---
         window.toggleTBD = function(forceState) {
-            const overlay = document.getElementById('f-endtime-tbd-overlay');
-            if(!overlay) return;
-            let isTBD = typeof forceState === 'boolean' ? forceState : !overlay.classList.contains('hidden');
-            if (isTBD) overlay.classList.remove('hidden');
-            else overlay.classList.add('hidden');
+            const startOverlay = document.getElementById('f-time-tbd-overlay');
+            const endOverlay = document.getElementById('f-endtime-tbd-overlay');
+            if(!startOverlay || !endOverlay) return;
+            let isTBD = typeof forceState === 'boolean' ? forceState : !startOverlay.classList.contains('hidden');
+            if (isTBD) {
+                startOverlay.classList.remove('hidden');
+                endOverlay.classList.remove('hidden');
+                document.getElementById('f-time').value = '';
+                document.getElementById('f-endtime').value = '';
+            } else {
+                startOverlay.classList.add('hidden');
+                endOverlay.classList.add('hidden');
+                if (!document.getElementById('f-time').value) {
+                    const now = new Date();
+                    document.getElementById('f-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                }
+            }
         }
 
         window.toggleRepeatCount = function() {
@@ -1599,8 +1619,8 @@
             
             const now = Date.now();
             const sortedEvents = [...events].sort((a, b) => {
-                const dateA = new Date(`${a.date}T${a.time}:00`).getTime();
-                const dateB = new Date(`${b.date}T${b.time}:00`).getTime();
+                const dateA = new Date(`${a.date}T${a.time || '00:00'}:00`).getTime();
+                const dateB = new Date(`${b.date}T${b.time || '00:00'}:00`).getTime();
                 return dateB - dateA; 
             });
 
@@ -1623,7 +1643,7 @@
                                 </div>
                                 <div class="flex items-center gap-2 sm:gap-2.5 w-full">
                                     ${statusBadge}
-                                    <p class="text-[10px] sm:text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium truncate min-w-0">${e.date} ${e.time}</p>
+                                    <p class="text-[10px] sm:text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium truncate min-w-0">${e.date} ${e.time ? e.time : '未設定時間'}</p>
                                 </div>
                             </div>
                             <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-2.5 sm:p-3 text-red-500 hover:text-white bg-red-50 dark:bg-red-500/10 hover:bg-red-500 dark:hover:bg-red-500 rounded-lg sm:rounded-xl transition-colors shrink-0 shadow-sm min-h-[40px] sm:min-h-[44px]">
@@ -1713,7 +1733,7 @@
             if (dashDateEl) dashDateEl.innerText = now.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', weekday: 'short' });
 
             const upcomingEvents = events.map(e => {
-                const start = new Date(`${e.date}T${e.time}:00`);
+                const start = new Date(`${e.date}T${e.time || '00:00'}:00`);
                 const end = window.getEventEndObj(e);
                 return { ...e, startObj: start, endObj: end };
             })
@@ -1746,10 +1766,19 @@
             titleEl.innerText = targetEvent.tag ? `【${targetEvent.tag}】${targetEvent.title}` : targetEvent.title;
             
             let endStr = '';
-            if (targetEvent.endTime === 'TBD') endStr = '暫未確定';
-            else if (targetEvent.endTime && String(targetEvent.endTime).trim() !== '') endStr = formatAMPM(targetEvent.endTime);
-            else endStr = '未設定時間'; 
-            if (timeEl) timeEl.innerText = `${formatAMPM(targetEvent.time)} - ${endStr}`;
+            if (targetEvent.endTime === 'TBD' || !targetEvent.endTime || String(targetEvent.endTime).trim() === '') {
+                endStr = targetEvent.time ? '暫未確定' : '';
+            } else {
+                endStr = formatAMPM(targetEvent.endTime);
+            }
+            
+            if (timeEl) {
+                if (!targetEvent.time) {
+                    timeEl.innerText = "未確認具體時間";
+                } else {
+                    timeEl.innerText = `${formatAMPM(targetEvent.time)} ${endStr ? '- ' + endStr : ''}`;
+                }
+            }
 
             if (targetEvent.startObj <= now && targetEvent.endObj > now) {
                 labelEl.innerText = "正在進行 (IN PROGRESS)";
@@ -1771,7 +1800,7 @@
                 const nextEvent = upcomingEvents[1];
                 if (nextTitleEl) nextTitleEl.innerText = nextEvent.tag ? `【${nextEvent.tag}】${nextEvent.title}` : nextEvent.title;
                 const nextDatePrefix = isToday(nextEvent.date) ? '今日 ' : new Date(nextEvent.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric'}) + ' ';
-                if (nextTimeEl) nextTimeEl.innerText = nextDatePrefix + formatAMPM(nextEvent.time);
+                if (nextTimeEl) nextTimeEl.innerText = nextDatePrefix + (nextEvent.time ? formatAMPM(nextEvent.time) : '未設定時間');
             } else {
                 if (nextTitleEl) nextTitleEl.innerText = "無後續安排";
                 if (nextTimeEl) nextTimeEl.innerText = "--";
@@ -1881,7 +1910,7 @@
             let filteredEvents = activeEvs;
             if (activeFilter) filteredEvents = activeEvs.filter(e => e.tag === activeFilter);
             
-            const sortedEvents = [...filteredEvents].sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+            const sortedEvents = [...filteredEvents].sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
             window.renderUpNext(filteredEvents);
 
             let html = '';
@@ -1954,20 +1983,23 @@
 
             const now = new Date();
             const upcomingEvents = filteredEvents.map(e => {
-                const startObj = new Date(`${e.date}T${e.time}:00`);
+                const startObj = new Date(`${e.date}T${e.time || '00:00'}:00`);
                 const endObj = window.getEventEndObj(e);
                 return { ...e, startMs: startObj.getTime(), endMs: endObj.getTime() };
-            }).filter(e => e.endMs > now.getTime()).sort((a,b) => a.startMs - b.startMs);
+            }).filter(e => e.endMs > now.getTime() && e.time).sort((a,b) => a.startMs - b.startMs);
 
             if (upcomingEvents.length === 0) { container.classList.add('hidden'); return; }
 
             const nextEvent = upcomingEvents[0];
             container.classList.remove('hidden');
 
-            const displayTime = formatAMPM(nextEvent.time);
+            const displayTime = nextEvent.time ? formatAMPM(nextEvent.time) : '未設定時間';
             let endStr = '';
-            if (nextEvent.endTime === 'TBD') endStr = ' - 暫未確定';
-            else if (nextEvent.endTime && String(nextEvent.endTime).trim() !== '') endStr = ' - ' + formatAMPM(nextEvent.endTime);
+            if (nextEvent.endTime === 'TBD' || !nextEvent.endTime || String(nextEvent.endTime).trim() === '') {
+                endStr = nextEvent.time ? ' - 暫未確定' : '';
+            } else {
+                endStr = ' - ' + formatAMPM(nextEvent.endTime);
+            }
             const dateLabel = isToday(nextEvent.date) ? '今日' : new Date(nextEvent.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric', weekday:'short'});
 
             cardEl.innerHTML = `
@@ -2023,10 +2055,58 @@
                 dayEvents.forEach(e => {
                     const displayTimeFull = formatAMPM(e.time);
                     const timeMatch = displayTimeFull.match(/([上下]午)\s*(\d{1,2}:\d{2})/);
-                    const ampm = timeMatch ? timeMatch[1] : '';
-                    const timeOnly = timeMatch ? timeMatch[2] : displayTimeFull;
+                    let ampm = '';
+                    let timeOnly = '';
                     
-                    const startObj = new Date(`${e.date}T${e.time}:00`);
+                    if (!e.time) {
+                        timeOnly = '未設定';
+                        ampm = '時間';
+                        
+                        if (e.endDate && e.endDate !== e.date) {
+                            const sD = new Date(e.date);
+                            const eD = new Date(e.endDate);
+                            const sStr = `${sD.getMonth() + 1}/${sD.getDate()}`;
+                            const eStr = `${eD.getMonth() + 1}/${eD.getDate()}`;
+
+                            if (dateStr === e.date) {
+                                ampm = '開始';
+                            } else if (dateStr === e.endDate) {
+                                ampm = '結束';
+                            } else {
+                                timeOnly = sStr;
+                                ampm = `至 ${eStr}`;
+                            }
+                        }
+                    } else {
+                        ampm = timeMatch ? timeMatch[1] : '';
+                        timeOnly = timeMatch ? timeMatch[2] : displayTimeFull;
+                        
+                        if (e.endDate && e.endDate !== e.date) {
+                            const sD = new Date(e.date);
+                            const eD = new Date(e.endDate);
+                            const sStr = `${sD.getMonth() + 1}/${sD.getDate()}`;
+                            const eStr = `${eD.getMonth() + 1}/${eD.getDate()}`;
+
+                            if (dateStr === e.date) {
+                                ampm = ampm ? ampm + ' 開始' : '開始';
+                            } else if (dateStr === e.endDate) {
+                                if (e.endTime && e.endTime !== 'TBD' && String(e.endTime).trim() !== '') {
+                                    const endFull = formatAMPM(e.endTime);
+                                    const endMatch = endFull.match(/([上下]午)\s*(\d{1,2}:\d{2})/);
+                                    ampm = (endMatch ? endMatch[1] : '') + ' 結束';
+                                    timeOnly = endMatch ? endMatch[2] : endFull;
+                                } else {
+                                    timeOnly = '全天';
+                                    ampm = '最後一日';
+                                }
+                            } else {
+                                timeOnly = sStr;
+                                ampm = `至 ${eStr}`;
+                            }
+                        }
+                    }
+                    
+                    const startObj = new Date(`${e.date}T${e.time || '00:00'}:00`);
                     const endObj = window.getEventEndObj(e);
                     const startMs = startObj.getTime();
                     const endMs = endObj.getTime();
@@ -2036,7 +2116,7 @@
                     const seriesIcon = e.seriesId ? `<i data-lucide="copy" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-300 dark:text-zinc-600" title="重複行程"></i>` : '';
 
                     html += `
-                        <div draggable="${isAdmin}" ondragstart="window.handleDragStart(event, '${e.id}')" ondragend="window.handleDragEnd(event)" onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white dark:bg-darkcard p-3.5 sm:p-4 md:p-5 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 dark:border-zinc-800 transition-all duration-400 ease-golden active:scale-[0.98]">
+                        <div draggable="${isAdmin}" ondragstart="window.handleDragStart(event, '${e.id}')" ondragend="window.handleDragEnd(event)" onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" data-has-time="${e.time ? 'true' : 'false'}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white dark:bg-darkcard p-3.5 sm:p-4 md:p-5 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 dark:border-zinc-800 transition-all duration-400 ease-golden active:scale-[0.98]">
                             <div class="card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-zinc-900 dark:bg-zinc-100 transition-colors duration-500 ease-golden"></div>
                             
                             <div class="w-[60px] sm:w-[72px] shrink-0 flex flex-col items-center justify-center border-r border-zinc-100 dark:border-zinc-800 pr-2 sm:pr-3 mr-3 sm:mr-4 ml-1 sm:ml-2">
@@ -2091,7 +2171,7 @@
             const pushEnabled = localStorage.getItem('chim_app_push') === 'true';
             if (pushEnabled && "Notification" in window && Notification.permission === 'granted') {
                 events.forEach(e => {
-                    if (e.isArchived) return;
+                    if (e.isArchived || !e.time) return;
                     const startMs = new Date(`${e.date}T${e.time}:00`).getTime();
                     const diff = startMs - now;
                     if (diff > 14 * 60000 && diff <= 15 * 60000) {
@@ -2127,6 +2207,7 @@
             document.querySelectorAll('.agenda-card').forEach(card => {
                 const start = parseInt(card.dataset.start);
                 const end = parseInt(card.dataset.end);
+                const hasTime = card.dataset.hasTime === 'true';
                 const indicator = card.querySelector('.card-indicator');
                 const badge = card.querySelector('.card-timer-badge');
                 const title = card.querySelector('.card-title');
@@ -2151,12 +2232,17 @@
                     if(timeText) timeText.classList.add('text-zinc-900', 'dark:text-white');
                     if(timeText) timeText.classList.remove('text-zinc-400', 'dark:text-zinc-600');
 
-                    const diff = end - now;
-                    badge.innerHTML = `
-                        <span class="relative flex h-1.5 sm:h-2 w-1.5 sm:w-2 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 sm:h-2 w-1.5 sm:w-2 bg-emerald-500"></span></span> 
-                        進行中 · 剩餘 ${window.formatDiffDash(diff)}
-                    `;
-                    badge.className = "card-timer-badge flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] sm:text-[11px] font-bold tabular-nums";
+                    if (hasTime) {
+                        const diff = end - now;
+                        badge.innerHTML = `
+                            <span class="relative flex h-1.5 sm:h-2 w-1.5 sm:w-2 mr-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 sm:h-2 w-1.5 sm:w-2 bg-emerald-500"></span></span> 
+                            進行中 · 剩餘 ${window.formatDiffDash(diff)}
+                        `;
+                        badge.className = "card-timer-badge flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] sm:text-[11px] font-bold tabular-nums";
+                    } else {
+                        badge.innerHTML = `<i data-lucide="calendar-check" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>今日活動`;
+                        badge.className = "card-timer-badge flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-500";
+                    }
 
                 } else {
                     const diff = start - now;
@@ -2165,7 +2251,7 @@
                     if(timeText) timeText.classList.add('text-zinc-900', 'dark:text-white');
                     if(timeText) timeText.classList.remove('text-zinc-400', 'dark:text-zinc-600');
 
-                    if (diff < 24 * 60 * 60 * 1000) {
+                    if (hasTime && diff < 24 * 60 * 60 * 1000) {
                         indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-amber-400 transition-colors duration-500";
                         badge.innerHTML = `<i data-lucide="clock" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>倒數 ${window.formatDiffDash(diff)}`;
                         badge.className = "card-timer-badge flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 text-[10px] sm:text-[11px] font-bold tabular-nums";
@@ -2237,10 +2323,15 @@
             document.getElementById('f-tag').value = e.tag || '';
             document.getElementById('f-date').value = e.date || '';
             document.getElementById('f-enddate').value = e.endDate || e.date || '';
-            document.getElementById('f-time').value = e.time || '';
-            document.getElementById('f-location').value = e.location || '';
-            if (e.endTime === 'TBD') { window.toggleTBD(true); document.getElementById('f-endtime').value = ''; } 
-            else { window.toggleTBD(false); document.getElementById('f-endtime').value = e.endTime || ''; }
+            
+            if (!e.time) { 
+                window.toggleTBD(true); 
+            } else { 
+                window.toggleTBD(false); 
+                document.getElementById('f-time').value = e.time; 
+                document.getElementById('f-endtime').value = (e.endTime === 'TBD' ? '' : e.endTime) || ''; 
+            }
+            
             document.getElementById('repeat-section').classList.add('hidden');
             window.renderTags(); 
             window.showOverlayAndModal('add-modal');
@@ -2249,9 +2340,9 @@
         window.handleAddOrEditEvent = async function(e) {
             e.preventDefault();
             if (!isAdmin) return;
-            const timeVal = document.getElementById('f-time').value;
-            const isTBD = !document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden');
-            const endTimeVal = isTBD ? 'TBD' : document.getElementById('f-endtime').value;
+            const isTBD = !document.getElementById('f-time-tbd-overlay').classList.contains('hidden');
+            const timeVal = isTBD ? '' : document.getElementById('f-time').value;
+            const endTimeVal = isTBD ? '' : (!document.getElementById('f-endtime-tbd-overlay').classList.contains('hidden') ? 'TBD' : document.getElementById('f-endtime').value);
             const baseDateStr = document.getElementById('f-date').value;
             const endDateStr = document.getElementById('f-enddate').value;
             const tagVal = document.getElementById('f-tag').value;
@@ -2345,7 +2436,7 @@
             document.getElementById('admin-modal').classList.add('hidden');
             window.showOverlayAndModal('archive-modal');
             const archiveList = document.getElementById('archive-list');
-            const archivedEvents = events.filter(e => e.isArchived).sort((a,b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+            const archivedEvents = events.filter(e => e.isArchived).sort((a,b) => new Date(`${b.date}T${b.time || '00:00'}`) - new Date(`${a.date}T${a.time || '00:00'}`));
             if (archivedEvents.length === 0) {
                 archiveList.innerHTML = '<p class="text-center text-zinc-400 dark:text-zinc-600 text-sm font-bold py-10">歷史庫目前空空如也</p>';
                 return;
@@ -2356,7 +2447,7 @@
                     <div class="bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800 flex justify-between items-center opacity-70 min-h-[64px] sm:min-h-[72px]">
                         <div>
                             <p class="font-bold text-sm sm:text-base text-zinc-900 dark:text-white line-through">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
-                            <p class="text-[10px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-500 mt-0.5">${e.date} ${formatAMPM(e.time)}</p>
+                            <p class="text-[10px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-500 mt-0.5">${e.date} ${e.time ? formatAMPM(e.time) : '未設定時間'}</p>
                         </div>
                         <button type="button" onclick="window.deleteEvent('${e.id}')" class="p-2 sm:p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg sm:rounded-xl min-h-[36px] sm:min-h-[44px]">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
