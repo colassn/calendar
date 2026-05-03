@@ -70,7 +70,6 @@
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px dashed #a1a1aa; z-index: 50; }
         .drag-over { border: 2px dashed #fbbf24 !important; background-color: rgba(251, 191, 36, 0.1) !important; transform: scale(1.1); z-index: 10; }
         
-        /* 避免 iOS Safari 輸入框縮放與破版問題 */
         input, textarea { font-size: 16px !important; }
         @media (min-width: 640px) { input, textarea { font-size: 14px !important; } }
     </style>
@@ -144,11 +143,6 @@
                     </div>
                 </div>
                 <div id="calendar-grid" class="grid grid-cols-7 gap-y-3 sm:gap-y-4 gap-x-1 sm:gap-x-2 text-center text-[13px] sm:text-sm font-medium"></div>
-                <div class="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-zinc-50 dark:border-zinc-800/50 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                    <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>1項</div>
-                    <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>2項</div>
-                    <div class="flex items-center gap-1.5 sm:gap-2"><div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>3項+</div>
-                </div>
             </div>
         </section>
     </main>
@@ -161,11 +155,24 @@
         </button>
     </div>
 
+    <!-- 即時廣播通知大彈窗 -->
+    <div id="broadcast-modal" class="fixed inset-0 z-[150] flex flex-col items-center justify-center p-4 sm:p-6 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkcard w-full max-w-sm sm:max-w-md rounded-[2rem] p-8 sm:p-10 text-center shadow-[0_0_50px_rgba(0,0,0,0.3)] transform scale-95 transition-transform duration-300 border border-rose-100 dark:border-rose-900/50" id="broadcast-content-box">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 animate-bounce shadow-inner">
+                <i data-lucide="bell-ring" class="w-8 h-8 sm:w-10 sm:h-10 text-rose-500 drop-shadow-md"></i>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white mb-3 tracking-tight">來自管理員的新通知</h3>
+            <p id="broadcast-msg" class="text-zinc-600 dark:text-zinc-300 font-bold mb-8 sm:mb-10 text-base sm:text-lg leading-relaxed"></p>
+            <button type="button" onclick="window.closeBroadcast()" class="w-full py-4 sm:py-5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg hover:bg-zinc-800 dark:hover:bg-white shadow-xl shadow-zinc-900/20 active:scale-95 transition-all duration-300 tracking-wide">我知道了</button>
+        </div>
+    </div>
+
     <!-- MAIN Modals Overlay -->
     <div id="modal-overlay" class="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity ease-golden duration-300">
 
         <!-- 搜尋 Modal -->
         <div id="search-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <!-- (保持不變) -->
             <div class="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 relative flex items-center">
                 <i data-lucide="search" class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400 dark:text-zinc-500 absolute left-6 sm:left-8"></i>
                 <input type="text" id="search-input" oninput="window.performSearch()" class="w-full pl-10 sm:pl-12 pr-12 py-3 text-lg sm:text-xl bg-transparent focus:outline-none text-zinc-900 dark:text-white placeholder:text-zinc-300 dark:placeholder:text-zinc-600 font-bold" placeholder="搜尋行程、地點...">
@@ -180,6 +187,7 @@
 
         <!-- 鋼琴班智能更改 Modal -->
         <div id="piano-update-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <!-- (保持不變) -->
             <div class="bg-purple-50 dark:bg-purple-500/10 p-5 sm:p-6 pb-4 sm:pb-5 text-center relative shrink-0 border-b border-purple-100 dark:border-purple-500/20">
                 <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white dark:bg-darkcard text-zinc-400 hover:text-zinc-800 dark:hover:text-white p-2 sm:p-2.5 rounded-full shadow-sm transition-colors ease-golden min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center no-min-h">
                     <i data-lucide="x" class="w-4 h-4 sm:w-5 h-5"></i>
@@ -245,7 +253,7 @@
             </div>
         </div>
 
-        <!-- Add / Edit Modal -->
+        <!-- Add / Edit Modal (更新了請假與撞期警告) -->
         <div id="add-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 id="form-modal-title" class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">新增排程</h3>
@@ -269,12 +277,12 @@
                         <div class="flex items-center justify-between p-1.5 sm:p-2 gap-1.5 sm:gap-2 relative w-full border-b border-zinc-100/80 dark:border-zinc-800 pb-2 sm:pb-3">
                             <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none flex items-center justify-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> 開始日期</p>
-                                <input id="f-date" required type="date" onchange="window.syncEndDate()" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-bold text-sm sm:text-base no-min-h relative z-10">
+                                <input id="f-date" required type="date" onchange="window.syncEndDate(); window.checkGlobalConflict()" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-bold text-sm sm:text-base no-min-h relative z-10">
                             </div>
                             <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
                             <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none flex items-center justify-center gap-1"><i data-lucide="calendar-check-2" class="w-3 h-3"></i> 結束日期</p>
-                                <input id="f-enddate" required type="date" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-bold text-sm sm:text-base no-min-h relative z-10">
+                                <input id="f-enddate" required type="date" onchange="window.checkGlobalConflict()" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-bold text-sm sm:text-base no-min-h relative z-10">
                             </div>
                         </div>
                         
@@ -282,7 +290,7 @@
                         <div class="flex items-center justify-between p-1.5 sm:p-2 gap-1.5 sm:gap-2 relative w-full pt-1">
                             <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">開始時間</p>
-                                <input id="f-time" type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
+                                <input id="f-time" type="time" onchange="window.checkGlobalConflict()" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 <div id="f-time-tbd-overlay" class="absolute inset-0 bg-white/95 dark:bg-darkcard/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300 z-20" onclick="window.toggleTBD()">
                                     <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">未設定</span>
                                 </div>
@@ -290,7 +298,7 @@
                             <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-300 dark:text-zinc-600 shrink-0"></i>
                             <div class="flex-1 min-w-0 bg-white dark:bg-darkcard rounded-lg sm:rounded-xl px-2 sm:px-3 py-2 sm:py-2.5 text-center shadow-sm border border-zinc-100/50 dark:border-zinc-800 relative overflow-hidden">
                                 <p class="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-1 sm:mb-1.5 pointer-events-none">結束時間</p>
-                                <input id="f-endtime" type="time" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
+                                <input id="f-endtime" type="time" onchange="window.checkGlobalConflict()" class="w-full min-w-0 bg-transparent text-center focus:outline-none text-zinc-900 dark:text-white font-black text-lg sm:text-xl no-min-h h-7 sm:h-8 relative z-10">
                                 <div id="f-endtime-tbd-overlay" class="absolute inset-0 bg-white/95 dark:bg-darkcard/95 backdrop-blur-sm flex items-center justify-center cursor-pointer hidden transition-opacity duration-300 z-20" onclick="window.toggleTBD()">
                                     <span class="text-xs sm:text-sm font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">未設定</span>
                                 </div>
@@ -325,6 +333,35 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 新增: 請假選項 -->
+                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-zinc-100 dark:border-zinc-800 flex items-center justify-between w-full mt-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center shrink-0">
+                                <i data-lucide="user-x" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white leading-tight">標記為請假 / 欠堂</p>
+                                <p class="text-[9px] sm:text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">特別標示並從倒數看板隱藏</p>
+                            </div>
+                        </div>
+                        <label class="inline-flex items-center cursor-pointer shrink-0 ml-2 min-h-[44px]">
+                            <input type="checkbox" id="f-is-leave" onchange="window.checkGlobalConflict()" class="sr-only peer">
+                            <div class="relative w-10 sm:w-11 h-5 sm:h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-rose-500"></div>
+                        </label>
+                    </div>
+
+                    <!-- 新增: 撞期警告 -->
+                    <div id="f-conflict-warning" class="hidden bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col gap-2 w-full mt-3 transition-all duration-300">
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0 mt-0.5"></i>
+                            <div class="min-w-0">
+                                <p class="text-xs sm:text-sm font-bold text-amber-800 dark:text-amber-400 mb-0.5">發現行程撞期！</p>
+                                <p class="text-[10px] sm:text-xs font-medium text-amber-600 dark:text-amber-500/80 leading-relaxed break-words">與 <span id="f-conflict-text" class="font-black border-b border-amber-300"></span> 重疊。</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="pt-2 sm:pt-4 shrink-0">
                         <button type="submit" id="form-submit-btn" class="w-full py-3.5 sm:py-4 text-sm sm:text-base font-black text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-xl sm:rounded-[1.5rem] hover:bg-zinc-800 dark:hover:bg-white transition-colors ease-golden shadow-lg shadow-zinc-900/20 dark:shadow-white/10 active:scale-[0.98] min-h-[52px] sm:min-h-[56px] tracking-wide">確認建立</button>
                     </div>
@@ -332,34 +369,7 @@
             </div>
         </div>
 
-        <!-- Series Action Modal -->
-        <div id="series-action-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
-            <div class="flex flex-col p-6 sm:p-8 pt-8 sm:pt-10">
-                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5 mx-auto">
-                    <i data-lucide="copy" class="text-blue-500 w-6 h-6 sm:w-7 sm:h-7"></i>
-                </div>
-                <h3 class="text-lg sm:text-xl font-black text-center text-zinc-900 dark:text-white mb-1.5 sm:mb-2">這是一個重複行程</h3>
-                <p class="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm text-center mb-6 sm:mb-8 font-medium">您希望如何套用這次的更改？</p>
-                <div class="space-y-2.5 sm:space-y-3">
-                    <button type="button" onclick="window.handleSeriesAction('single')" class="w-full py-3.5 sm:py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px]">僅此行程</button>
-                    <button type="button" onclick="window.handleSeriesAction('following')" class="w-full py-3.5 sm:py-4 bg-blue-500 text-white rounded-xl sm:rounded-2xl hover:bg-blue-600 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px] shadow-md shadow-blue-500/20">此行程及後續所有行程</button>
-                </div>
-                <button type="button" onclick="window.closeModals()" class="mt-3 sm:mt-4 text-[11px] sm:text-xs font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-2 text-center min-h-[44px]">取消</button>
-            </div>
-        </div>
-
-        <!-- Alert Modal -->
-        <div id="alert-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[110] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
-            <div class="flex flex-col items-center text-center p-8 sm:p-10 pt-10 sm:pt-12">
-                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5">
-                    <i data-lucide="info" class="text-amber-500 w-6 h-6 sm:w-7 sm:h-7"></i>
-                </div>
-                <p id="alert-msg" class="text-zinc-800 dark:text-zinc-200 text-sm sm:text-base mb-6 sm:mb-8 font-bold leading-relaxed tracking-wide">訊息內容</p>
-                <button type="button" onclick="window.closeAlertModal()" class="w-full py-3.5 sm:py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px]">我知道了</button>
-            </div>
-        </div>
-
-        <!-- Admin Modal -->
+        <!-- Admin Modal (新增了廣播通知) -->
         <div id="admin-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -373,6 +383,18 @@
                 </div>
             </div>
             <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain space-y-6 sm:space-y-8 bg-white dark:bg-darkcard grow hide-scrollbar w-full">
+                
+                <!-- 新增: 廣播通知區塊 -->
+                <div class="w-full">
+                    <h4 class="text-[11px] sm:text-xs font-bold text-rose-500 uppercase tracking-wider ml-1 mb-2 sm:mb-3 flex items-center gap-1.5"><i data-lucide="radio" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 發佈廣播通知</h4>
+                    <p class="text-[10px] sm:text-xs font-medium text-zinc-500 mb-3 ml-1">發送後，使用者(媽媽)手機會立刻彈出全螢幕通知！</p>
+                    <div class="flex gap-2 w-full">
+                        <input id="broadcast-input" type="text" class="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl focus:outline-none text-base sm:text-sm font-bold min-h-[44px] text-rose-900 dark:text-rose-100 placeholder:text-rose-300 dark:placeholder:text-rose-700" placeholder="輸入通知內容 (例如: 今晚我會遲到)">
+                        <button type="button" onclick="window.sendBroadcast()" class="px-4 sm:px-5 py-2.5 sm:py-3 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-colors shadow-sm shadow-rose-500/30 min-h-[44px] shrink-0 active:scale-95">廣播</button>
+                    </div>
+                </div>
+                <div class="h-px bg-zinc-100 dark:bg-zinc-800 w-full"></div>
+
                 <!-- 標籤管理區塊 -->
                 <div class="w-full">
                     <h4 class="text-[11px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider ml-1 mb-2 sm:mb-3 flex items-center gap-1.5"><i data-lucide="tags" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 自定義標籤管理</h4>
@@ -405,7 +427,32 @@
             </div>
         </div>
 
-        <!-- Archive Modal (歷史庫) -->
+        <!-- 其他隱藏的 Modal (保留原樣) -->
+        <div id="series-action-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[105] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex flex-col p-6 sm:p-8 pt-8 sm:pt-10">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5 mx-auto">
+                    <i data-lucide="copy" class="text-blue-500 w-6 h-6 sm:w-7 sm:h-7"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-center text-zinc-900 dark:text-white mb-1.5 sm:mb-2">這是一個重複行程</h3>
+                <p class="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm text-center mb-6 sm:mb-8 font-medium">您希望如何套用這次的更改？</p>
+                <div class="space-y-2.5 sm:space-y-3">
+                    <button type="button" onclick="window.handleSeriesAction('single')" class="w-full py-3.5 sm:py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px]">僅此行程</button>
+                    <button type="button" onclick="window.handleSeriesAction('following')" class="w-full py-3.5 sm:py-4 bg-blue-500 text-white rounded-xl sm:rounded-2xl hover:bg-blue-600 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px] shadow-md shadow-blue-500/20">此行程及後續所有行程</button>
+                </div>
+                <button type="button" onclick="window.closeModals()" class="mt-3 sm:mt-4 text-[11px] sm:text-xs font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-2 text-center min-h-[44px]">取消</button>
+            </div>
+        </div>
+
+        <div id="alert-modal" class="col-start-1 row-start-1 hidden bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 z-[110] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
+            <div class="flex flex-col items-center text-center p-8 sm:p-10 pt-10 sm:pt-12">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mb-4 sm:mb-5">
+                    <i data-lucide="info" class="text-amber-500 w-6 h-6 sm:w-7 sm:h-7"></i>
+                </div>
+                <p id="alert-msg" class="text-zinc-800 dark:text-zinc-200 text-sm sm:text-base mb-6 sm:mb-8 font-bold leading-relaxed tracking-wide">訊息內容</p>
+                <button type="button" onclick="window.closeAlertModal()" class="w-full py-3.5 sm:py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold min-h-[52px] sm:min-h-[56px]">我知道了</button>
+            </div>
+        </div>
+
         <div id="archive-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -415,12 +462,9 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain space-y-3 sm:space-y-4 bg-zinc-50/50 dark:bg-darkbg/50 grow hide-scrollbar w-full" id="archive-list">
-                <p class="text-center text-zinc-400 dark:text-zinc-500 text-sm font-bold py-10">載入中...</p>
-            </div>
+            <div class="p-5 sm:p-6 overflow-y-auto overscroll-contain space-y-3 sm:space-y-4 bg-zinc-50/50 dark:bg-darkbg/50 grow hide-scrollbar w-full" id="archive-list"></div>
         </div>
 
-        <!-- Settings Modal -->
         <div id="settings-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0 max-h-[85dvh]">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -452,7 +496,7 @@
                             <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center shrink-0"><i data-lucide="bell" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500"></i></div>
                             <div>
                                 <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">行程前桌面推播</p>
-                                <p class="text-[9px] sm:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">提早 15 分鐘通知</p>
+                                <p class="text-[9px] sm:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">允許廣播與提早提醒</p>
                             </div>
                         </div>
                         <label class="inline-flex items-center cursor-pointer min-h-[44px] shrink-0 ml-2">
@@ -503,7 +547,6 @@
             </div>
         </div>
 
-        <!-- Detail Modal -->
         <div id="detail-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="p-8 md:p-12 relative flex flex-col items-center text-center overflow-y-auto overscroll-contain hide-scrollbar w-full grow">
                 <button type="button" onclick="window.closeModals()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 sm:p-2.5 rounded-full transition-colors min-h-[36px] w-[36px] sm:min-h-[44px] sm:w-[44px] flex items-center justify-center">
@@ -523,7 +566,6 @@
             </div>
         </div>
         
-        <!-- Preset Modal -->
         <div id="preset-modal" class="col-start-1 row-start-1 hidden flex flex-col bg-white dark:bg-darkcard rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform translate-y-full sm:translate-y-8 sm:scale-95 transition-all ease-golden duration-300 max-h-[85dvh] sm:max-h-[90dvh] border border-zinc-100 dark:border-zinc-800 pb-safe sm:pb-0">
             <div class="flex justify-between items-center p-5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-50 dark:border-zinc-800/50 shrink-0">
                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -617,7 +659,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let currentFont = localStorage.getItem('chim_app_font') || 'sans'; 
@@ -630,8 +672,7 @@
             projectId: "calendar-61298",
             storageBucket: "calendar-61298.firebasestorage.app",
             messagingSenderId: "507955747395",
-            appId: "1:507955747395:web:7422bf9b7e8672eff052f6",
-            measurementId: "G-4DXLBPGSP6"
+            appId: "1:507955747395:web:7422bf9b7e8672eff052f6"
         };
         const appId = 'calendar-61298';
 
@@ -663,6 +704,7 @@
         let unsubscribeSnapshot = null;
         let unsubscribeTags = null;
         let unsubscribePresets = null;
+        let unsubscribeBroadcast = null;
         let dashboardInterval = null;
         let mainTimerInterval = null; 
 
@@ -685,24 +727,23 @@
         function setupFirestoreListener(user) {
             if (!user) return; 
 
+            // Events
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             const eventsPath = collection(db, 'artifacts', appId, 'public', 'data', 'events');
             unsubscribeSnapshot = onSnapshot(eventsPath, (snapshot) => {
                 events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                if (!isDraggingEvent) {
-                    window.updateAllViews();
-                }
+                if (!isDraggingEvent) window.updateAllViews();
                 
                 const puModal = document.getElementById('piano-update-modal');
                 if (puModal && !puModal.classList.contains('hidden')) {
                     if (typeof window.renderUpcomingPiano === 'function') window.renderUpcomingPiano();
                     if (typeof window.checkPianoConflict === 'function') window.checkPianoConflict();
                 }
-
                 if (dashboardInterval) window.forceDashboardUpdate(); 
             }, (error) => { console.error("Firestore error (Events): ", error); });
 
+            // Tags
             if (unsubscribeTags) unsubscribeTags();
             const tagsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'tags');
             unsubscribeTags = onSnapshot(tagsDoc, (docSnap) => {
@@ -710,14 +751,43 @@
                 window.renderTags();
                 const adminModal = document.getElementById('admin-modal');
                 if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) window.renderAdminTagsList();
-            }, (error) => { console.error("Firestore error (Tags): ", error); });
+            });
 
+            // Presets
             if (unsubscribePresets) unsubscribePresets();
             const presetPath = collection(db, 'artifacts', appId, 'public', 'data', 'presets');
             unsubscribePresets = onSnapshot(presetPath, (snapshot) => {
                 presets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 const adminModal = document.getElementById('admin-modal');
                 if (adminModal && !adminModal.classList.contains('hidden') && isAdmin) window.renderAdminPresetList();
+            });
+
+            // Broadcast (廣播通知監聽)
+            if (unsubscribeBroadcast) unsubscribeBroadcast();
+            const broadcastDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'broadcast');
+            unsubscribeBroadcast = onSnapshot(broadcastDoc, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const lastSeen = parseInt(localStorage.getItem('chim_last_broadcast') || '0', 10);
+                    // 如果有新訊息，且不是自己發的舊訊息
+                    if (data.active && data.timestamp && data.timestamp > lastSeen) {
+                        document.getElementById('broadcast-msg').innerText = data.message;
+                        const bm = document.getElementById('broadcast-modal');
+                        const bc = document.getElementById('broadcast-content-box');
+                        bm.classList.remove('hidden');
+                        setTimeout(() => {
+                            bm.classList.remove('opacity-0');
+                            bc.classList.remove('scale-95');
+                        }, 10);
+                        
+                        localStorage.setItem('chim_last_broadcast', data.timestamp);
+                        
+                        // 原生 Web Push 觸發 (如果允許了通知且背景執行)
+                        if (("Notification" in window) && Notification.permission === 'granted' && document.visibilityState !== 'visible') {
+                            new Notification("🔔 新通知", { body: data.message });
+                        }
+                    }
+                }
             });
         }
 
@@ -743,7 +813,6 @@
             } catch(e) { return timeStr; }
         }
 
-        // --- Multi-day Helper Functions ---
         window.isDateInRange = function(targetStr, startStr, endStr) {
             if (!endStr || startStr === endStr) return targetStr === startStr;
             return targetStr >= startStr && targetStr <= endStr;
@@ -780,10 +849,80 @@
             }
         }
 
+        // --- 撞期警告邏輯 ---
+        window.checkGlobalConflict = function() {
+            const warningEl = document.getElementById('f-conflict-warning');
+            const conflictText = document.getElementById('f-conflict-text');
+            if (!warningEl || !conflictText) return;
+
+            const isLeave = document.getElementById('f-is-leave').checked;
+            const isTBD = !document.getElementById('f-time-tbd-overlay').classList.contains('hidden');
+            const dateStr = document.getElementById('f-date').value;
+            const endDateStr = document.getElementById('f-enddate').value || dateStr;
+            const timeStr = document.getElementById('f-time').value;
+            const endTimeStr = document.getElementById('f-endtime').value;
+
+            // 如果是請假、時間未定，或者還沒填寫時間，就先不檢查撞期
+            if (isLeave || isTBD || !dateStr || !timeStr) {
+                warningEl.classList.add('hidden');
+                return;
+            }
+
+            const formStart = new Date(`${dateStr}T${timeStr}:00`);
+            let formEnd;
+            if (endTimeStr && endTimeStr !== 'TBD') {
+                formEnd = new Date(`${endDateStr}T${endTimeStr}:00`);
+                if (formEnd < formStart && dateStr === endDateStr) formEnd.setDate(formEnd.getDate() + 1);
+            } else {
+                formEnd = new Date(formStart.getTime() + 60*60*1000); 
+            }
+
+            const conflict = events.find(e => {
+                if (e.isArchived || e.isLeave || !e.time || (editingId && e.id === editingId)) return false;
+                const evStart = new Date(`${e.date}T${e.time}:00`);
+                const evEnd = window.getEventEndObj(e);
+                return formStart < evEnd && formEnd > evStart;
+            });
+
+            if (conflict) {
+                const tagDisplay = conflict.tag ? `【${conflict.tag}】` : '';
+                conflictText.innerText = `${tagDisplay}${conflict.title} (${formatAMPM(conflict.time)})`;
+                warningEl.classList.remove('hidden');
+            } else {
+                warningEl.classList.add('hidden');
+            }
+        }
+
+        // --- 廣播相關 ---
+        window.sendBroadcast = async function() {
+            if(!isAdmin) return;
+            const input = document.getElementById('broadcast-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'broadcast'), {
+                    message: msg, timestamp: Date.now(), active: true
+                });
+                input.value = '';
+                window.showAlert("📢 通知已成功發送！使用者畫面會立刻彈出提示。");
+            } catch(e) { window.showAlert("發送失敗，請稍後再試。"); }
+        }
+
+        window.closeBroadcast = function() {
+            const bm = document.getElementById('broadcast-modal');
+            const bc = document.getElementById('broadcast-content-box');
+            if(bm && bc) {
+                bm.classList.add('opacity-0');
+                bc.classList.add('scale-95');
+                setTimeout(() => bm.classList.add('hidden'), 300);
+            }
+        }
+
+
         // --- View & Modal Methods ---
         window.showOverlayAndModal = function(modalId) {
             document.body.style.overflow = 'hidden';
-            
             const overlay = document.getElementById('modal-overlay');
             const modal = document.getElementById(modalId);
             if (overlay) overlay.classList.remove('hidden');
@@ -972,7 +1111,7 @@
                 const perm = await Notification.requestPermission();
                 if (perm === 'granted') {
                     localStorage.setItem('chim_app_push', 'true');
-                    window.showAlert("推播通知已啟用！行程開始前15分鐘會提醒您。");
+                    window.showAlert("推播通知已啟用！將允許接收廣播，及行程前提早提醒。");
                 } else {
                     checkbox.checked = false;
                     localStorage.setItem('chim_app_push', 'false');
@@ -1014,11 +1153,13 @@
             let html = '';
             results.forEach(e => {
                 const isPast = new Date(`${e.endDate || e.date}T${e.endTime === 'TBD' || !e.endTime ? '23:59' : e.endTime}:00`) < new Date();
-                const badge = isPast ? '<span class="text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-300 px-2 py-0.5 rounded ml-2 font-bold">已過去</span>' : '';
+                let badge = isPast ? '<span class="text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-300 px-2 py-0.5 rounded ml-2 font-bold shrink-0">已過去</span>' : '';
+                if(e.isLeave) badge += '<span class="text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded ml-2 font-bold shrink-0">已請假</span>';
+
                 html += `
                     <div onclick="window.closeModals(); setTimeout(()=>window.openEventDetail('${e.id}'), 400)" class="bg-white dark:bg-zinc-900 p-4 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors w-full">
                         <div class="flex justify-between items-start mb-1 w-full">
-                            <p class="font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
+                            <p class="font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0 ${e.isLeave ? 'line-through text-zinc-500' : ''}">${e.tag ? `【${e.tag}】` : ''}${e.title}</p>
                             ${badge}
                         </div>
                         <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">${e.date} ${e.time ? formatAMPM(e.time) : '未設定時間'}</p>
@@ -1181,15 +1322,13 @@
             const endInput = document.getElementById('f-endtime');
             endInput.classList.add('scale-110', 'text-indigo-600', 'dark:text-indigo-400');
             setTimeout(() => endInput.classList.remove('scale-110', 'text-indigo-600', 'dark:text-indigo-400'), 300);
+            window.checkGlobalConflict();
         }
 
         window.openEventDetail = function(id) {
             try {
                 const evData = events.find(e => e.id === id);
-                if (!evData) {
-                    console.warn("Event not found:", id);
-                    return;
-                }
+                if (!evData) return;
 
                 const dateObj = new Date(evData.date);
                 let dateRangeStr = dateObj.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
@@ -1210,7 +1349,12 @@
                 
                 const timeDisplay = evData.time ? `${formatAMPM(evData.time)}${endStr}` : '未確認具體時間';
                 document.getElementById('detail-time').innerText = timeDisplay;
-                document.getElementById('detail-title').innerText = evData.tag ? `【${evData.tag}】${evData.title}` : evData.title;
+                
+                // 請假狀態加上刪除線
+                const titleEl = document.getElementById('detail-title');
+                titleEl.innerText = evData.tag ? `【${evData.tag}】${evData.title}` : evData.title;
+                if(evData.isLeave) titleEl.classList.add('line-through', 'text-zinc-400');
+                else titleEl.classList.remove('line-through', 'text-zinc-400');
                 
                 const locContainer = document.getElementById('detail-location-container');
                 const locEl = document.getElementById('detail-location');
@@ -1225,9 +1369,7 @@
 
                 window.showOverlayAndModal('detail-modal');
                 if (window.lucide) window.lucide.createIcons();
-            } catch (err) {
-                console.error("Error opening detail modal:", err);
-            }
+            } catch (err) {}
         }
 
         // --- Piano Update Logic ---
@@ -1262,7 +1404,7 @@
             if (!listContainer) return;
             const now = new Date();
             const pianoEvents = events
-                .filter(e => e.tag === '鋼琴班' && !e.isArchived && new Date(`${e.date}T${e.time}:00`) >= now)
+                .filter(e => e.tag === '鋼琴班' && !e.isArchived && !e.isLeave && new Date(`${e.date}T${e.time}:00`) >= now)
                 .sort((a,b) => new Date(`${a.date}T${a.time}:00`) - new Date(`${b.date}T${b.time}:00`));
 
             if(pianoEvents.length === 0) {
@@ -1328,7 +1470,7 @@
 
         window.checkPianoConflict = function() {
             const dateVal = document.getElementById('pu-date').value;
-            const conflict = events.find(e => e.tag === '鋼琴班' && !e.isArchived && e.date === dateVal);
+            const conflict = events.find(e => e.tag === '鋼琴班' && !e.isArchived && !e.isLeave && e.date === dateVal);
             const warningEl = document.getElementById('pu-conflict-warning');
             const submitBtn = document.getElementById('pu-submit-btn');
 
@@ -1405,12 +1547,13 @@
                     time: timeVal,
                     endTime: endtimeVal,
                     isArchived: false,
+                    isLeave: false,
                     createdAt: new Date().toISOString()
                 });
             }
 
             try {
-                const conflicts = events.filter(ev => ev.tag === '鋼琴班' && !ev.isArchived && datesToCheck.includes(ev.date));
+                const conflicts = events.filter(ev => ev.tag === '鋼琴班' && !ev.isArchived && !ev.isLeave && datesToCheck.includes(ev.date));
                 const deletePromises = conflicts.map(c => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events', c.id)));
                 await Promise.all(deletePromises);
 
@@ -1504,6 +1647,7 @@
                     document.getElementById('f-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 }
             }
+            window.checkGlobalConflict();
         }
 
         window.toggleRepeatCount = function() {
@@ -1536,6 +1680,10 @@
             
             document.getElementById('f-endtime').value = '';
             document.getElementById('f-tag').value = ''; 
+            
+            document.getElementById('f-is-leave').checked = false;
+            document.getElementById('f-conflict-warning').classList.add('hidden');
+            
             window.toggleTBD(false); 
             
             document.getElementById('repeat-section').classList.remove('hidden');
@@ -1636,13 +1784,13 @@
                         : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[9px] sm:text-[11px] font-bold shrink-0">未結束</span>`;
 
                     html += `
-                        <div class="flex items-center justify-between bg-white dark:bg-darkcard p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow min-h-[72px] sm:min-h-[80px] w-full">
+                        <div class="flex items-center justify-between bg-white dark:bg-darkcard p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow min-h-[72px] sm:min-h-[80px] w-full ${e.isLeave ? 'opacity-60' : ''}">
                             <div class="flex-1 min-w-0 pr-3 sm:pr-4">
                                 <div class="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 w-full">
-                                    <p class="text-sm sm:text-base md:text-lg font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
+                                    <p class="text-sm sm:text-base md:text-lg font-bold text-zinc-900 dark:text-white truncate flex-1 min-w-0 ${e.isLeave ? 'line-through text-zinc-500' : ''}">${e.tag ? '【'+e.tag+'】' : ''}${e.title}</p>
                                 </div>
                                 <div class="flex items-center gap-2 sm:gap-2.5 w-full">
-                                    ${statusBadge}
+                                    ${e.isLeave ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-rose-100 text-rose-600 rounded-md text-[9px] sm:text-[11px] font-bold shrink-0">請假</span>` : statusBadge}
                                     <p class="text-[10px] sm:text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium truncate min-w-0">${e.date} ${e.time ? e.time : '未設定時間'}</p>
                                 </div>
                             </div>
@@ -1675,7 +1823,7 @@
         
         window.handleLogout = async function() { 
             await signOut(auth); 
-            try { await signInAnonymously(auth); } catch(e) { console.error("訪客登入失敗", e); }
+            try { await signInAnonymously(auth); } catch(e) {}
             window.updateAllViews();
         }
 
@@ -1737,7 +1885,8 @@
                 const end = window.getEventEndObj(e);
                 return { ...e, startObj: start, endObj: end };
             })
-            .filter(e => !e.isArchived && e.endObj > now) 
+            // 排除請假的行程
+            .filter(e => !e.isArchived && !e.isLeave && e.endObj > now) 
             .sort((a, b) => a.startObj - b.startObj); 
 
             const labelEl = document.getElementById('dash-status-label');
@@ -1872,7 +2021,7 @@
             ['日', '一', '二', '三', '四', '五', '六'].forEach(day => { html += `<div class="text-zinc-400 dark:text-zinc-500 font-bold text-xs py-2">${day}</div>`; });
             for (let i = 0; i < firstDay; i++) { html += `<div></div>`; }
 
-            const activeEvs = events.filter(e => !e.isArchived);
+            const activeEvs = events.filter(e => !e.isArchived && !e.isLeave); // 請假不計入小圓點
 
             for (let i = 1; i <= daysInMonth; i++) {
                 const dateStr = formatDate(new Date(year, month, i));
@@ -1986,7 +2135,7 @@
                 const startObj = new Date(`${e.date}T${e.time || '00:00'}:00`);
                 const endObj = window.getEventEndObj(e);
                 return { ...e, startMs: startObj.getTime(), endMs: endObj.getTime() };
-            }).filter(e => e.endMs > now.getTime() && e.time).sort((a,b) => a.startMs - b.startMs);
+            }).filter(e => e.endMs > now.getTime() && e.time && !e.isLeave).sort((a,b) => a.startMs - b.startMs);
 
             if (upcomingEvents.length === 0) { container.classList.add('hidden'); return; }
 
@@ -2116,7 +2265,7 @@
                     const seriesIcon = e.seriesId ? `<i data-lucide="copy" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-300 dark:text-zinc-600" title="重複行程"></i>` : '';
 
                     html += `
-                        <div draggable="${isAdmin}" ondragstart="window.handleDragStart(event, '${e.id}')" ondragend="window.handleDragEnd(event)" onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" data-has-time="${e.time ? 'true' : 'false'}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white dark:bg-darkcard p-3.5 sm:p-4 md:p-5 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 dark:border-zinc-800 transition-all duration-400 ease-golden active:scale-[0.98]">
+                        <div draggable="${isAdmin}" ondragstart="window.handleDragStart(event, '${e.id}')" ondragend="window.handleDragEnd(event)" onclick="window.openEventDetail('${e.id}')" data-start="${startMs}" data-end="${endMs}" data-has-time="${e.time ? 'true' : 'false'}" data-is-leave="${e.isLeave ? 'true' : 'false'}" style="animation-delay: ${currentDelayIndex * 50}ms" class="agenda-card animate-item bg-white dark:bg-darkcard p-3.5 sm:p-4 md:p-5 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-none relative overflow-hidden group cursor-pointer hover:shadow-md hover:-translate-y-0.5 flex flex-row items-center text-left border border-zinc-100/80 dark:border-zinc-800 transition-all duration-400 ease-golden active:scale-[0.98]">
                             <div class="card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-zinc-900 dark:bg-zinc-100 transition-colors duration-500 ease-golden"></div>
                             
                             <div class="w-[60px] sm:w-[72px] shrink-0 flex flex-col items-center justify-center border-r border-zinc-100 dark:border-zinc-800 pr-2 sm:pr-3 mr-3 sm:mr-4 ml-1 sm:ml-2">
@@ -2171,7 +2320,7 @@
             const pushEnabled = localStorage.getItem('chim_app_push') === 'true';
             if (pushEnabled && "Notification" in window && Notification.permission === 'granted') {
                 events.forEach(e => {
-                    if (e.isArchived || !e.time) return;
+                    if (e.isArchived || e.isLeave || !e.time) return;
                     const startMs = new Date(`${e.date}T${e.time}:00`).getTime();
                     const diff = startMs - now;
                     if (diff > 14 * 60000 && diff <= 15 * 60000) {
@@ -2208,13 +2357,29 @@
                 const start = parseInt(card.dataset.start);
                 const end = parseInt(card.dataset.end);
                 const hasTime = card.dataset.hasTime === 'true';
+                const isLeave = card.dataset.isLeave === 'true';
+                
                 const indicator = card.querySelector('.card-indicator');
                 const badge = card.querySelector('.card-timer-badge');
                 const title = card.querySelector('.card-title');
                 const timeText = card.querySelector('.card-time-text');
 
-                card.className = card.className.replace(/bg-zinc-50\/70|shadow-none|bg-emerald-50\/20|shadow-md|bg-blue-50\/20|bg-white|dark:bg-darkcard|dark:shadow-none/g, '').trim();
+                card.className = card.className.replace(/bg-zinc-50\/70|shadow-none|bg-emerald-50\/20|shadow-md|bg-blue-50\/20|bg-white|dark:bg-darkcard|dark:shadow-none|bg-rose-50\/50|dark:bg-rose-900\/10|border-rose-100|dark:border-rose-900\/30|opacity-80/g, '').trim();
                 
+                // 1. 如果是請假狀態，直接套用特殊紅色樣式，不跑倒數計時
+                if (isLeave) {
+                    card.classList.add('bg-rose-50/50', 'dark:bg-rose-900/10', 'border-rose-100', 'dark:border-rose-900/30', 'opacity-80');
+                    indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-rose-400 transition-colors duration-500";
+                    badge.innerHTML = `<i data-lucide="user-x" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>已請假 / 欠堂`;
+                    badge.className = "card-timer-badge flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-rose-500 dark:text-rose-400";
+                    title.className = "card-title text-base sm:text-lg md:text-xl font-black text-zinc-400 dark:text-zinc-500 line-through leading-tight truncate mb-1.5 sm:mb-2";
+                    if(timeText) {
+                        timeText.classList.add('text-zinc-400', 'dark:text-zinc-600');
+                        timeText.classList.remove('text-zinc-900', 'dark:text-white');
+                    }
+                    return; // 跳過後續的普通狀態計算
+                }
+
                 if (now > end) {
                     card.classList.add('bg-zinc-50/70', 'shadow-none', 'dark:bg-darkcard', 'dark:shadow-none');
                     indicator.className = "card-indicator absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-zinc-300 dark:bg-zinc-700 transition-colors duration-500";
@@ -2324,6 +2489,8 @@
             document.getElementById('f-date').value = e.date || '';
             document.getElementById('f-enddate').value = e.endDate || e.date || '';
             
+            document.getElementById('f-is-leave').checked = e.isLeave || false;
+            
             if (!e.time) { 
                 window.toggleTBD(true); 
             } else { 
@@ -2334,6 +2501,7 @@
             
             document.getElementById('repeat-section').classList.add('hidden');
             window.renderTags(); 
+            window.checkGlobalConflict();
             window.showOverlayAndModal('add-modal');
         }
 
@@ -2348,6 +2516,7 @@
             const tagVal = document.getElementById('f-tag').value;
             const titleVal = document.getElementById('f-title').value;
             const locationVal = document.getElementById('f-location').value;
+            const isLeaveVal = document.getElementById('f-is-leave').checked;
             const [year, month, day] = baseDateStr.split('-').map(Number);
             const repeatType = document.getElementById('f-repeat').value;
             const repeatCountStr = document.getElementById('f-repeat-count').value;
@@ -2370,13 +2539,13 @@
 
                             return updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events', ev.id), {
                                 tag: tagVal, title: titleVal, time: timeVal, endTime: endTimeVal, location: locationVal,
-                                endDate: updatedEndDate
+                                endDate: updatedEndDate, isLeave: isLeaveVal
                             });
                         }));
                         window.showAlert(`成功更新 ${toUpdate.length} 個關聯行程`);
                     } else {
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'events', editingId), {
-                            tag: tagVal, title: titleVal, date: baseDateStr, endDate: endDateStr, time: timeVal, endTime: endTimeVal, location: locationVal
+                            tag: tagVal, title: titleVal, date: baseDateStr, endDate: endDateStr, time: timeVal, endTime: endTimeVal, location: locationVal, isLeave: isLeaveVal
                         });
                     }
                 } else {
@@ -2403,7 +2572,7 @@
 
                         newEvents.push({
                             tag: tagVal, title: titleVal, date: formatDate(targetDate), endDate: formatDate(targetEndDate), time: timeVal, endTime: endTimeVal, location: locationVal,
-                            seriesId: seriesId, isArchived: false, createdAt: new Date().toISOString()
+                            seriesId: seriesId, isArchived: false, isLeave: isLeaveVal, createdAt: new Date().toISOString()
                         });
                     }
                     await Promise.all(newEvents.map(eventData => addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'events'), eventData)));
@@ -2500,7 +2669,7 @@
                 `;
                 const swBlob = new Blob([swCode], { type: 'application/javascript' });
                 const swUrl = URL.createObjectURL(swBlob);
-                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW (PWA) 預覽環境中可能受限，發佈後將正常運行:', err));
+                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW (PWA) 預覽環境中可能受限:', err));
             }
 
             window.deferredPrompt = null;
